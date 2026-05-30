@@ -10,7 +10,7 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
         
         /* شاشة تسجيل الدخول */
-        #login-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        #login-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; display: block; }
         #login-container h2 { color: #008069; margin-bottom: 20px; }
         .input-group { display: flex; margin-bottom: 15px; gap: 5px; }
         .input-group select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
@@ -51,10 +51,4 @@
             </select>
             <input type="tel" id="reg-phone" placeholder="رقم الهاتف">
         </div>
-        <button id="login-btn" onclick="document.getElementById('login-container').style.display='none'; document.getElementById('app-container').style.display='flex'; document.getElementById('username').value=document.getElementById('reg-name').value.trim(); document.getElementById('chat-header-title').innerText='نايل شات ('+document.getElementById('reg-name').value+')';">دخول الغرفة</button>
-    </div>
-
-    <div id="app-container">
-        <header>
-            <div class="user-info">
-                <h1 id="chat-header-title">نايل شات</h1>
+        <button id="login-btn" onclick="document.getElementById('login-container').style.display='none'; document.getElementById('app-container').style.display='flex'; document.getElementById('username').value=document.getElementByI
