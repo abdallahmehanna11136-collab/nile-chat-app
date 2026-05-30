@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, send
+from flask_socketio import SocketIO, emit, send
 import os
 
 app = Flask(__name__)
@@ -10,15 +10,16 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 def index():
     return render_template('index.html')
 
-@socketio.on('message')
-def handle_message(msg):
-    send(msg, broadcast=True)
+# استقبال الرسائل الجديدة (سواء صوت أو نص) وبثها للجميع بنظام منظّم
+@socketio.on('new_message')
+def handle_new_message(data):
+    emit('message', data, broadcast=True)
 
 @socketio.on('user_join')
 def handle_user_join(username):
-    send(f"📢 نظام نايل شات: {username} انضم إلى الغرفة الآن!", broadcast=True)
+    # إشعار الدخول بصيغة نصية
+    emit('message', {'type': 'text', 'sender': '📢 نظام نايل شات', 'content': f'{username} انضم إلى الغرفة الآن!'}, broadcast=True)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    # أضفنا الخاصية دي هنا عشان ريندر يوافق يشغل السيرفر فوراً بدون أخطاء
     socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
