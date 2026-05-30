@@ -11,7 +11,7 @@ def index():
 
 @socketio.on('message')
 def handle_message(msg):
-    # السيرفر بياخد الرسالة ويبعتها لكل الناس فوراً
+    # بياخد الرسالة ويبثها لكل الناس فوراً بدون تعديل
     send(msg, broadcast=True)
 
 if __name__ == '__main__':
