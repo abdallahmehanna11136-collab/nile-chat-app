@@ -59,11 +59,9 @@
     </div>
 
 <script>
-    const socket = io();
+    // طلب الاسم أول حاجة خالص قبل أي كود تاني عشان نضمن ظهوره
     let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
     document.getElementById('chat-header-title').innerText = "نايل شات (" + myName + ")";
 
-    socket.emit('user_join', myName);
-
-    socket.on('message', function(data) {
-        const chatWindow = document.getElementById('chat
+    const socket = io();
+    socket.emit('user_join', m
