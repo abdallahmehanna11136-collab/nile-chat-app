@@ -7,20 +7,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
         
-        /* شاشة تسجيل الدخول */
-        #login-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; display: block; }
-        #login-container h2 { color: #008069; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; margin-bottom: 15px; outline: none; }
-        #login-btn { width: 100%; background: #008069; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        
-        /* شاشة الشات الرئيسية */
-        #app-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        #chat-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
         header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
-
         #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 8px 12px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
+        .message { padding: 8px 12px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .sent { background: #d9fdd3; align-self: flex-end; }
         .received { background: #fff; align-self: flex-start; }
         
@@ -31,39 +23,47 @@
 </head>
 <body>
 
-    <div id="login-container">
-        <h2>نايل شات 💬</h2>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">تطوير: عبد الله محمد شعبان مهنا</p>
-        <input type="text" id="reg-name" placeholder="اكتب اسمك المستعار">
-        <input type="tel" id="reg-phone" placeholder="رقم الهاتف">
-        <button id="login-btn" onclick="startChat()">دخول الغرفة</button>
-    </div>
-
-    <div id="app-container">
-        <header id="chat-header-title">نايل شات</header>
+    <div id="chat-container">
+        <header id="chat-header">نايل شات 💬</header>
         <div id="chat-window"></div>
         <footer>
-            <input type="hidden" id="username" value="">
-            <input type="text" id="message-input" placeholder="اكتب رسالة..." onkeypress="handleKey(event)">
+            <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
             <button id="send-btn" onclick="sendMessage()">🚀</button>
         </footer>
     </div>
 
 <script>
     const socket = io();
-
-    function startChat() {
-        const nameInput = document.getElementById('reg-name').value.trim();
-        if (nameInput === "") {
-            alert("من فضلك أدخل الاسم المستعار أولاً!");
-            return;
-        }
-        document.getElementById('username').value = nameInput;
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-        document.getElementById('chat-header-title').innerText = 'نايل شات (' + nameInput + ')';
-    }
+    
+    // اطلب الاسم أول ما الصفحة تفتح فوراً بدون شاشات معقدة
+    let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
+    document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
     socket.on('message', function(msg) {
         const chatWindow = document.getElementById('chat-window');
-        const messageDiv = document
+        const messageDiv = document.createElement('div');
+        const parts = msg.split(": ");
+        const username = parts[0];
+        const content = parts.slice(1).join(": ");
+        
+        messageDiv.className = 'message ' + (username === myName ? 'sent' : 'received');
+        messageDiv.innerHTML = '<b>' + username + ':</b> ' + content;
+        chatWindow.appendChild(messageDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    });
+
+    function sendMessage() {
+        const input = document.getElementById('message-input');
+        const text = input.value.trim();
+        if (text !== "") {
+            socket.send(myName + ": " + text);
+            input.value = "";
+        }
+    }
+
+    function handleKey(event) {
+        if (event.key === "Enter") { sendMessage(); }
+    }
+</script>
+</body>
+</html>
