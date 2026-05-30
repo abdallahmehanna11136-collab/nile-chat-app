@@ -11,13 +11,14 @@
         
         #chat-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
         header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        
         #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 8px 12px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; line-height: 1.4; }
         .sent { background: #d9fdd3; align-self: flex-end; }
         .received { background: #fff; align-self: flex-start; }
         
         footer { background: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
-        #message-input { flex: 1; background: white; border: none; padding: 12px; border-radius: 8px; outline: none; }
+        #message-input { flex: 1; background: white; border: none; padding: 12px; border-radius: 8px; outline: none; font-size: 15px; }
         #send-btn { background: #008069; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -35,23 +36,28 @@
 <script>
     const socket = io();
     
-    // اطلب الاسم أول ما الصفحة تفتح فوراً بدون شاشات معقدة
+    // طلب الاسم عند فتح التطبيق مباشرة
     let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
     document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
+    // استقبال وعرض الرسايل فوراً بدون تعقيد وبدون split
     socket.on('message', function(msg) {
         const chatWindow = document.getElementById('chat-window');
         const messageDiv = document.createElement('div');
-        const parts = msg.split(": ");
-        const username = parts[0];
-        const content = parts.slice(1).join(": ");
         
-        messageDiv.className = 'message ' + (username === myName ? 'sent' : 'received');
-        messageDiv.innerHTML = '<b>' + username + ':</b> ' + content;
+        // التحقق لو الرسالة أنا اللي باعتها أو شخص تاني
+        if (msg.startsWith(myName + ":")) {
+            messageDiv.className = 'message sent';
+        } else {
+            messageDiv.className = 'message received';
+        }
+        
+        messageDiv.innerHTML = msg;
         chatWindow.appendChild(messageDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 
+    // إرسال الرسالة
     function sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
