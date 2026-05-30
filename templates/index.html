@@ -38,15 +38,14 @@
     </div>
 
 <script>
-    const socket = io();
-    
-    // نافذة طلب الاسم من أول السطر بشكل مستقل
+    // طلب الاسم في أول السطر وبشكل مستقل تماماً لضمان ظهوره
     let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
     document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
+    const socket = io();
     socket.emit('user_join', myName);
 
-    // استقبال النص والفويس نوتس
+    // استقبال الرسائل (سواء نصية أو صوتية)
     socket.on('message', function(data) {
         const chatWindow = document.getElementById('chat-window');
         const messageDiv = document.createElement('div');
@@ -71,7 +70,7 @@
         chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 
-    // إرسال الرسائل النصية
+    // إرسال الرسائل النصية بالصاروخ
     function sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
@@ -79,7 +78,3 @@
             socket.emit('new_message', { type: 'text', sender: myName, content: text });
             input.value = "";
         }
-    }
-
-    function handleKey(event) {
-        if (event.ke
