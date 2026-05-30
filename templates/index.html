@@ -51,7 +51,7 @@
             </select>
             <input type="tel" id="reg-phone" placeholder="رقم الهاتف">
         </div>
-        <button id="login-btn" onclick="startChat()">دخول الغرفة</button>
+        <button id="login-btn" onclick="document.getElementById('login-container').style.display='none'; document.getElementById('app-container').style.display='flex'; document.getElementById('username').value=document.getElementById('reg-name').value.trim(); document.getElementById('chat-header-title').innerText='نايل شات ('+document.getElementById('reg-name').value+')';">دخول الغرفة</button>
     </div>
 
     <div id="app-container">
