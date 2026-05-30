@@ -7,57 +7,54 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; align-items: center; justify-content: center; }
-        #app-container { width: 100%; max-width: 600px; height: 90vh; background: #fff; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
         
-        /* رأس الصفحة - الستايل الأخضر للواتساب */
-        header { background-color: #008069; color: white; padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
-        header h1 { font-size: 20px; font-weight: 500; line-height: 1.2; }
-        /* ستايل اسمك تحت العنوان */
-        header .developer-name { font-size: 12px; color: #deff9a; font-weight: normal; display: block; margin-top: 2px; }
+        /* شاشة تسجيل الدخول */
+        #login-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        #login-container h2 { color: #008069; margin-bottom: 20px; }
+        .input-group { display: flex; margin-bottom: 15px; gap: 5px; }
+        .input-group select { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none; }
+        #login-btn { width: 100%; background: #008069; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        
+        /* شاشة الشات الرئيسي */
+        #app-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: none; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        header { background-color: #008069; color: white; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; }
+        .user-info h1 { font-size: 18px; font-weight: 500; }
+        .developer-name { font-size: 11px; color: #deff9a; }
+        .call-actions button { background: none; border: none; font-size: 20px; cursor: pointer; margin-right: 10px; }
 
-        #chat-window { flex: 1; padding: 20px; background-color: #efeae2; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 8px 12px; border-radius: 8px; font-size: 15px; max-width: 80%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word; }
-        .received { background: #fff; align-self: flex-start; border-top-right-radius: 0; }
+        #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 8px 12px; border-radius: 8px; font-size: 15px; max-width: 80%; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
         .sent { background: #d9fdd3; align-self: flex-end; border-top-left-radius: 0; }
+        .received { background: #fff; align-self: flex-start; border-top-right-radius: 0; }
         .user-label { font-weight: bold; font-size: 12px; color: #008069; display: block; margin-bottom: 3px; }
+        
         footer { background: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
-        #username { width: 80px; padding: 10px; border: none; border-radius: 20px; outline: none; text-align: center; font-size: 14px; }
-        #message-input { flex: 1; padding: 10px 15px; border: none; border-radius: 20px; outline: none; font-size: 15px; }
-        #send-btn { background: #00a884; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        #message-input { flex: 1; background: white; border: none; padding: 12px; border-radius: 8px; }
+        .action-btn { background: #008069; color: white; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        #voice-btn { background: #25d366; }
     </style>
 </head>
 <body>
 
-<div id="app-container">
-    <header>
-        <div style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px;">💬</div>
-        <div>
-            <h1>نايل شات - Nile Chat</h1>
-            <span class="developer-name">تطوير: عبد الله محمد شعبان مهنا</span>
+    <div id="login-container">
+        <h2>نايل شات 💬</h2>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">تطوير: عبد الله محمد شعبان مهنا</p>
+        <input type="text" id="reg-name" placeholder="اكتب اسمك المستعار" style="margin-bottom: 15px;">
+        <div class="input-group">
+            <select id="country-code">
+                <option value="+20">🇪🇬 +20</option>
+                <option value="+966">🇸🇦 +966</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+964">🇮🇶 +964</option>
+            </select>
+            <input type="tel" id="reg-phone" placeholder="رقم الهاتف">
         </div>
-    </header>
-    <div id="chat-window"></div>
-    <footer>
-        <input type="text" id="username" placeholder="الاسم" value="عبده">
-        <input type="text" id="message-input" placeholder="اكتب رسالة..." onkeypress="handleKey(event)">
-        <button id="send-btn" onclick="sendMessage()">🚀</button>
-    </footer>
-</div>
+        <button id="login-btn" onclick="startChat()">دخول الغرفة</button>
+    </div>
 
-<script>
-    const socket = io();
-    socket.on('message', function(msg) {
-        const chatWindow = document.getElementById('chat-window');
-        const messageDiv = document.createElement('div');
-        const parts = msg.split(": ");
-        const userName = parts[0];
-        const content = parts.slice(1).join(": ");
-        messageDiv.className = 'message ' + (userName === document.getElementById('username').value ? 'sent' : 'received');
-        messageDiv.innerHTML = `<span class="user-label">${userName}</span>${content}`;
-        chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    });
-    function sendMessage() {
-        const user = document.getElementById('username').value.trim() || "مجهول";
-        const input = document.g
+    <div id="app-container">
+        <header>
+            <div class="user-info">
+                <h1 id="chat-header-title">نايل شات</h1>
