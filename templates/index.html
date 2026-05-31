@@ -32,36 +32,47 @@
 
 <script>
     const socket = io();
-    
-    let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-    document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
+    let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات") || "مجهول";
+    document.getElementById('chat-header').innerText = "نايل شات 💬 (" + myName + ")";
+
+    // إرسال اسم المستخدم للسيرفر فور الدخول ليجلب له التاريخ ويظهر إشعار
     socket.emit('user_join', myName);
 
-    // استقبال الرسائل النصية وعرضها
+    // استقبال الرسائل (القديمة والجديدة) وعرضها
     socket.on('message', function(data) {
         const chatWindow = document.getElementById('chat-window');
         const messageDiv = document.createElement('div');
         
+        // تحديد هل الرسالة أرسلتها أنا أم شخص آخر لتنسيق التصميم
         messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
+        
+        // عرض اسم الراسل ومحتوى الرسالة
         messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
         
         chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        chatWindow.scrollTop = chatWindow.scrollHeight; // النزول التلقائي لآخر رسالة
     });
 
-    // إرسال الرسائل النصية
+    // دالة إرسال الرسائل النصية
     function sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
         if (text !== "") {
-            socket.emit('new_message', { sender: myName, content: text });
+            socket.emit('new_message', { 
+                type: 'text', 
+                sender: myName, 
+                content: text 
+            });
             input.value = "";
         }
     }
 
+    // إرسال الرسالة عند الضغط على زر Enter
     function handleKey(event) {
-        if (event.key === "Enter") { sendMessage(); }
+        if (event.key === "Enter") {
+            sendMessage();
+        }
     }
 </script>
 </body>
