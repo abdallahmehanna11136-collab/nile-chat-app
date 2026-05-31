@@ -21,8 +21,6 @@
         #message-input { flex: 1; background: white; border: none; padding: 12px; border-radius: 8px; outline: none; font-size: 15px; }
         .btn { border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; }
         #send-btn { background: #008069; }
-        #audio-btn { background: #ea4335; }
-        audio { max-width: 100%; margin-top: 5px; display: block; }
     </style>
 </head>
 <body>
@@ -32,20 +30,20 @@
         <div id="chat-window"></div>
         <footer>
             <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
-            <button id="audio-btn" class="btn" onclick="toggleRecording()">🎤</button>
             <button id="send-btn" class="btn" onclick="sendMessage()">🚀</button>
         </footer>
     </div>
 
 <script>
-    // طلب الاسم في أول السطر وبشكل مستقل تماماً لضمان ظهوره
+    const socket = io();
+    
+    // طلب الاسم أول ما الصفحة تفتح
     let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
     document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
-    const socket = io();
     socket.emit('user_join', myName);
 
-    // استقبال الرسائل (سواء نصية أو صوتية)
+    // استقبال الرسائل النصية وعرضها
     socket.on('message', function(data) {
         const chatWindow = document.getElementById('chat-window');
         const messageDiv = document.createElement('div');
@@ -56,25 +54,26 @@
             messageDiv.className = 'message received';
         }
         
-        if (data.type === 'audio') {
-            messageDiv.innerHTML = '<b>' + data.sender + ':</b> <br>';
-            const audio = document.createElement('audio');
-            audio.controls = true;
-            audio.src = data.content;
-            messageDiv.appendChild(audio);
-        } else {
-            messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
-        }
+        messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
         
         chatWindow.appendChild(messageDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     });
 
-    // إرسال الرسائل النصية بالصاروخ
+    // إرسال الرسالة بالزرار
     function sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
         if (text !== "") {
-            socket.emit('new_message', { type: 'text', sender: myName, content: text });
+            socket.emit('new_message', { sender: myName, content: text });
             input.value = "";
         }
+    }
+
+    // إرسال الرسالة بزرار Enter
+    function handleKey(event) {
+        if (event.key === "Enter") { sendMessage(); }
+    }
+</script>
+</body>
+</html>
