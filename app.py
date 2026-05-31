@@ -58,20 +58,21 @@ def get_messages(user1, user2):
     return jsonify(messages)
 
 # استقبال الرسائل الخاصة وبثها للشخص المستهدف فقط لو أونلاين، وحفظها
-@socketio.on('private_msg')
-def handle_private_msg(data):
+@socketio.on('new_message')
+def handle_new_message(data):
+    room = data['room']
     sender = data['sender']
-    receiver = data['receiver']
     content = data['content']
     
-    # حفظ في قاعدة البيانات بشكل دائم
+    # حفظ في قاعدة البيانات بناءً على الغرفة
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)",
-        (sender, receiver, content)
-    )
+    cursor.execute("INSERT INTO messages (room, sender, content) VALUES (?, ?, ?)", (room, sender, content))
     conn.commit()
+    conn.close()
+    
+    # إرسال الرسالة للغرفة السرية دي بس
+    emit('message', {'sender': sender, 'content': content}, to=room)
     conn.close()
     
     # إرسال الرسالة للجميع، والـ JavaScript هيفلتر مين يعرضها ومين يخفيها
