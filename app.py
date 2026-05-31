@@ -1,5 +1,5 @@
-from flask import Flask, render_template, send_from_directory, jsonify
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template, send_from_directory
+from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
 
@@ -7,15 +7,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abdo_secret_nile_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# تهيئة قاعدة البيانات بالجدول الجديد لشات الخاص
 def init_db():
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
+    # تأكد من وجود خانة room في الجدول لحفظ الرسايل جوة الأوضة
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS private_messages (
+        CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room TEXT,
             sender TEXT,
-            receiver TEXT,
             content TEXT
         )
     ''')
@@ -28,55 +28,38 @@ init_db()
 def index():
     return render_template('index.html')
 
-# سطر لجلب لستة الأشخاص الذين تواصلت معهم
-@app.route('/get_chats/<username>')
-def get_chats(username):
+# الربط الصحيح مع السطر 40 في الجافا سكريبت لدخول الغرفة
+@socketio.on('join_room')
+def handle_join_room(data):
+    room = data['room']
+    join_room(room)
+    
+    # جلب رسايل الغرفة دي بس أول ما المستخدم يدخل
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
-    # جلب كل الأسماء اللي كلمتها أو كلمتك
-    cursor.execute('''
-        SELECT DISTINCT sender FROM private_messages WHERE receiver = ?
-        UNION
-        SELECT DISTINCT receiver FROM private_messages WHERE sender = ?
-    ''', (username, username))
-    chats = [row[0] for row in cursor.fetchall()]
+    try:
+        cursor.execute("SELECT sender, content FROM messages WHERE room = ? ORDER BY id ASC", (room,))
+        rows = cursor.fetchall()
+        for row in rows:
+            emit('message', {'sender': row[0], 'content': row[1]})
+    except:
+        pass
     conn.close()
-    return jsonify(chats)
 
-# سطر لجلب المحادثة الثابتة بين شخصين بس
-@app.route('/get_messages/<user1>/<user2>')
-def get_messages(user1, user2):
-    conn = sqlite3.connect('chat.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        SELECT sender, content FROM private_messages 
-        WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)
-        ORDER BY id ASC
-    ''', (user1, user2, user2, user1))
-    messages = [{'sender': row[0], 'content': row[1]} for row in cursor.fetchall()]
-    conn.close()
-    return jsonify(messages)
-
-# استقبال الرسائل الخاصة وبثها للشخص المستهدف فقط لو أونلاين، وحفظها
+# استقبال الرسالة وبثها لداخل الغرفة السرية بس
 @socketio.on('new_message')
 def handle_new_message(data):
     room = data['room']
     sender = data['sender']
     content = data['content']
     
-    # حفظ في قاعدة البيانات بناءً على الغرفة
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
     cursor.execute("INSERT INTO messages (room, sender, content) VALUES (?, ?, ?)", (room, sender, content))
     conn.commit()
     conn.close()
     
-    # إرسال الرسالة للغرفة السرية دي بس
     emit('message', {'sender': sender, 'content': content}, to=room)
-    conn.close()
-    
-    # إرسال الرسالة للجميع، والـ JavaScript هيفلتر مين يعرضها ومين يخفيها
-    emit('receive_private', data, broadcast=True)
 
 @app.route('/manifest.json')
 def serve_manifest():
