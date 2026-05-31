@@ -1,5 +1,5 @@
-from flask import Flask, render_template, send_from_directory
-from flask_socketio import SocketIO, emit, send
+from flask import Flask, render_template, send_from_directory, jsonify
+from flask_socketio import SocketIO, emit
 import os
 import sqlite3
 
@@ -7,70 +7,75 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abdo_secret_nile_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# دالة لإنشاء قاعدة البيانات والجدول لو مش موجودين
+# تهيئة قاعدة البيانات بالجدول الجديد لشات الخاص
 def init_db():
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS messages (
+        CREATE TABLE IF NOT EXISTS private_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT,
             sender TEXT,
+            receiver TEXT,
             content TEXT
         )
     ''')
     conn.commit()
     conn.close()
 
-# تشغيل تهيئة قاعدة البيانات
 init_db()
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# استقبال الرسائل الجديدة وحفظها في قاعدة البيانات ثم بثها للجميع
-@socketio.on('new_message')
-def handle_new_message(data):
-    # حفظ الرسالة في قاعدة البيانات
+# سطر لجلب لستة الأشخاص الذين تواصلت معهم
+@app.route('/get_chats/<username>')
+def get_chats(username):
+    conn = sqlite3.connect('chat.db')
+    cursor = conn.cursor()
+    # جلب كل الأسماء اللي كلمتها أو كلمتك
+    cursor.execute('''
+        SELECT DISTINCT sender FROM private_messages WHERE receiver = ?
+        UNION
+        SELECT DISTINCT receiver FROM private_messages WHERE sender = ?
+    ''', (username, username))
+    chats = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(chats)
+
+# سطر لجلب المحادثة الثابتة بين شخصين بس
+@app.route('/get_messages/<user1>/<user2>')
+def get_messages(user1, user2):
+    conn = sqlite3.connect('chat.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT sender, content FROM private_messages 
+        WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)
+        ORDER BY id ASC
+    ''', (user1, user2, user2, user1))
+    messages = [{'sender': row[0], 'content': row[1]} for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(messages)
+
+# استقبال الرسائل الخاصة وبثها للشخص المستهدف فقط لو أونلاين، وحفظها
+@socketio.on('private_msg')
+def handle_private_msg(data):
+    sender = data['sender']
+    receiver = data['receiver']
+    content = data['content']
+    
+    # حفظ في قاعدة البيانات بشكل دائم
     conn = sqlite3.connect('chat.db')
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO messages (type, sender, content) VALUES (?, ?, ?)",
-        (data.get('type', 'text'), data.get('sender', 'مجهول'), data.get('content', ''))
+        "INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)",
+        (sender, receiver, content)
     )
     conn.commit()
     conn.close()
     
-    # بث الرسالة لكل الناس في نفس اللحظة
-    emit('message', data, broadcast=True)
-
-# عند دخول مستخدم جديد: نرسل له إشعار دخول، ونرسل له كل التاريخ القديم
-@socketio.on('user_join')
-def handle_user_join(username):
-    # إشعار الدخول بصيغة نصية
-    join_msg = {
-        'type': 'text',
-        'sender': '📢 نظام نايل شات',
-        'content': f'الانضمام إلى الغرفة الآن: {username}!'
-    }
-    emit('message', join_msg, broadcast=True)
-    
-    # جلب الرسائل القديمة من قاعدة البيانات وإرسالها للمستخدم الجديد فقط
-    conn = sqlite3.connect('chat.db')
-    cursor = conn.cursor()
-    cursor.execute("SELECT type, sender, content FROM messages ORDER BY id ASC")
-    rows = cursor.fetchall()
-    conn.close()
-    
-    # إرسال التاريخ القديم سطر سطر للمستخدم اللي لسه داخل
-    for row in rows:
-        old_msg = {
-            'type': row[0],
-            'sender': row[1],
-            'content': row[2]
-        }
-        emit('message', old_msg) # بدون broadcast عشان تروح له هو بس
+    # إرسال الرسالة للجميع، والـ JavaScript هيفلتر مين يعرضها ومين يخفيها
+    emit('receive_private', data, broadcast=True)
 
 @app.route('/manifest.json')
 def serve_manifest():
