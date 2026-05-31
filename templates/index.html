@@ -57,7 +57,8 @@
     </div>
 
     <script>
-        const socket = io();
-        
-        // يطلب الاسم المستعار مرة واحدة فقط عند الدخول، والغرفة بتبدأ افتراضي على "عامة"
-        let myName = prompt("من فضلك اكتب اسمك المستعار ل�
+        // دالة التنقل بين الغرف (مكتوبة فوق عشان المتصفح يشوفها قبل أي سطر تاني)
+        function switchRoom(roomName) {
+            if (myRoom === roomName) return;
+            
+            myRoom = roomName;
