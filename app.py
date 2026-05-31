@@ -7,9 +7,9 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abdo_secret_nile_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# تهيئة قاعدة البيانات بالجدول الجديد لشات الخاص
+# تهيئة قاعدة البيانات الجديدة باسم جديد تماماً للأمان
 def init_db():
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('private_chat.db')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS private_messages (
@@ -28,12 +28,11 @@ init_db()
 def index():
     return render_template('index.html')
 
-# سطر لجلب لستة الأشخاص الذين تواصلت معهم
+# جلب لستة الأشخاص
 @app.route('/get_chats/<username>')
 def get_chats(username):
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('private_chat.db')
     cursor = conn.cursor()
-    # جلب كل الأسماء اللي كلمتها أو كلمتك
     cursor.execute('''
         SELECT DISTINCT sender FROM private_messages WHERE receiver = ?
         UNION
@@ -43,10 +42,10 @@ def get_chats(username):
     conn.close()
     return jsonify(chats)
 
-# سطر لجلب المحادثة الثابتة بين شخصين بس
+# جلب المحادثة الثابتة بين شخصين بس
 @app.route('/get_messages/<user1>/<user2>')
 def get_messages(user1, user2):
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('private_chat.db')
     cursor = conn.cursor()
     cursor.execute('''
         SELECT sender, content FROM private_messages 
@@ -57,15 +56,14 @@ def get_messages(user1, user2):
     conn.close()
     return jsonify(messages)
 
-# استقبال الرسائل الخاصة وبثها للشخص المستهدف فقط لو أونلاين، وحفظها
+# استقبال الرسائل الخاصة وبثها
 @socketio.on('private_msg')
 def handle_private_msg(data):
     sender = data['sender']
     receiver = data['receiver']
     content = data['content']
     
-    # حفظ في قاعدة البيانات بشكل دائم
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('private_chat.db')
     cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)",
@@ -74,7 +72,6 @@ def handle_private_msg(data):
     conn.commit()
     conn.close()
     
-    # إرسال الرسالة للجميع، والـ JavaScript هيفلتر مين يعرضها ومين يخفيها
     emit('receive_private', data, broadcast=True)
 
 @app.route('/manifest.json')
