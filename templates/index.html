@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نايل شات | Nile Chat</title>
+    <title>نايل شات الآمن | Nile Chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="manifest" href="/manifest.json">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        #chat-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
+        #chat-container { width: 100%; max-width: 600px; height: 100vh; background: #fff; display: flex; flex-direction: column; margin: 0 auto; }
         header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
         #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; line-height: 1.4; }
+        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
         .sent { background: #d9fdd3; align-self: flex-end; }
         .received { background: #fff; align-self: flex-start; }
-        footer { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f0f2f5; }
-        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; background: white; }
+        footer { display: flex; padding: 10px; gap: 10px; background: #f0f2f5; border-top: 1px solid #ccc; align-items: center; }
+        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; }
+        #send-btn { border: none; border-radius: 50%; background: #008069; color: white; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -26,54 +27,51 @@
         <div id="chat-window"></div>
         <footer>
             <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
-            <button id="send-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #008069;" onclick="sendMessage()">🚀</button>
+            <button id="send-btn" onclick="sendMessage()">🚀</button>
         </footer>
     </div>
 
-<script>
-    const socket = io();
-
-    let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات") || "مجهول";
-    document.getElementById('chat-header').innerText = "نايل شات 💬 (" + myName + ")";
-let myRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليها مع صاحبك):") || "عامة";
-    // إرسال اسم المستخدم للسيرفر فور الدخول ليجلب له التاريخ ويظهر إشعار
-    socket.emit('join_room', { username: myName, room: myRoom });
-
-    // استقبال الرسائل (القديمة والجديدة) وعرضها
-    socket.on('message', function(data) {
-        const chatWindow = document.getElementById('chat-window');
-        const messageDiv = document.createElement('div');
+    <script>
+        const socket = io();
         
-        // تحديد هل الرسالة أرسلتها أنا أم شخص آخر لتنسيق التصميم
-        messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
+        // طلب الاسم المستعار واسم الغرفة مرة واحدة عند الدخول
+        let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
+        let myRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليها مع صاحبك):") || "عامة";
         
-        // عرض اسم الراسل ومحتوى الرسالة
-        messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
-        
-        chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // النزول التلقائي لآخر رسالة
-    });
+        document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
-    // دالة إرسال الرسائل النصية
-    function sendMessage() {
-        const input = document.getElementById('message-input');
-        const text = input.value.trim();
-        if (text !== "") {
-            socket.emit('new_message', { 
-                type: 'text', 
-                sender: myName, 
-                content: text 
-            });
-            input.value = "";
+        // إرسال طلب دخول الغرفة للسيرفر فوراً
+        socket.emit('join_room', { username: myName, room: myRoom });
+
+        // استقبال الرسائل وعرضها
+        socket.on('message', function(data) {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDiv = document.createElement('div');
+            
+            messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
+            messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
+            
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        });
+
+        // دالة إرسال الرسالة المربوطة بالزرار المظبوطة
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (text !== "") {
+                socket.emit('new_message', { 
+                    room: myRoom,
+                    sender: myName, 
+                    content: text 
+                });
+                input.value = "";
+            }
         }
-    }
 
-    // إرسال الرسالة عند الضغط على زر Enter
-    function handleKey(event) {
-        if (event.key === "Enter") {
-            sendMessage();
+        function handleKey(event) {
+            if (event.key === "Enter") { sendMessage(); }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
