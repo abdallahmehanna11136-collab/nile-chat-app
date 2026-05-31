@@ -17,10 +17,8 @@
         .sent { background: #d9fdd3; align-self: flex-end; }
         .received { background: #fff; align-self: flex-start; }
         
-        footer { background: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
-        #message-input { flex: 1; background: white; border: none; padding: 12px; border-radius: 8px; outline: none; font-size: 15px; }
-        .btn { border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; }
-        #send-btn { background: #008069; }
+        footer { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f0f2f5; }
+        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; background: white; }
     </style>
 </head>
 <body>
@@ -28,11 +26,11 @@
     <div id="chat-container">
         <header id="chat-header">نايل شات 💬</header>
         <div id="chat-window"></div>
-<footer>
-        <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)" style="flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px;">
-        <button id="send-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #008069;" onclick="sendMessage()">🚀</button>
-        <button id="audio-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #ea4335;" onclick="toggleRecording()">🎤</button>
-    </footer>
+        <footer>
+            <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
+            <button id="send-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #008069;" onclick="sendMessage()">🚀</button>
+            <button id="audio-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #ea4335;" onclick="toggleRecording()">🎤</button>
+        </footer>
     </div>
 
 <script>
@@ -43,8 +41,8 @@
     document.getElementById('chat-header').innerText = "نايل شات (" + myName + ")";
 
     socket.emit('user_join', myName);
-    
- // استقبال الرسائل (نص أو صوت) وعرضها في الشات
+
+    // استقبال الرسائل (نص أو صوت) وعرضها في الشات
     socket.on('message', function(data) {
         const chatWindow = document.getElementById('chat-window');
         const messageDiv = document.createElement('div');
@@ -67,132 +65,10 @@
         chatWindow.appendChild(messageDiv);
         chatWindow.scrollTop = chatWindow.scrollHeight;
     });
-    // دالة إرسال الرسائل النصية بالصاروخ
-    function sendMessage() {
-        const input = document.getElementById('message-input');
-        const text = input.value.trim();
-        if (text !== "") {
-            socket.emit('new_message', { type: 'text', sender: myName, content: text });
-            input.value = "";
-        }
-    }
-
-    function handleKey(event) {
-        if (event.key === "Enter") { sendMessage(); }
-    }
-
-    // كود تشغيل المايك الفعلي وتسجيل الفويس نوت
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-
-    function toggleRecording() {
-        const btn = document.getElementById('audio-btn');
-        
-        if (!isRecording) {
-            try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    alert("المتصفح يمنع تسجيل الصوت أو لا يدعمه على هذا الرابط.");
-                    return;
-                }
-                
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
-                        
-                        mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
-                        mediaRecorder.onstop = () => {
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                            const reader = new FileReader();
-                            reader.readAsDataURL(audioBlob); 
-                            reader.onloadend = function() {
-                                socket.emit('new_message', { type: 'audio', sender: myName, content: reader.result });
-                            }
-                        };
-
-                        mediaRecorder.start();
-                        isRecording = true;
-                        btn.innerText = "🛑";
-                    }).catch(err => {
-                        alert("برجاء السماح بصلاحية المايك من إعدادات المتصفح أولاً!");
-                    });
-            } catch (e) {
-                alert("حدث خطأ في المايك، لكن الشات مستمر في العمل.");
-            }
-        } else {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-            isRecording = false;
-            btn.innerText = "🎤";
-        }
-    }
-</script>
-</body>
-</html>
 
     // دالة إرسال الرسائل النصية
     function sendMessage() {
         const input = document.getElementById('message-input');
         const text = input.value.trim();
         if (text !== "") {
-            socket.emit('new_message', { type: 'text', sender: myName, content: text });
-            input.value = "";
-        }
-    }
-
-    function handleKey(event) {
-        if (event.key === "Enter") { sendMessage(); }
-    }
-
-    // كود تشغيل المايك وتسجيل الفويس نوت الفعلي
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-
-    function toggleRecording() {
-        const btn = document.getElementById('audio-btn');
-        
-        if (!isRecording) {
-            try {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    alert("المتصفح يمنع تسجيل الصوت أو لا يدعمه على هذا الرابط.");
-                    return;
-                }
-                
-                navigator.mediaDevices.getUserMedia({ audio: true })
-                    .then(stream => {
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
-                        
-                        mediaRecorder.ondataavailable = event => { audioChunks.push(event.data); };
-                        mediaRecorder.onstop = () => {
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                            const reader = new FileReader();
-                            reader.readAsDataURL(audioBlob); 
-                            reader.onloadend = function() {
-                                socket.emit('new_message', { type: 'audio', sender: myName, content: reader.result });
-                            }
-                        };
-
-                        mediaRecorder.start();
-                        isRecording = true;
-                        btn.innerText = "🛑";
-                    }).catch(err => {
-                        alert("برجاء السماح بصلاحية المايك من إعدادات المتصفح أولاً!");
-                    });
-            } catch (e) {
-                alert("حدث خطأ في المايك، لكن الشات مستمر في العمل.");
-            }
-        } else {
-            if (mediaRecorder && mediaRecorder.state !== "inactive") {
-                mediaRecorder.stop();
-            }
-            isRecording = false;
-            btn.innerText = "🎤";
-        }
-    }
-</script>
-</body>
-</html>
+            socket.emit('new_message', { type: 'text', sender: myName, content: te
