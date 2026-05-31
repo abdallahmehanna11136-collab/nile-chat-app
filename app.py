@@ -7,10 +7,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'abdo_secret_nile_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+# إنشاء قاعدة البيانات الجديدة والجداول على نضافة تماماً
 def init_db():
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
-    # تأكد من وجود خانة room في الجدول لحفظ الرسايل جوة الأوضة
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,37 +28,43 @@ init_db()
 def index():
     return render_template('index.html')
 
-# الربط الصحيح مع السطر 40 في الجافا سكريبت لدخول الغرفة
+# الربط الصحيح لدخول الغرفة وجلب رسايلها القديمة بس
 @socketio.on('join_room')
 def handle_join_room(data):
     room = data['room']
     join_room(room)
     
-    # جلب رسايل الغرفة دي بس أول ما المستخدم يدخل
-    conn = sqlite3.connect('chat.db')
+    # جلب أرشيف الرسايل الخاص بهذه الغرفة السرية فقط
+    conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
     try:
         cursor.execute("SELECT sender, content FROM messages WHERE room = ? ORDER BY id ASC", (room,))
         rows = cursor.fetchall()
         for row in rows:
             emit('message', {'sender': row[0], 'content': row[1]})
-    except:
-        pass
-    conn.close()
+    except Exception as e:
+        print(f"Error reading database: {e}")
+    finally:
+        conn.close()
 
-# استقبال الرسالة وبثها لداخل الغرفة السرية بس
+# استقبال الرسائل الجديدة وحفظها وبثها جوة الأوضة بس
 @socketio.on('new_message')
 def handle_new_message(data):
     room = data['room']
     sender = data['sender']
     content = data['content']
     
-    conn = sqlite3.connect('chat.db')
+    conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO messages (room, sender, content) VALUES (?, ?, ?)", (room, sender, content))
-    conn.commit()
-    conn.close()
+    try:
+        cursor.execute("INSERT INTO messages (room, sender, content) VALUES (?, ?, ?)", (room, sender, content))
+        conn.commit()
+    except Exception as e:
+        print(f"Error writing to database: {e}")
+    finally:
+        conn.close()
     
+    # بث الرسالة لأعضاء هذه الغرفة السرية فقط
     emit('message', {'sender': sender, 'content': content}, to=room)
 
 @app.route('/manifest.json')
