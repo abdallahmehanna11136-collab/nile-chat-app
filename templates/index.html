@@ -35,9 +35,9 @@
 
     let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات") || "مجهول";
     document.getElementById('chat-header').innerText = "نايل شات 💬 (" + myName + ")";
-
+let myRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليها مع صاحبك):") || "عامة";
     // إرسال اسم المستخدم للسيرفر فور الدخول ليجلب له التاريخ ويظهر إشعار
-    socket.emit('user_join', myName);
+    socket.emit('join_room', { username: myName, room: myRoom });
 
     // استقبال الرسائل (القديمة والجديدة) وعرضها
     socket.on('message', function(data) {
