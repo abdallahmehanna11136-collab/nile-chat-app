@@ -3,77 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نايل شات | Nile Chat</title>
+    <title>نايل شات الخاص | Nile Chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="manifest" href="/manifest.json">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        #chat-container { width: 100%; max-width: 600px; height: 95vh; background: #fff; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
         header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        
+        #sidebar { background: white; padding: 10px; border-bottom: 1px solid #ccc; display: flex; flex-direction: column; gap: 10px; }
+        #chat-list { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0; }
+        .chat-user-btn { background: #eef; border: 1px solid #008069; padding: 8px 15px; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 14px; }
+        .chat-user-btn.active { background: #008069; color: white; }
+        #start-new-btn { background: #008069; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
         #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; line-height: 1.4; }
+        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
         .sent { background: #d9fdd3; align-self: flex-end; }
         .received { background: #fff; align-self: flex-start; }
-        footer { display: flex; align-items: center; gap: 10px; padding: 10px; background: #f0f2f5; }
-        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; background: white; }
+        
+        footer { display: flex; padding: 10px; gap: 10px; background: #f0f2f5; border-top: 1px solid #ccc; }
+        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; }
+        #send-btn { border: none; border-radius: 5px; background: #008069; color: white; padding: 0 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="chat-container">
-        <header id="chat-header">نايل شات 💬</header>
-        <div id="chat-window"></div>
-        <footer>
-            <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
-            <button id="send-btn" style="border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: white; background: #008069;" onclick="sendMessage()">🚀</button>
-        </footer>
+    <header id="chat-header">نايل شات الخاص 💬</header>
+
+    <div id="sidebar">
+        <button id="start-new-btn" onclick="startNewChat()">+ ابدأ محادثة مع شخص جديد</button>
+        <div id="chat-list"></div>
     </div>
 
-<script>
-    const socket = io();
+    <div id="chat-window"></div>
 
-    let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات") || "مجهول";
-    document.getElementById('chat-header').innerText = "نايل شات 💬 (" + myName + ")";
+    <footer>
+        <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
+        <button id="send-btn" onclick="sendMessage()">إرسال</button>
+    </footer>
 
-    // إرسال اسم المستخدم للسيرفر فور الدخول ليجلب له التاريخ ويظهر إشعار
-    socket.emit('user_join', myName);
+    <script>
+        const socket = io();
+        let myName = prompt("من فضلك اكتب اسمك الثابت للدخول:") || "مجهول";
+        let activeReceiver = ""; // الشخص اللي بتكلمه حالياً
 
-    // استقبال الرسائل (القديمة والجديدة) وعرضها
-    socket.on('message', function(data) {
-        const chatWindow = document.getElementById('chat-window');
-        const messageDiv = document.createElement('div');
-        
-        // تحديد هل الرسالة أرسلتها أنا أم شخص آخر لتنسيق التصميم
-        messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
-        
-        // عرض اسم الراسل ومحتوى الرسالة
-        messageDiv.innerHTML = '<b>' + data.sender + ':</b> ' + data.content;
-        
-        chatWindow.appendChild(messageDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // النزول التلقائي لآخر رسالة
-    });
+        document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName})`;
 
-    // دالة إرسال الرسائل النصية
-    function sendMessage() {
-        const input = document.getElementById('message-input');
-        const text = input.value.trim();
-        if (text !== "") {
-            socket.emit('new_message', { 
-                type: 'text', 
-                sender: myName, 
-                content: text 
-            });
-            input.value = "";
+        // تحميل لستة الأشخاص اللي كلمتهم قبل كده أول ما تفتح
+        function loadChatList() {
+            fetch(`/get_chats/${myName}`)
+                .then(res => res.json())
+                .then(users => {
+                    const listDiv = document.getElementById('chat-list');
+                    listDiv.innerHTML = "";
+                    users.forEach(user => {
+                        if(user !== myName) {
+                            const btn = document.createElement('button');
+                            btn.className = `chat-user-btn ${user === activeReceiver ? 'active' : ''}`;
+                            btn.innerText = user;
+                            btn.onclick = () => openChatWith(user);
+                            listDiv.appendChild(btn);
+                        }
+                    });
+                });
         }
-    }
 
-    // إرسال الرسالة عند الضغط على زر Enter
-    function handleKey(event) {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
-    }
-</script>
-</body>
-</html>
+        // فتح محادثة شخص معين وتحميل الرسايل الثابتة بينكم
+        function openChatWith(username) {
+            activeReceiver = username;
+            loadChatList();
+            const
