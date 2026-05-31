@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask_socketio import SocketIO, emit, send
 import os
 
@@ -19,6 +19,13 @@ def handle_new_message(data):
 def handle_user_join(username):
     # إشعار الدخول بصيغة نصية
     emit('message', {'type': 'text', 'sender': '📢 نظام نايل شات', 'content': f'{username} انضم إلى الغرفة الآن!'}, broadcast=True)
+@app.route('/manifest.json')
+def serve_manifest():
+    return send_from_directory('.', 'manifest.json')
+
+@app.route('/icon.png')
+def serve_icon():
+    return send_from_directory('.', 'icon.png')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
