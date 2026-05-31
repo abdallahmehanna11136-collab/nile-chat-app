@@ -46,11 +46,10 @@
     <script>
         const socket = io();
         let myName = prompt("من فضلك اكتب اسمك الثابت للدخول:") || "مجهول";
-        let activeReceiver = ""; // الشخص اللي بتكلمه حالياً
+        let activeReceiver = "";
 
         document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName})`;
 
-        // تحميل لستة الأشخاص اللي كلمتهم قبل كده أول ما تفتح
         function loadChatList() {
             fetch(`/get_chats/${myName}`)
                 .then(res => res.json())
@@ -69,8 +68,13 @@
                 });
         }
 
-        // فتح محادثة شخص معين وتحميل الرسايل الثابتة بينكم
         function openChatWith(username) {
             activeReceiver = username;
             loadChatList();
-            const
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = "";
+
+            fetch(`/get_messages/${myName}/${username}`)
+                .then(res => res.json())
+                .then(messages => {
+                    messag
