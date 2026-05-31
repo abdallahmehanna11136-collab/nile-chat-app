@@ -57,8 +57,8 @@
     </div>
 
     <script>
-        // دالة التنقل بين الغرف (مكتوبة فوق عشان المتصفح يشوفها قبل أي سطر تاني)
-        function switchRoom(roomName) {
-            if (myRoom === roomName) return;
-            
-            myRoom = roomName;
+        const socket = io();
+        
+        // طلب الاسم المستعار فوراً عند فتح الصفحة
+        let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
+        let myRoom = "عام�
