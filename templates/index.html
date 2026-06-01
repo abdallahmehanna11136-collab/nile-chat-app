@@ -31,19 +31,26 @@
         </footer>
     </div>
 
-    <script>
+   <script>
         const socket = io();
         
-        // طلب الاسم المستعار واسم الغرفة مرة واحدة عند الدخول
+        // طلب الاسم المستعار أول ما الصفحة تفتح
         let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-        let myRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليها مع صاحبك):") || "عامة";
+        let myRoom = "عامة";
+        
+        // طلب إذن تفعيل الإشعارات من المستخدم (اللي أنت ضفتها)
+        if ("Notification" in window) {
+            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission();
+            }
+        }
         
         document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
-        // إرسال طلب دخول الغرفة للسيرفر فوراً
+        // دخول الغرفة العامة تلقائياً
         socket.emit('join_room', { username: myName, room: myRoom });
 
-        // استقبال الرسائل وعرضها
+        // استقبال الرسائل وعرضها + تشغيل الإشعارات
         socket.on('message', function(data) {
             const chatWindow = document.getElementById('chat-window');
             const messageDiv = document.createElement('div');
@@ -53,9 +60,17 @@
             
             chatWindow.appendChild(messageDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            // لو الرسالة من شخص تاني والإذن مقبول، يظهر إشعار
+            if (data.sender !== myName && Notification.permission === "granted") {
+                new Notification(`رسالة جديدة من ${data.sender}`, {
+                    body: data.content,
+                    icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png"
+                });
+            }
         });
 
-        // دالة إرسال الرسالة المربوطة بالزرار المظبوطة
+        // دالة إرسال الرسالة المربوطة بالزرار
         function sendMessage() {
             const input = document.getElementById('message-input');
             const text = input.value.trim();
@@ -71,6 +86,26 @@
 
         function handleKey(event) {
             if (event.key === "Enter") { sendMessage(); }
+        }
+
+        // دالة التنقل بين الغرف اللي كانت ناقصة وموقفة الزراير
+        function switchRoom(roomName) {
+            if (myRoom === roomName) return;
+            
+            myRoom = roomName;
+            document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
+            document.getElementById('chat-window').innerHTML = ''; 
+            
+            socket.emit('join_room', { username: myName, room: myRoom });
+            
+            const items = document.querySelectorAll('.room-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            } else if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
         }
     </script>
 </body>
