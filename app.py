@@ -12,13 +12,12 @@ def init_db():
     conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
     cursor.execute('''
-       CREATE TABLE IF NOT EXISTS messages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                msg_id TEXT,
-                room TEXT,
-                sender TEXT,
-                content TEXT
-            )
+        CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            room TEXT,
+            sender TEXT,
+            content TEXT,
+            msg_id TEXT
         )
     ''')
     conn.commit()
