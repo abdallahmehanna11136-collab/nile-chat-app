@@ -32,7 +32,7 @@ def index():
 # الربط الصحيح لدخول الغرفة وجلب رسايلها القديمة بس
 @socketio.on('join_room')
 def handle_join_room(data):
-    room = data['room']
+    room = data.get('room', 'عامة')
     join_room(room)
     
    # جلب أرشيف الرسائل الخاص بهذه الغرفة السرية فقط
