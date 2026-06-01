@@ -12,6 +12,7 @@
         #main-layout { display: flex; width: 100%; max-width: 1000px; height: 95vh; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
         #rooms-sidebar { width: 30%; background: #ffffff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
         .sidebar-header { background: #008069; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 16px; }
+        #add-room-btn { width: 90%; margin: 10px auto; padding: 10px; background: #008069; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; }
         #rooms-list { flex: 1; overflow-y: auto; background: #fff; }
         .room-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: bold; transition: 0.2s; text-align: right; color: #333; }
         .room-item:hover { background-color: #f0f2f5; }
@@ -36,9 +37,10 @@
     <div id="main-layout">
         <div id="rooms-sidebar">
             <div class="sidebar-header">المحادثات السريّة 💬</div>
+            <button id="add-room-btn" onclick="createNewSecretRoom()">➕ إنشاء غرفة سرية جديدة</button>
             <div id="rooms-list">
-                <div class="room-item active" id="current-room-tab" onclick="switchRoom('secret')">🔒 غرفتك النشطة</div>
-                <div class="room-item" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
+                <div class="room-item" id="general-room-tab" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
+                <div id="dynamic-rooms"></div>
             </div>
         </div>
 
@@ -56,16 +58,65 @@
         const socket = io();
         
         let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-        let initialRoom = localStorage.getItem('mySecretRoom') || prompt("اكتب رقم أو اسم الغرفة السرية:") || "عامة";
         
-        let myRoom = initialRoom;
-        let mySecretRoom = initialRoom;
-        document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${mySecretRoom}`;
+        let secretRooms = JSON.parse(localStorage.getItem('secretRoomsList')) || [];
+        if (secretRooms.length === 0) {
+            let firstRoom = prompt("اكتب رقم أو اسم غرفتك السرية الأولى:") || "123";
+            secretRooms.push(firstRoom);
+            localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
+        }
+
+        let myRoom = secretRooms[0];
+        let activeTabId = 'room-' + myRoom;
+
         document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
         if ("Notification" in window) {
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
+            }
+        }
+
+        function renderRooms() {
+            const container = document.getElementById('dynamic-rooms');
+            container.innerHTML = '';
+            
+            secretRooms.forEach(room => {
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'room-item';
+                roomDiv.id = 'room-' + room;
+                roomDiv.innerText = `🔒 غرفة: ${room}`;
+                roomDiv.onclick = function() { switchRoom(room); };
+                container.appendChild(roomDiv);
+            });
+            
+            updateActiveTab();
+        }
+
+        function updateActiveTab() {
+            const items = document.querySelectorAll('.room-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            if (myRoom === 'عامة') {
+                document.getElementById('general-room-tab').classList.add('active');
+            } else {
+                const activeTab = document.getElementById('room-' + myRoom);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+            }
+        }
+
+        function createNewSecretRoom() {
+            let newRoomName = prompt("اكتب اسم أو رقم الغرفة السرية الجديدة:");
+            if (newRoomName && newRoomName.trim() !== "") {
+                newRoomName = newRoomName.trim();
+                if (!secretRooms.includes(newRoomName)) {
+                    secretRooms.push(newRoomName);
+                    localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
+                    renderRooms();
+                }
+                switchRoom(newRoomName);
             }
         }
 
@@ -137,38 +188,16 @@
         }
 
         function switchRoom(roomName) {
-            if (roomName === 'secret') {
-                roomName = mySecretRoom;
-            }
-
             myRoom = roomName;
             document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
             document.getElementById('chat-window').innerHTML = ''; 
             
             socket.emit('join_room', { username: myName, room: myRoom });
-            
-            const items = document.querySelectorAll('.room-item');
-            items.forEach(item => item.classList.remove('active'));
-            
-            if (roomName === mySecretRoom) {
-                document.getElementById('current-room-tab').classList.add('active');
-            } else {
-                if (window.event && window.event.currentTarget) {
-                    window.event.currentTarget.classList.add('active');
-                }
-            }
+            updateActiveTab();
         }
 
-        const savedSecretRoom = localStorage.getItem('mySecretRoom');
-        if (savedSecretRoom) {
-            mySecretRoom = savedSecretRoom;
-            myRoom = savedSecretRoom;
-            document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${mySecretRoom}`;
-            switchRoom(mySecretRoom);
-        } else {
-            localStorage.setItem('mySecretRoom', mySecretRoom);
-            switchRoom(mySecretRoom);
-        }
+        renderRooms();
+        switchRoom(myRoom);
     </script>
 </body>
 </html>
