@@ -134,6 +134,20 @@
 
             if (myRoom === roomName) return;
             
-            myRoom = roomName;
+           myRoom = roomName;
             document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
-            document.getElementById('chat-window').innerHTML
+            document.getElementById('chat-window').innerHTML = ''; 
+            
+            socket.emit('join_room', { username: myName, room: myRoom });
+            
+            // تحديث الشكل النشط للزراير الجانبية
+            const items = document.querySelectorAll('.room-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
