@@ -39,7 +39,7 @@
         <div id="rooms-sidebar">
             <div class="sidebar-header">المحادثات السريّة 💬</div>
             <div id="rooms-list">
-                <div class="room-item active" id="current-room-tab">🔒 غرفتك النشطة</div>
+                <div class="room-item active" id="current-room-tab" onclick="switchRoom('secret')">🔒 غرفتك النشطة</div>
                 <div class="room-item" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
             </div>
         </div>
@@ -62,20 +62,20 @@
         let initialRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليه مع صديقك):") || "عامة";
         
         let myRoom = initialRoom;
-        let mySecretRoom = initialRoom; // حفظ اسم الغرفة السرية هنا عشان الكود ما ينسهاش
+        let mySecretRoom = initialRoom; 
         
-        // تحديث التبويب الجانبي والعنوان باسم الأوضة السرية
+        // تحديث التبويب الجانبي والعنوان
         document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${mySecretRoom}`;
         document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
-        // طلب إذن الإشعارات من نظام التشغيل
+        // طلب إذن الإشعارات
         if ("Notification" in window) {
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
         }
 
-        // إرسال طلب دخول الغرفة المحددة للسيرفر
+        // إرسال طلب دخول الغرفة للسيرفر
         socket.emit('join_room', { username: myName, room: myRoom });
 
         // استقبال الرسائل وعرضها + تشغيل الإشعارات والصوت
@@ -89,13 +89,13 @@
             chatWindow.appendChild(messageDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            // تشغيل صوت تنبيه ناعم ومضمون لما تيجي رسالة من شخص تاني
+            // تشغيل صوت التنبيه
             if (data.sender !== myName) {
                 let notificationSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
                 notificationSound.play().catch(err => console.log("تفاعل مع الصفحة أولاً لتشغيل الصوت"));
             }
 
-            // إرسال إشعار للمستخدم لو الرسالة من شخص تاني والإذن مقبول
+            // إرسال الإشعار
             if (data.sender !== myName && Notification.permission === "granted") {
                 new Notification(`رسالة جديدة من ${data.sender}`, {
                     body: data.content,
@@ -125,29 +125,30 @@
             }
         }
 
-        // دالة التنقل الصحيحة والمعدلة بين الغرف
+        // دالة التنقل الصحيحة والمضمونة بين الغرف
         function switchRoom(roomName) {
-            // لو المستخدم ضغط على زرار الغرفة السرية، بنجيب الاسم الأصلي اللي سيفناه
             if (roomName === 'secret') {
                 roomName = mySecretRoom;
             }
 
-            if (myRoom === roomName) return;
-            
-           myRoom = roomName;
+            myRoom = roomName;
             document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
             document.getElementById('chat-window').innerHTML = ''; 
             
             socket.emit('join_room', { username: myName, room: myRoom });
             
-            // تحديث الشكل النشط للزراير الجانبية
             const items = document.querySelectorAll('.room-item');
             items.forEach(item => item.classList.remove('active'));
             
-            if (window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add('active');
+            if (roomName === mySecretRoom) {
+                document.getElementById('current-room-tab').classList.add('active');
+            } else {
+                if (window.event && window.event.currentTarget) {
+                    window.event.currentTarget.classList.add('active');
+                }
             }
         }
     </script>
 </body>
 </html>
+        
