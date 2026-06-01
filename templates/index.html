@@ -8,9 +8,22 @@
     <link rel="manifest" href="/manifest.json">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; flex-direction: column; }
-        #chat-container { width: 100%; max-width: 600px; height: 100vh; background: #fff; display: flex; flex-direction: column; margin: 0 auto; }
-        header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 18px; font-weight: bold; }
+        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        
+        /* تقسيم الشاشة لنظام محادثات واتساب */
+        #main-layout { display: flex; width: 100%; max-width: 1000px; height: 95vh; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        
+        /* القائمة الجانبية للغرف السرية */
+        #rooms-sidebar { width: 30%; background: #ffffff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
+        .sidebar-header { background: #008069; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 16px; }
+        #rooms-list { flex: 1; overflow-y: auto; background: #fff; }
+        .room-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: bold; transition: 0.2s; text-align: right; color: #333; }
+        .room-item:hover { background-color: #f0f2f5; }
+        .room-item.active { background-color: #e9edef; color: #008069; }
+        
+        /* منطقة المحادثة الحالية */
+        #chat-container { width: 70%; display: flex; flex-direction: column; }
+        header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; }
         #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; }
         .sent { background: #d9fdd3; align-self: flex-end; }
@@ -22,32 +35,44 @@
 </head>
 <body>
 
-    <div id="chat-container">
-        <header id="chat-header">نايل شات 💬</header>
-        <div id="chat-window"></div>
-        <footer>
-            <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
-            <button id="send-btn" onclick="sendMessage()">🚀</button>
-        </footer>
+    <div id="main-layout">
+        <div id="rooms-sidebar">
+            <div class="sidebar-header">المحادثات السريّة 💬</div>
+            <div id="rooms-list">
+                <div class="room-item active" id="current-room-tab">🔒 غرفتك النشطة</div>
+                <div class="room-item" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
+            </div>
+        </div>
+
+        <div id="chat-container">
+            <header id="chat-header">نايل شات 💬</header>
+            <div id="chat-window"></div>
+            <footer>
+                <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
+                <button id="send-btn" onclick="sendMessage()">🚀</button>
+            </footer>
+        </div>
     </div>
 
-   <script>
+    <script>
         const socket = io();
         
-        // طلب الاسم المستعار أول ما الصفحة تفتح
+        // طلب الاسم ورقم الغرفة السرية فوراً عند الدخول
         let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-        let myRoom = "عامة";
+        let myRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليه مع صديقك):") || "عامة";
         
-        // طلب إذن تفعيل الإشعارات من المستخدم (اللي أنت ضفتها)
+        // تحديث التبويب الجانبي والعنوان باسم الأوضة السرية
+        document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${myRoom}`;
+        document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
+
+        // طلب إذن الإشعارات من نظام التشغيل
         if ("Notification" in window) {
             if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission();
             }
         }
-        
-        document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
-        // دخول الغرفة العامة تلقائياً
+        // إرسال طلب دخول الغرفة المحددة للسيرفر
         socket.emit('join_room', { username: myName, room: myRoom });
 
         // استقبال الرسائل وعرضها + تشغيل الإشعارات
@@ -61,7 +86,7 @@
             chatWindow.appendChild(messageDiv);
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            // لو الرسالة من شخص تاني والإذن مقبول، يظهر إشعار
+            // إرسال إشعار للمستخدم لو الرسالة من شخص تاني والإذن مقبول
             if (data.sender !== myName && Notification.permission === "granted") {
                 new Notification(`رسالة جديدة من ${data.sender}`, {
                     body: data.content,
@@ -84,11 +109,14 @@
             }
         }
 
+        // الإرسال بزر الـ Enter
         function handleKey(event) {
-            if (event.key === "Enter") { sendMessage(); }
+            if (event.key === "Enter") { 
+                sendMessage(); 
+            }
         }
 
-        // دالة التنقل بين الغرف اللي كانت ناقصة وموقفة الزراير
+        // دالة التنقل بين الغرف اللي كانت مقطوعة ومسببة المشكلة
         function switchRoom(roomName) {
             if (myRoom === roomName) return;
             
