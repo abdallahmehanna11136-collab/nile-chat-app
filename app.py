@@ -36,18 +36,18 @@ def handle_join_room(data):
     room = data['room']
     join_room(room)
     
-    # جلب أرشيف الرسايل الخاص بهذه الغرفة السرية فقط
+   # جلب أرشيف الرسائل الخاص بهذه الغرفة السرية فقط
     conn = sqlite3.connect('nile_rooms.db')
-    cursor.execute("SELECT sender, content, msg_id FROM messages WHERE room = ? ORDER BY id ASC", (room,))
+    cursor = conn.cursor()
     try:
-      rows = cursor.fetchall()
-            for row in rows:
-                emit('message', {'sender': row[0], 'content': row[1], 'id': row[2]})
+        cursor.execute("SELECT sender, content, msg_id FROM messages WHERE room = ? ORDER BY id ASC", (room,))
+        rows = cursor.fetchall()
+        for row in rows:
+            emit('message', {'sender': row[0], 'content': row[1], 'id': row[2]})
     except Exception as e:
         print(f"Error reading database: {e}")
     finally:
         conn.close()
-
 # استقبال الرسائل الجديدة وحفظها وبثها جوة الأوضة بس
 @socketio.on('new_message')
 def handle_new_message(data):
