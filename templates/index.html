@@ -37,8 +37,8 @@
         <div id="rooms-sidebar">
             <div class="sidebar-header">المحادثات السريّة 💬</div>
             <div id="rooms-list">
-                <div class="room-item active" id="current-room-tab"
-                    <div class="room-item" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
+                <div class="room-item active" id="current-room-tab" onclick="switchRoom('secret')">🔒 غرفتك النشطة</div>
+                <div class="room-item" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
             </div>
         </div>
 
@@ -56,11 +56,10 @@
         const socket = io();
         
         let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-        let initialRoom = prompt("اكتب رقم أو اسم الغرفة السرية (اتفق عليه مع صديقك):") || "عامة";
+        let initialRoom = localStorage.getItem('mySecretRoom') || prompt("اكتب رقم أو اسم الغرفة السرية:") || "عامة";
         
         let myRoom = initialRoom;
-        let mySecretRoom = initialRoom; 
-        
+        let mySecretRoom = initialRoom;
         document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${mySecretRoom}`;
         document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
 
@@ -158,6 +157,17 @@
                     window.event.currentTarget.classList.add('active');
                 }
             }
+        }
+
+        const savedSecretRoom = localStorage.getItem('mySecretRoom');
+        if (savedSecretRoom) {
+            mySecretRoom = savedSecretRoom;
+            myRoom = savedSecretRoom;
+            document.getElementById('current-room-tab').innerText = `🔒 غرفة: ${mySecretRoom}`;
+            switchRoom(mySecretRoom);
+        } else {
+            localStorage.setItem('mySecretRoom', mySecretRoom);
+            switchRoom(mySecretRoom);
         }
     </script>
 </body>
