@@ -160,10 +160,41 @@
         const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😍','🥰','😘','😋','😜','😎','🤩','🥳','🤔','👏','👍','🔥','❤️'];
 
-        window.onload = function() {
-            if (myName && myPhone) { document.getElementById('login-screen').style.display = 'none'; initChat(); }
+       window.onload = function() {
+            if (myName && myPhone) { 
+                var loginScreen = document.getElementById('login-screen');
+                if (loginScreen) loginScreen.style.display = 'none'; 
+                initChat(); 
+            }
             initEmojis();
         };
+
+        function toggleQRModal() {
+            var modal = document.getElementById('qr-modal');
+            var qrContainer = document.getElementById('qrcode');
+            
+            if (!modal || !qrContainer) return;
+
+            if (modal.style.display !== 'flex') {
+                modal.style.display = 'flex';
+                qrContainer.innerHTML = ''; 
+                
+                try {
+                    new QRCode(qrContainer, {
+                        text: window.location.href,
+                        width: 160,
+                        height: 160,
+                        colorDark : "#111b21",
+                        colorLight : "#ffffff",
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                } catch(e) {
+                    console.error("انتظر تحميل مكتبة الـ QR بالكامل", e);
+                }
+            } else {
+                modal.style.display = 'none';
+            }
+        }
 
         function submitLogin() {
             const name = document.getElementById('login-name').value.trim();
