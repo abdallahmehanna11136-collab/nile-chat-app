@@ -6,10 +6,10 @@ import sqlite3
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 
-# التعديل الجذري: تشغيل الشات بنظام threading المدمج لمنع مشاكل البناء نهائياً
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+# تشغيل الـ SocketIO بأبسط طريقة متوافقة مع السيرفر الخارجي
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-# مسار قاعدة البيانات في المجلد المؤقت المسموح به على Render
+# مسار قاعدة البيانات في المجلد المؤقت لـ Render
 DB_PATH = os.path.join('/tmp', 'chat_database.db')
 
 def init_db():
@@ -37,7 +37,7 @@ def index():
 def sw():
     return app.send_static_file('service-worker.js')
 
-# --- أحداث الشات وحفظ المحادثات للأبد ---
+# --- أحداث الشات وحفظ البيانات ---
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -100,7 +100,3 @@ def handle_delete_message(data):
     conn.close()
     
     emit('delete_message_client', {'id': msg_id}, room=room)
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
