@@ -10,7 +10,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: system-ui, -apple-system, sans-serif; background-color: #0b141a; height: 100vh; display: flex; justify-content: center; align-items: center; color: #e9edef; overflow: hidden; }
         
-        /* شاشة الدخول */
+        /* شاشة الدخول الاحترافية */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111b21; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
         .login-box { background: #222e35; padding: 25px; border-radius: 12px; width: 100%; max-width: 360px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center; }
         .login-box h2 { color: #00a884; margin-bottom: 8px; font-size: 22px; }
@@ -24,10 +24,10 @@
         #login-btn { width: 100%; background: #00a884; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.2s; }
         #login-btn:hover { background: #00664f; }
 
-        /* الواجهة الرئيسية - متوافقة مع الموبايل والكمبيوتر */
+        /* الواجهة الرئيسية المتجاوبة */
         #main-layout { display: flex; width: 100%; height: 100vh; background: #222e35; overflow: hidden; position: relative; }
         
-        /* القائمة الجانبية */
+        /* القائمة الجانبية للمحادثات والغرف */
         #rooms-sidebar { width: 30%; background: #111b21; border-left: 1px solid #2f3b43; display: flex; flex-direction: column; transition: 0.3s; z-index: 10; }
         .sidebar-header { background: #202c33; color: #e9edef; padding: 14px; text-align: center; font-weight: bold; font-size: 15px; border-bottom: 1px solid #2f3b43; }
         #add-room-btn { width: 90%; margin: 10px auto; padding: 10px; background: #00a884; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 13px; transition: 0.2s; }
@@ -39,27 +39,28 @@
         .delete-room-x { cursor: pointer; padding: 4px 8px; color: #ff4d4d; font-weight: bold; font-size: 12px; border-radius: 4px; transition: 0.2s; }
         .delete-room-x:hover { background: rgba(255, 77, 77, 0.1); }
         
-        /* منطقة المحادثة */
+        /* منطقة المحادثة الفوقية والفقاعات */
         #chat-container { width: 70%; display: flex; flex-direction: column; background: #0b141a; position: relative; }
         header { background-color: #202c33; color: #e9edef; padding: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; font-weight: bold; border-bottom: 1px solid #2f3b43; height: 50px; }
         
-        /* زر للموبايل للعودة للمحادثات */
+        /* زر للموبايل لاستعراض القائمة */
         #toggle-sidebar-btn { display: none; background: #2a3942; color: #00a884; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; }
 
         #chat-window { flex: 1; padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        /* الفقاعات */
+        /* نظام فقاعات الرسائل المتناسق */
         .message { padding: 8px 12px; border-radius: 8px; font-size: 14px; max-width: 75%; box-shadow: 0 1px 1px rgba(0,0,0,0.2); word-break: break-word; display: flex; flex-direction: column; color: #e9edef; position: relative; }
         .sent { background: #005c4b; align-self: flex-end; border-top-left-radius: 0; }
         .received { background: #202c33; align-self: flex-start; border-top-right-radius: 0; }
         .message b { font-size: 12px; color: #34b7f1; margin-bottom: 3px; display: block; }
         .sent b { color: #53bdeb; }
         
+        /* زر الحذف للجميع */
         .delete-btn { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 11px; align-self: flex-end; margin-top: 6px; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
         .delete-btn:hover { background: rgba(255,107,107,0.1); }
         audio { max-width: 100%; margin-top: 5px; outline: none; height: 36px; }
 
-        /* الفوتر المتناسق */
+        /* منطقة الإدخال السفلية الفوتر */
         footer { display: flex; padding: 10px; gap: 8px; background: #202c33; border-top: 1px solid #2f3b43; align-items: center; }
         #message-input { flex: 1; padding: 10px 14px; border: none; background: #2a3942; color: #fff; border-radius: 20px; outline: none; font-size: 14px; }
         #send-btn, #voice-btn { border: none; border-radius: 50%; background: #00a884; color: white; width: 40px; height: 40px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; shrink: 0; transition: 0.2s; }
@@ -68,19 +69,21 @@
         
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
 
-        /* شاشات الموبايل (Responsive Design) */
+        /* تعديلات شاشات الموبايل لمنع التداخل الهيكلي */
         @media (max-width: 768px) {
             #rooms-sidebar { width: 100%; position: absolute; top: 0; bottom: 0; right: 0; }
             #chat-container { width: 100%; }
             #toggle-sidebar-btn { display: block; position: absolute; right: 10px; }
             
-            /* إخفاء القائمة الجانبية تلقائياً لما الشات يفتح */
+            /* إخفاء وتمرير الأقسام عالموبايل */
             .sidebar-hidden #rooms-sidebar { transform: translateX(100%); }
             .sidebar-hidden #chat-container { width: 100%; }
         }
     </style>
 </head>
-<body class="sidebar-hidden"> <div id="login-screen">
+<body class="sidebar-hidden"> 
+
+    <div id="login-screen">
         <div class="login-box">
             <h2>نايل شات الآمن 💬</h2>
             <p>أدخل بياناتك للتفعيل والدخول المباشر</p>
@@ -260,12 +263,12 @@
             socket.emit('join_room', { username: myName, room: myRoom });
             updateActiveTab();
 
-            // اخفاء القائمة تلقائياً عالموبايل بعد اختيار الغرفة لراحة العين
             if(window.innerWidth <= 768) {
                 document.body.classList.add('sidebar-hidden');
             }
         }
 
+        // تم تصحيح القوس المفقود هنا لاسم المرسل ليعمل بكفاءة 100%
         socket.on('message', function(data) {
             const chatWindow = document.getElementById('chat-window');
             const messageDiv = document.createElement('div');
@@ -274,7 +277,7 @@
             messageDiv.id = msgId;
             messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
             
-            let contentHTML = `b>${data.sender}</b>`;
+            let contentHTML = `<b>${data.sender}</b>`;
             if (data.type === 'voice') {
                 contentHTML += `<audio src="${data.content}" controls></audio>`;
             } else {
