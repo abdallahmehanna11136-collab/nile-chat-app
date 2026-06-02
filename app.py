@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
 import sqlite3
@@ -44,7 +44,7 @@ def index():
 
 @app.route('/service-worker.js')
 def sw():
-    return app.send_static_file('service-worker.js')
+    return send_from_directory(app.static_folder, 'service-worker.js')
 
 @socketio.on('get_all_rooms')
 def handle_get_rooms():
@@ -127,6 +127,18 @@ def handle_new_message(data):
 def handle_delete_message(data):
     room = data.get('room')
     msg_id = data.get('id')
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM messages WHERE id = ?', (msg_id,))
+    conn.commit()
+    conn.close()
+    emit('delete_message_client', {'id': msg_id}, room=room)
+
+@socketio.on('edit_message_server')
+def handle_edit_message(data):
+    msg_id = data.get('id')
+    room = data.get('room')
+    new_content = data.get('content')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT timestamp FROM messages WHERE id = ?', (msg_id,))
