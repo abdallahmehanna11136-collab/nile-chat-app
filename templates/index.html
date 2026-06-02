@@ -50,7 +50,7 @@
         #send-btn, #voice-btn { border: none; border-radius: 50%; background: #00a884; color: white; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
         #voice-btn.recording { background: #ff4d4d; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        </style>
+    </style>
 </head>
 <body>
 
@@ -104,6 +104,17 @@
                 <button id="send-btn" onclick="sendMessage()">🚀</button>
             </footer>
         </div>
+        </div>
+
+        <div id="chat-container">
+            <header id="chat-header">نايل شات 💬</header>
+            <div id="chat-window"></div>
+            <footer>
+                <button id="voice-btn" onclick="toggleRecording()">🎤</button>
+                <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
+                <button id="send-btn" onclick="sendMessage()">🚀</button>
+            </footer>
+        </div>
     </div>
 
     <script>
@@ -122,9 +133,6 @@
         window.onload = function() {
             if (myName && myCountryCode && myPhone) {
                 document.getElementById('login-screen').style.display = 'none';
-                if(secretRooms.length > 0) {
-                    myRoom = secretRooms[0];
-                }
                 initChat();
             }
         };
@@ -152,17 +160,25 @@
         }
 
         function initChat() {
-            document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
-            
+            renderRooms();
+            switchRoom(myRoom);
+
+            // تشغيل الـ Service Worker عشان الإشعارات تشتغل في ستارة الموبايل بره وجوه
+            if ('serviceWorker' in navigator && 'PushManager' in window) {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                .then(function(swReg) {
+                    console.log('Service Worker تم تسجيله بنجاح');
+                })
+                .catch(function(error) {
+                    console.error('فشل تسجيل Service Worker:', error);
+                });
+            }
+
             if ("Notification" in window) {
                 if (Notification.permission !== "granted" && Notification.permission !== "denied") {
                     Notification.requestPermission();
                 }
             }
-
-            socket.emit('join_room', { username: myName, room: myRoom });
-            renderRooms();
-            switchRoom(myRoom);
         }
 
         function renderRooms() {
@@ -256,7 +272,157 @@
 
             if (data.sender !== myName) {
                 let notificationSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
-                notificationSound.play().catch(err => console.log("الصومت معلق"));
+                notificationSound.play().catch(err => console.log("الصوت معلق"));
+            }
+
+            if (data.sender !== myName && Notification.permission === "granted") {
+                new Notification(`رسالة جديدة من ${data.sender}`, {
+                    body: data.type === 'voice' ? '🎙️ رسالة صوتية' : data.content,
+                    icon: "https://cdn-icons-png.flaticon.com/512/134/134914.png"
+                });
+            }
+        });
+
+        socket.on('delete_message_client', function(data) {
+            const targetMsg = document.getElementById(data.id);
+            if (targetMsg) {
+                targetMsg.remove();
+            }
+        });
+
+        function requestDeleteMessage(msgId) {
+            if (confirm("هل تريد مسح هذه الرسالة لدى الجميع؟")) {
+                socket.emit('delete_message_server', { room: myRoom, id: msgId });
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (text !== "") {
+                const uniqueId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                socket.emit('new_message', { 
+                    room: myRoom,
+                    sender: myName, 
+                    content: text,
+                    id: uniqueId,
+                    type: 'text'
+                });
+                input.value = "";
+            }
+        }
+
+        function toggleRecording() {
+            const voiceBtn = document.getElementById('voice-btn');
+            if (!isRecording) {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                .then(function(swReg) {
+                    console.log('Service Worker تم تسجيله بنجاح');
+                })
+                .catch(function(error) {
+                    console.error('فشل تسجيل Service Worker:', error);
+                });
+            }
+
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        function renderRooms() {
+            const container = document.getElementById('dynamic-rooms');
+            container.innerHTML = '';
+            
+            secretRooms.forEach(room => {
+                const roomWrapper = document.createElement('div');
+                roomWrapper.className = 'room-item';
+                roomWrapper.id = 'room-' + room;
+                
+                const roomClick = document.createElement('span');
+                roomClick.innerText = `🔒 شات: ${room}`;
+                roomClick.style.flex = '1';
+                roomClick.onclick = function() { switchRoom(room); };
+                
+                const deleteRoomBtn = document.createElement('span');
+                deleteRoomBtn.innerText = '❌';
+                deleteRoomBtn.style.cursor = 'pointer';
+                deleteRoomBtn.style.padding = '0 5px';
+                deleteRoomBtn.style.color = '#ff4d4d';
+                deleteRoomBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    if (confirm(`هل تريد حذف المحادثة مع "${room}" نهائياً؟`)) {
+                        secretRooms = secretRooms.filter(r => r !== room);
+                        localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
+                        if (myRoom === room) {
+                            switchRoom('عامة');
+                        }
+                        renderRooms();
+                    }
+                };
+                
+                roomWrapper.appendChild(roomClick);
+                roomWrapper.appendChild(deleteRoomBtn);
+                container.appendChild(roomWrapper);
+            });
+            
+            updateActiveTab();
+        }
+
+        function updateActiveTab() {
+            const items = document.querySelectorAll('.room-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            if (myRoom === 'عامة') {
+                document.getElementById('general-room-tab').classList.add('active');
+            } else {
+                const activeTab = document.getElementById('room-' + myRoom);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+            }
+        }
+
+        function createNewSecretRoom() {
+            let targetPhone = prompt("أدخل رقم هاتف الصديق (مع كود الدولة مثل +20123...) لبدء شات خاص معه:");
+            if (targetPhone && targetPhone.trim() !== "") {
+                targetPhone = targetPhone.trim();
+                if (!secretRooms.includes(targetPhone)) {
+                    secretRooms.push(targetPhone);
+                    localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
+                    renderRooms();
+                }
+                switchRoom(targetPhone);
+            }
+        }
+
+        socket.on('message', function(data) {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDiv = document.createElement('div');
+            
+            const msgId = data.id || 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            messageDiv.id = msgId;
+            messageDiv.className = 'message ' + (data.sender === myName ? 'sent' : 'received');
+            
+            let contentHTML = '';
+            if (data.type === 'voice') {
+                contentHTML = '<span><b>' + data.sender + ':</b> <br><audio src="' + data.content + '" controls></audio></span>';
+            } else {
+                contentHTML = '<span><b>' + data.sender + ':</b> ' + data.content + '</span>';
+            }
+            
+            if (data.sender === myName) {
+                contentHTML += `<button class="delete-btn" onclick="requestDeleteMessage('${msgId}')">🗑️ مسح للجميع</button>`;
+            }
+            
+            messageDiv.innerHTML = contentHTML;
+            chatWindow.appendChild(messageDiv);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            if (data.sender !== myName) {
+                let notificationSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
+                notificationSound.play().catch(err => console.log("الصوت معلق"));
             }
 
             if (data.sender !== myName && Notification.permission === "granted") {
