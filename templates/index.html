@@ -139,7 +139,7 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io({ transports: ['polling'] });
         
         let myName = localStorage.getItem('myName');
         let myCountryCode = localStorage.getItem('myCountryCode');
