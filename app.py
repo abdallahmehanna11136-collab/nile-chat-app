@@ -5,9 +5,11 @@ import sqlite3
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
-socketio = SocketIO(app, cors_allowed_origins="*")
 
-# تحديد مسار قاعدة البيانات في الفولدر المؤقت المسموح به على Render
+# إعداد SocketIO ليتوافق مع gunicorn و eventlet برابط مستقر
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# مسار قاعدة البيانات في المجلد المؤقت المسموح به على Render
 DB_PATH = os.path.join('/tmp', 'chat_database.db')
 
 def init_db():
@@ -25,7 +27,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-# تشغيل إنشاء الداتابيز بأمان
 init_db()
 
 @app.route('/')
@@ -36,7 +37,7 @@ def index():
 def sw():
     return app.send_static_file('service-worker.js')
 
-# --- هيدرز وأحداث الشات ---
+# --- أحداث الشات وحفظ المحادثات للأبد ---
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -44,9 +45,7 @@ def handle_join_room(data):
     room = data.get('room', 'عامة')
     
     join_room(room)
-    print(f"👤 {username} دخل الغرفة: {room}")
     
-    # سحب الأرشيف بأمان
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT id, room, sender, content, msg_type FROM messages WHERE room = ?', (room,))
@@ -70,7 +69,6 @@ def handle_new_message(data):
     content = data.get('content')
     msg_type = data.get('type', 'text')
     
-    # حفظ الرسائل والفويسات في المسار الصحيح
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
@@ -78,7 +76,7 @@ def handle_new_message(data):
                        (msg_id, room, sender, content, msg_type))
         conn.commit()
     except sqlite3.Error as e:
-        print(f"خطأ حفظ: {e}")
+        print(f"Error: {e}")
     finally:
         conn.close()
     
