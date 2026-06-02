@@ -85,17 +85,47 @@
             }
         }
 
-        function renderRooms() {
+       function renderRooms() {
             const container = document.getElementById('dynamic-rooms');
             container.innerHTML = '';
             
             secretRooms.forEach(room => {
-                const roomDiv = document.createElement('div');
-                roomDiv.className = 'room-item';
-                roomDiv.id = 'room-' + room;
-                roomDiv.innerText = `🔒 غرفة: ${room}`;
-                roomDiv.onclick = function() { switchRoom(room); };
-                container.appendChild(roomDiv);
+                const roomWrapper = document.createElement('div');
+                roomWrapper.style.display = 'flex';
+                roomWrapper.style.justify = 'space-between';
+                roomWrapper.style.alignItems = 'center';
+                roomWrapper.className = 'room-item';
+                roomWrapper.id = 'room-' + room;
+                
+                // هنا اسم الغرفة لما تضغط عليه ينقلك ليها
+                const roomClick = document.createElement('span');
+                roomClick.innerText = `🔒 غرفة: ${room}`;
+                roomClick.style.flex = '1';
+                roomClick.onclick = function() { switchRoom(room); };
+                
+                // زرار الحذف (الاكس الأحمر)
+                const deleteRoomBtn = document.createElement('span');
+                deleteRoomBtn.innerText = '❌';
+                deleteRoomBtn.style.cursor = 'pointer';
+                deleteRoomBtn.style.padding = '0 5px';
+                deleteRoomBtn.onclick = function(e) {
+                    e.stopPropagation(); // عشان ما ينقلش للغرفة بالخطأ أثناء المسح
+                    if (confirm(`هل تريد حذف الغرفة "${room}" نهائياً من قائمتك؟`)) {
+                        secretRooms = secretRooms.filter(r => r !== room);
+                        localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
+                        
+                        // لو مسحت الأوضة اللي أنت واقف جواها حالياً، ينقلك للغرفة العامة
+                        if (myRoom === room) {
+                            switchRoom('عامة');
+                        }
+                        
+                        renderRooms();
+                    }
+                };
+                
+                roomWrapper.appendChild(roomClick);
+                roomWrapper.appendChild(deleteRoomBtn);
+                container.appendChild(roomWrapper);
             });
             
             updateActiveTab();
