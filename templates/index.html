@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nile Chat Multi-Rooms</title>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: system-ui, sans-serif; background-color: #111b21; color: #e9edef; display: flex; height: 100vh; overflow: hidden; }
-        
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #222e35; display: flex; align-items: center; justify-content: center; z-index: 1000; }
         .login-box { background: #111b21; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; position: relative; }
         .form-group { margin-bottom: 20px; text-align: right; }
@@ -19,49 +17,40 @@
         .phone-input-container { display: flex; gap: 8px; }
         .phone-input-container select { width: 35%; }
         .login-btn { width: 100%; padding: 12px; background: #00a884; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; }
-
         #main-layout { display: flex; width: 100vw; height: 100vh; position: relative; }
         #sidebar { width: 320px; background-color: #111b21; border-left: 1px solid #222e35; display: flex; flex-direction: column; transition: transform 0.3s ease; z-index: 500; }
         .sidebar-header { padding: 15px; background-color: #202c33; font-weight: bold; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #222e35; }
         .room-controls-buttons { display: flex; gap: 5px; }
         .add-room-btn { flex: 1; background: #00a884; color: white; border: none; padding: 8px 5px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        
         #rooms-list { flex: 1; overflow-y: auto; }
         .room-section-title { padding: 10px 15px; font-size: 12px; color: #8696a0; background: #1f2c34; }
         .room-item { padding: 12px 15px; border-bottom: 1px solid #222e35; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         .room-item.active { background-color: #202c33; color: #00a884; font-weight: bold; border-right: 4px solid #00a884; }
         .delete-room-x { color: #ff4d4d; font-weight: bold; cursor: pointer; padding: 0 5px; }
-        .sidebar-footer { padding: 10px; background: #202c33; text-align: center; font-size: 11px; color: #8696a0; border-top: 1px solid #222e35; font-weight: 500; letter-spacing: 0.5px; }
-
+        .sidebar-footer { padding: 10px; background: #202c33; text-align: center; font-size: 11px; color: #8696a0; border-top: 1px solid #222e35; font-weight: 500; }
         #chat-container { flex: 1; display: flex; flex-direction: column; background-color: #222e35; position: relative; }
         header { background: #202c33; padding: 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #222e35; }
         .header-controls { display: flex; align-items: center; gap: 10px; }
         #toggle-sidebar-btn { display: none; background: #2a3942; color: #00a884; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .call-btn { background: #2a3942; border: none; font-size: 14px; padding: 8px 12px; border-radius: 6px; cursor: pointer; color: #00a884; }
-        
         #chat-window { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .message { padding: 10px 14px; border-radius: 8px; max-width: 65%; word-wrap: break-word; display: flex; flex-direction: column; position: relative; }
         .message.sent { background: #005c4b; align-self: flex-end; border-top-left-radius: 0; }
         .message.received { background: #202c33; align-self: flex-start; border-top-right-radius: 0; }
         .message img, .message video { max-width: 100%; border-radius: 6px; margin-top: 5px; max-height: 250px; }
-        
         .reply-box-in-msg { background: rgba(0, 0, 0, 0.2); border-right: 3px solid #00a884; padding: 5px; border-radius: 4px; margin-bottom: 5px; font-size: 11px; color: #8696a0; }
         .msg-actions { display: flex; gap: 8px; margin-top: 5px; font-size: 11px; align-self: flex-end; }
         .action-link { color: #8696a0; cursor: pointer; text-decoration: none; }
-
         #reply-preview { background: #1f2c34; padding: 10px; border-right: 4px solid #00a884; display: none; justify-content: space-between; align-items: center; }
         #emoji-picker { position: absolute; bottom: 70px; right: 20px; background: #233138; border: 1px solid #374248; border-radius: 8px; padding: 10px; display: none; grid-template-columns: repeat(6, 1fr); gap: 8px; z-index: 2500; font-size: 20px; max-height: 200px; overflow-y: auto; }
         .emoji-item { cursor: pointer; }
-        
         footer { display: flex; padding: 15px; gap: 10px; background: #202c33; border-top: 1px solid #222e35; align-items: center; }
         #message-input { flex: 1; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: white; outline: none; }
         #send-btn { padding: 10px 20px; background-color: #00a884; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .footer-icon-btn { background: #2a3942; padding: 10px; border-radius: 8px; cursor: pointer; color: #8696a0; border: none; }
-
         #video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(17,27,33,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
         .video-box { display: flex; gap: 15px; width: 90%; max-width: 800px; justify-content: center; }
         video { width: 45%; background: #000; border-radius: 12px; transform: scaleX(-1); }
-        
         @media (max-width: 768px) {
             #sidebar { position: absolute; top: 0; bottom: 0; right: 0; width: 100%; transform: translateX(0); }
             body.sidebar-hidden #sidebar { transform: translateX(100%); }
@@ -73,7 +62,7 @@
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:#00a884; margin-bottom:15px;">نايل شات - المجموعات 🔒</h2>
+            <h2 style="color:#00a884; margin-bottom:15px;">نايل شات 🔒</h2>
             <div class="form-group"><label>اسم البروفايل:</label><input type="text" id="login-name" placeholder="اسمك..."></div>
             <div class="form-group">
                 <label>رقم الهاتف:</label>
@@ -84,7 +73,7 @@
             </div>
             <button class="login-btn" onclick="submitLogin()">دخول وتفعيل النظام 🚀</button>
             <div style="margin-top: 25px; font-size: 12px; color: #8696a0; font-family: monospace;">
-                Created by Abdullah Mohamed Shaban Mohanna
+                Created by ABDALLAH MOHAMED MEHANNA
             </div>
         </div>
     </div>
@@ -98,64 +87,72 @@
     <div id="main-layout">
         <div id="sidebar">
             <div class="sidebar-header">
-                <span style="font-size:14px;">🏢 إدارة المجموعات والغرف</span>
+                <span style="font-size:14px;">🏢 إدارة المحادثات والجروبات</span>
                 <div class="room-controls-buttons">
-                    <button class="add-room-btn" onclick="createNewRoom('public')">➕ غرفة عامة</button>
-                    <button class="add-room-btn" style="background:#721c24;" onclick="createNewRoom('private')">🔒 غرفة خاصة</button>
-                    <button class="add-room-btn" style="background:#005c4b;" onclick="createNewSecretDM()">👤 شات سري</button>
+                    <button class="add-room-btn" onclick="createNewRoom('public')">➕ جروب عام</button>
+                    <button class="add-room-btn" style="background:#721c24;" onclick="createNewRoom('private')">🔒 جروب خاص</button>
+                    <button class="add-room-btn" style="background:#005c4b;" onclick="createNewSecretDM()">👤 شات برقم</button>
+                </div>
+                </div>
+    </div>
+
+    <div id="video-overlay">
+        <h2 id="call-status" style="margin-bottom: 20px; color: #00a884;">جاري الاتصال...</h2>
+        <div class="video-box"><video id="localVideo" autoplay playsinline muted></video><video id="remoteVideo" autoplay playsinline></video></div>
+        <div class="call-controls"><button style="background:#ff4d4d; border:none; padding:12px 30px; border-radius:30px; color:white;" onclick="hangUp()">إنهاء 🛑</button></div>
+    </div>
+
+    <div id="main-layout">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span style="font-size:14px;">🏢 إدارة المحادثات والجروبات</span>
+                <div class="room-controls-buttons">
+                    <button class="add-room-btn" onclick="createNewRoom('public')">➕ جروب عام</button>
+                    <button class="add-room-btn" style="background:#721c24;" onclick="createNewRoom('private')">🔒 جروب خاص</button>
+                    <button class="add-room-btn" style="background:#005c4b;" onclick="createNewSecretDM()">👤 شات برقم</button>
                 </div>
             </div>
             <div id="rooms-list">
-                <div class="room-section-title">الغرف العامة والجروبات</div>
+                <div class="room-section-title">المجموعات المشتركة</div>
                 <div id="server-rooms"></div>
-                <div class="room-section-title">المحادثات المباشرة السرية</div>
+                <div class="room-section-title">شات خاص مباشر (برقم الهاتف)</div>
                 <div id="private-dms"></div>
             </div>
-            <div class="sidebar-footer">
-                Created by Abdullah Mohamed Shaban Mohanna
-            </div>
+            <div class="sidebar-footer">Created by Abdullah Mohamed Shaban Mohanna</div>
         </div>
 
         <div id="chat-container">
             <header>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <button id="toggle-sidebar-btn" onclick="showSidebar()">📁 القائمة</button>
-                    <div id="chat-header-title" style="font-weight: bold;">الرئيسية العامة</div>
+                    <div id="chat-header-title" style="font-weight: bold;">برجاء اختيار محادثة أو إنشاء جروب</div>
                 </div>
-                <div class="header-controls" id="call-actions">
+                <div class="header-controls" id="call-actions" style="display:none;">
                     <button class="call-btn" onclick="startCall('audio')">📞 صوت</button>
                     <button class="call-btn" onclick="startCall('video')">📹 فيديو</button>
                 </div>
             </header>
             
             <div id="chat-window"></div>
-
-            <div id="reply-preview">
-                <span id="reply-preview-text" style="font-size:13px; color:#8696a0;"></span>
-                <button onclick="cancelReply()" style="background:none; border:none; color:#ff4d4d; cursor:pointer;">✕</button>
-            </div>
-
+            <div id="reply-preview"><span id="reply-preview-text" style="font-size:13px; color:#8696a0;"></span><button onclick="cancelReply()" style="background:none; border:none; color:#ff4d4d;">✕</button></div>
             <div id="emoji-picker"></div>
             
-            <footer>
+            <footer id="chat-footer" style="display:none;">
                 <button class="footer-icon-btn" onclick="toggleEmojiPicker()">😀</button>
                 <label class="footer-icon-btn" for="file-input">🖼️</label>
                 <input type="file" id="file-input" accept="image/*,video/*" style="display:none;" onchange="sendFile(this)">
-                
                 <input type="text" id="message-input" placeholder="اكتب رسالة هنا..." onkeypress="handleKey(event)">
                 <button id="send-btn" onclick="sendMessage()">إرسال 🚀</button>
             </footer>
         </div>
     </div>
 
-    <div id="qr-container" style="position: fixed; bottom: 20px; left: 20px; background: white; padding: 5px; border-radius: 8px; z-index: 2000; color: #000;"><div id="qrcode"></div></div>
-
     <script>
         const socket = io({ transports: ['polling'] });
         let myName = localStorage.getItem('myName');
         let myPhone = localStorage.getItem('myPhone');
         let secretDMs = JSON.parse(localStorage.getItem('secretDMsList')) || [];
-        let currentRoom = "الرئيسية العامة";
+        let currentRoom = "";
         let roomPasscodes = {}; 
         let replyingToId = "";
 
@@ -165,7 +162,6 @@
 
         window.onload = function() {
             if (myName && myPhone) { document.getElementById('login-screen').style.display = 'none'; initChat(); }
-            new QRCode(document.getElementById("qrcode"), { text: window.location.href, width: 60, height: 60 });
             initEmojis();
         };
 
@@ -175,14 +171,12 @@
             if(!name || !phone) return alert("املا البيانات!");
             localStorage.setItem('myName', name); localStorage.setItem('myPhone', phone);
             myName = name; myPhone = phone; document.getElementById('login-screen').style.display = 'none';
-            if ("Notification" in window) { Notification.requestPermission(); }
             initChat();
         }
 
         function initChat() {
-            socket.emit('get_all_rooms');
+            socket.emit('get_all_rooms', { phone: myPhone });
             renderSecretDMs();
-            joinRoomAction(currentRoom);
         }
 
         function initEmojis() {
@@ -196,33 +190,32 @@
         function toggleEmojiPicker() { const p = document.getElementById('emoji-picker'); p.style.display = p.style.display === 'grid' ? 'none' : 'grid'; }
 
         function createNewRoom(type) {
-            const name = prompt("أدخل اسم الغرفة/الجروب الجديد:");
+            const name = prompt("أدخل اسم الجروب الجديد:");
             if(!name || name.trim() === "") return;
             let password = "";
             if(type === 'private') {
-                password = prompt("أدخل رمز سري (Password) لحماية الجروب:");
+                password = prompt("أدخل باسوورد الجروب الخاص:");
                 if(!password) return alert("لا يمكن إنشاء جروب خاص بدون باسورد!");
             }
-            socket.emit('create_new_room_server', { name: name.trim(), type: type, password: password });
+            socket.emit('create_new_room_server', { name: name.trim(), type: type, password: password, phone: myPhone });
         }
 
         function createNewSecretDM() {
-            const target = prompt("أدخل رقم هاتف الشخص الآخر:");
+            const target = prompt("أدخل رقم هاتف الشخص المراد مراسلته:");
             if (!target || target.trim() === "") return;
+            if (target.trim() === myPhone) return alert("لا يمكنك مراسلة نفسك!");
             const roomName = [myPhone, target.trim()].sort().join('-');
             if (!secretDMs.includes(roomName)) { secretDMs.push(roomName); localStorage.setItem('secretDMsList', JSON.stringify(secretDMs)); }
             renderSecretDMs();
-            joinRoomAction(roomName);
+            joinRoomAction(roomName, 'dm');
         }
 
         socket.on('receive_rooms_list', function(rooms) {
-            const container = document.getElementById('server-rooms');
-            container.innerHTML = '';
+            const container = document.getElementById('server-rooms'); container.innerHTML = '';
             rooms.forEach(r => {
                 const div = document.createElement('div');
                 div.className = `room-item ${currentRoom === r.name ? 'active' : ''}`;
-                const icon = r.type === 'public' ? '👥' : '🔒';
-                div.innerHTML = `<span style="flex:1;">${icon} ${r.name}</span>`;
+                div.innerHTML = `<span>${r.type === 'public' ? '👥' : '🔒'} ${r.name}</span>`;
                 div.onclick = () => { joinRoomAction(r.name, r.type); };
                 container.appendChild(div);
             });
@@ -234,7 +227,7 @@
                 const showName = room.replace(myPhone, '').replace('-', '');
                 const div = document.createElement('div');
                 div.className = `room-item ${currentRoom === room ? 'active' : ''}`;
-                div.innerHTML = `<span style="flex:1;">👤 شات: ${showName}</span><span class="delete-room-x" onclick="deleteLocalDM('${room}', event)">✕</span>`;
+                div.innerHTML = `<span>👤 شات: ${showName}</span><span class="delete-room-x" onclick="deleteLocalDM('${room}', event)">✕</span>`;
                 div.onclick = () => { joinRoomAction(room, 'dm'); };
                 container.appendChild(div);
             });
@@ -242,40 +235,37 @@
 
         function deleteLocalDM(roomName, event) {
             event.stopPropagation();
-            if(confirm("مسح الشات السري من قائمتك؟")) { secretDMs = secretDMs.filter(r => r !== roomName); localStorage.setItem('secretDMsList', JSON.stringify(secretDMs)); renderSecretDMs(); joinRoomAction('الرئيسية العامة'); }
+            if(confirm("مسح الشات السري؟")) { secretDMs = secretDMs.filter(r => r !== roomName); localStorage.setItem('secretDMsList', JSON.stringify(secretDMs)); renderSecretDMs(); document.getElementById('chat-window').innerHTML = ''; document.getElementById('chat-footer').style.display='none'; }
         }
 
         function joinRoomAction(roomName, type = 'public') {
             let pass = "";
             if(type === 'private') {
-                pass = prompt("هذا الجروب مغلق، أدخل الرمز السري للدخول:");
+                pass = prompt("أدخل الباسوورد لدخول الجروب:");
                 if(!pass) return;
                 roomPasscodes[roomName] = pass;
             }
             currentRoom = roomName;
-            document.getElementById('chat-header-title').innerText = roomName.includes('-') ? 'محادثة سرية مباشرة' : roomName;
+            document.getElementById('chat-header-title').innerText = roomName.includes('-') ? '📱 محادثة سرية مباشرة' : roomName;
             document.getElementById('chat-window').innerHTML = '';
+            document.getElementById('chat-footer').style.display = 'flex';
+            document.getElementById('call-actions').style.display = 'flex';
             
-            socket.emit('join_room', { room: currentRoom, password: roomPasscodes[roomName] || "" });
+            socket.emit('join_room', { room: currentRoom, password: roomPasscodes[roomName] || "", phone: myPhone });
             document.body.classList.add('sidebar-hidden');
             cancelReply();
         }
 
-        socket.on('auth_failed', function(data) {
-            alert("الرمز السري خاطئ! لم يتم الدخول للغرقة.");
-            joinRoomAction('الرئيسية العامة');
-        });
-
+        socket.on('auth_failed', function(data) { alert("الباسوورد خطأ!"); });
         socket.on('room_error', function(msg) { alert(msg); });
         function showSidebar() { document.body.classList.remove('sidebar-hidden'); }
 
         function sendMessage() {
             const input = document.getElementById('message-input'); if (!input.value.trim()) return;
             socket.emit('new_message', {
-                id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                room: currentRoom, sender: myName, content: input.value.trim(), type: 'text', reply_to: replyingToId
+                id: 'msg_' + Date.now(), room: currentRoom, sender: myName, phone: myPhone, content: input.value.trim(), type: 'text', reply_to: replyingToId
             });
-            input.value = ''; cancelReply(); document.getElementById('emoji-picker').style.display = 'none';
+            input.value = ''; cancelReply();
         }
 
         function sendFile(input) {
@@ -284,18 +274,16 @@
             const reader = new FileReader(); reader.readAsDataURL(file);
             reader.onload = function () {
                 socket.emit('new_message', {
-                    id: 'msg_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    room: currentRoom, sender: myName, content: reader.result, type: fileType, reply_to: replyingToId
+                    id: 'msg_' + Date.now(), room: currentRoom, sender: myName, phone: myPhone, content: reader.result, type: fileType, reply_to: replyingToId
                 });
                 cancelReply();
             };
-            input.value = '';
         }
 
         function handleKey(e) { if (e.key === 'Enter') sendMessage(); }
-        function setReply(msgId, sender, text) { replyingToId = msgId; document.getElementById('reply-preview-text').innerText = `الرد على ${sender}: ${text.substring(0,20)}...`; document.getElementById('reply-preview').style.display = 'flex'; }
+        function setReply(msgId, sender, text) { replyingToId = msgId; document.getElementById('reply-preview-text').innerText = `الرد على ${sender}: ${text.substring(0,20)}`; document.getElementById('reply-preview').style.display = 'flex'; }
         function cancelReply() { replyingToId = ""; document.getElementById('reply-preview').style.display = 'none'; }
-        function triggerEdit(msgId, currentText) { const newText = prompt("تعديل الرسالة:", currentText); if (newText && newText.trim() !== "") { socket.emit('edit_message_server', { id: msgId, room: currentRoom, content: newText.trim() }); } }
+        function triggerEdit(msgId, currentText) { const newText = prompt("تعديل الرسالة:", currentText); if (newText) socket.emit('edit_message_server', { id: msgId, room: currentRoom, content: newText.trim() }); }
 
         socket.on('message', function(data) {
             if (data.room !== currentRoom) return;
@@ -303,7 +291,7 @@
 
             const chatWindow = document.getElementById('chat-window');
             const msgDiv = document.createElement('div');
-            msgDiv.id = 'msg-' + data.id; msgDiv.className = (data.sender === myName) ? 'message sent' : 'message received';
+            msgDiv.id = 'msg-' + data.id; msgDiv.className = (data.phone === myPhone) ? 'message sent' : 'message received';
             
             let contentHTML = '';
             if(data.reply_to) contentHTML += `<div class="reply-box-in-msg">رد على رسالة سابقة</div>`;
@@ -314,10 +302,9 @@
             else contentHTML += `<p class="msg-text-p">${data.content}</p>`;
 
             let actionsHTML = `<div class="msg-actions">`;
-            actionsHTML += `<span class="action-link" onclick="setReply('${data.id}', '${data.sender}', '${data.type==='text'?data.content:'ملف'}')">↩️ رد</span>`;
-            if (data.sender === myName) {
-                const now = Date.now() / 1000;
-                if(!data.timestamp || (now - data.timestamp < 900)) { if(data.type === 'text') actionsHTML += `<span class="action-link" onclick="triggerEdit('${data.id}', '${data.content}')">✏️ تعديل</span>`; }
+            actionsHTML += `<span class="action-link" onclick="setReply('${data.id}', '${data.sender}', '${data.content}')">↩️ رد</span>`;
+            if (data.phone === myPhone) {
+                if(data.type === 'text') actionsHTML += `<span class="action-link" onclick="triggerEdit('${data.id}', '${data.content}')">✏️ تعديل</span>`;
                 actionsHTML += `<span class="action-link" style="color:#ff6b6b;" onclick="deleteMessage('${data.id}')">🗑️ حذف</span>`;
             }
             actionsHTML += `</div>`;
@@ -326,7 +313,7 @@
             chatWindow.appendChild(msgDiv); chatWindow.scrollTop = chatWindow.scrollHeight;
         });
 
-        function deleteMessage(msgId) { if (confirm("حذف للجميع؟")) socket.emit('delete_message_server', { id: msgId, room: currentRoom }); }
+        function deleteMessage(msgId) { if (confirm("حذف الرسالة؟")) socket.emit('delete_message_server', { id: msgId, room: currentRoom }); }
         socket.on('delete_message_client', function(data) { const el = document.getElementById('msg-' + data.id); if (el) el.remove(); });
         socket.on('edit_message_client', function(data) { const el = document.getElementById('msg-' + data.id); if (el) { const p = el.querySelector('.msg-text-p'); if(p) p.innerText = data.content + " (معدلة)"; } });
 
@@ -344,7 +331,7 @@
         socket.on('call_received', async data => {
             if (!confirm(`مكالمة من ${data.from}. قبول؟`)) return socket.emit('end_call', { room: currentRoom });
             document.getElementById('video-overlay').style.display = 'flex';
-            localStream = await navigator.mediaDevices.getUserMedia({ video: data.type === 'video', audio: true });
+            localStream = await navigator.mediaDevices.getUserMedia({ video:data.type === 'video', audio: true });
             document.getElementById('localVideo').srcObject = localStream;
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
