@@ -1,13 +1,13 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, request, send_from_directory
 from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'abdo_secret_nile_key'
+app.config['SECRET_KEY'] = 'abdu_secret_nile_key'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# إنشاء قاعدة البيانات الجديدة والجداول على نضافة تماماً
+# إنشاء قاعدة البيانات والجداول بناءً على هيكلة كودك الأصلي
 def init_db():
     conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
@@ -29,70 +29,59 @@ init_db()
 def index():
     return render_template('index.html')
 
-# الربط الصحيح لدخول الغرفة وجلب رسايلها القديمة بس
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'manifest.json')
+
+@app.route('/icon.png')
+def icon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'icon.png')
+
 @socketio.on('join_room')
 def handle_join_room(data):
     room = data.get('room', 'عامة')
     join_room(room)
-    
-   # جلب أرشيف الرسائل الخاص بهذه الغرفة السرية فقط
-    conn = sqlite3.connect('nile_rooms.db')
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT sender, content, msg_id FROM messages WHERE room = ? ORDER BY id ASC", (room,))
-        rows = cursor.fetchall()
-        for row in rows:
-            emit('message', {'sender': row[0], 'content': row[1], 'id': row[2]})
-    except Exception as e:
-        print(f"Error reading database: {e}")
-    finally:
-        conn.close()
-# استقبال الرسائل الجديدة وحفظها وبثها جوة الأوضة بس
+
 @socketio.on('new_message')
 def handle_new_message(data):
     room = data['room']
     sender = data['sender']
     content = data['content']
     msg_id = data.get('id')
-    msg_type = data.get('type', 'text')
+    msg_type = data.get('type', 'text') # استقبال نوع الرسالة (صوت أو نص)
 
     conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO messages (msg_id, room, sender, content) VALUES (?, ?, ?, ?)", 
-                       (msg_id, room, sender, content))
+        # الحفظ متوافق تماماً مع حقول الداتابيز اللي عندك
+        cursor.execute("INSERT INTO messages (room, sender, content, msg_id) VALUES (?, ?, ?, ?)", 
+                       (room, sender, content, msg_id))
         conn.commit()
     except Exception as e:
         print(f"Error writing to database: {e}")
     finally:
         conn.close()
 
+    # إرسال الرسالة للغرفة المحددة مع تمرير النوع ليعرضها المتصفح بشكل صحيح
     emit('message', {'sender': sender, 'content': content, 'id': msg_id, 'type': msg_type}, to=room)
+
 @socketio.on('delete_message_server')
 def handle_delete_message(data):
-    room = data.get('room')
-    msg_id = data.get('id')
-    
+    room = data['room']
+    msg_id = data['id']
+
     conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
     try:
         cursor.execute("DELETE FROM messages WHERE msg_id = ?", (msg_id,))
         conn.commit()
     except Exception as e:
-        print(f"Error deleting from database: {e}")
+        print(f"Error deleting message: {e}")
     finally:
         conn.close()
-        
-    emit('delete_message_client', {'id': msg_id}, to=room)
 
-@app.route('/manifest.json')
-def serve_manifest():
-    return send_from_directory('.', 'manifest.json')
-
-@app.route('/icon.png')
-def serve_icon():
-    return send_from_directory('.', 'icon.png')
+    emit('delete_message_client', {'id': msg_id}, room=room)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get("PORT", 5000))
     socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
