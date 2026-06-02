@@ -54,19 +54,20 @@ def handle_new_message(data):
     sender = data['sender']
     content = data['content']
     msg_id = data.get('id')
+    msg_type = data.get('type', 'text')
 
     conn = sqlite3.connect('nile_rooms.db')
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO messages (msg_id, room, sender, content) VALUES (?, ?, ?, ?)", (msg_id, room, sender, content))
+        cursor.execute("INSERT INTO messages (msg_id, room, sender, content) VALUES (?, ?, ?, ?)", 
+                       (msg_id, room, sender, content))
         conn.commit()
     except Exception as e:
         print(f"Error writing to database: {e}")
     finally:
         conn.close()
 
-    emit('message', {'sender': sender, 'content': content, 'id': msg_id}, to=room)
-
+    emit('message', {'sender': sender, 'content': content, 'id': msg_id, 'type': msg_type}, to=room)
 @socketio.on('delete_message_server')
 def handle_delete_message(data):
     room = data.get('room')
