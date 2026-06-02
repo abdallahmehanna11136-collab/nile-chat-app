@@ -1,12 +1,11 @@
 from flask import Flask, render_template, request, send_from_directory
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
 import time
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
-
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 DB_PATH = os.path.join('/tmp', 'chat_database.db')
@@ -14,25 +13,28 @@ DB_PATH = os.path.join('/tmp', 'chat_database.db')
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+    # جدول الرسائل معدل ليدعم الخصوصية بناءً على رقم الهاتف
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id TEXT PRIMARY KEY,
             room TEXT,
             sender TEXT,
+            sender_phone TEXT,
             content TEXT,
             msg_type TEXT,
             timestamp REAL,
             reply_to TEXT
         )
     ''')
+    # جدول الغرف
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS created_rooms (
             room_name TEXT PRIMARY KEY,
             room_type TEXT,
-            password TEXT
+            password TEXT,
+            creator_phone TEXT
         )
     ''')
-    cursor.execute("INSERT OR IGNORE INTO created_rooms (room_name, room_type, password) VALUES ('الرئيسية العامة', 'public', '')")
     conn.commit()
     conn.close()
 
@@ -47,10 +49,12 @@ def sw():
     return send_from_directory(app.static_folder, 'service-worker.js')
 
 @socketio.on('get_all_rooms')
-def handle_get_rooms():
+def handle_get_rooms(data):
+    phone = data.get('phone')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT room_name, room_type FROM created_rooms')
+    # جلب الغرف العامة + الغرف الخاصة التي تنتمي لهذا الهاتف فقط أو المحادثات السرية الخاصة به
+    cursor.execute('SELECT room_name, room_type FROM created_rooms WHERE room_type="public" OR creator_phone=?', (phone,))
     rows = cursor.fetchall()
     rooms = [{'name': row[0], 'type': row[1]} for row in rows]
     conn.close()
@@ -61,34 +65,45 @@ def handle_create_room(data):
     name = data.get('name')
     room_type = data.get('type')
     password = data.get('password', '')
+    creator = data.get('phone')
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute('INSERT INTO created_rooms (room_name, room_type, password) VALUES (?, ?, ?)', (name, room_type, password))
+        cursor.execute('INSERT INTO created_rooms (room_name, room_type, password, creator_phone) VALUES (?, ?, ?, ?)', 
+                       (name, room_type, password, creator))
         conn.commit()
         conn.close()
-        handle_get_rooms()
+        # تحديث القائمة للمستخدم الحالي
+        handle_get_rooms({'phone': creator})
     except sqlite3.Error:
         conn.close()
         emit('room_error', 'اسم الغرفة موجود بالفعل!')
 
 @socketio.on('join_room')
 def handle_join_room(data):
-    room = data.get('room', 'الرئيسية العامة')
+    room = data.get('room')
     password = data.get('password', '')
+    phone = data.get('phone')
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT room_type, password FROM created_rooms WHERE room_name = ?', (room,))
+    cursor.execute('SELECT room_type, password, creator_phone FROM created_rooms WHERE room_name = ?', (room,))
     row = cursor.fetchone()
     
-    if row and row[0] == 'private' and row[1] != password:
-        conn.close()
-        emit('auth_failed', {'room': room})
-        return
+    # حماية الغرف الخاصة والمحادثات المباشرة
+    if row:
+        if row[0] == 'private' and row[1] != password:
+            conn.close()
+            emit('auth_failed', {'room': room})
+            return
+        if '-' in room and phone not in room: # شات سري مباشر ليس ملكه
+            conn.close()
+            return
 
     join_room(room)
+    
+    # جلب الرسائل الخاصة بهذه الغرفة فقط
     cursor.execute('SELECT id, sender, content, msg_type, timestamp, reply_to FROM messages WHERE room = ?', (room,))
     rows = cursor.fetchall()
     conn.close()
@@ -102,8 +117,9 @@ def handle_join_room(data):
 @socketio.on('new_message')
 def handle_new_message(data):
     msg_id = data.get('id')
-    room = data.get('room', 'الرئيسية العامة')
+    room = data.get('room')
     sender = data.get('sender')
+    phone = data.get('phone')
     content = data.get('content')
     msg_type = data.get('type', 'text')
     reply_to = data.get('reply_to', '')
@@ -112,8 +128,8 @@ def handle_new_message(data):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        cursor.execute('INSERT INTO messages (id, room, sender, content, msg_type, timestamp, reply_to) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-                       (msg_id, room, sender, content, msg_type, timestamp, reply_to))
+        cursor.execute('INSERT INTO messages (id, room, sender, sender_phone, content, msg_type, timestamp, reply_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', 
+                       (msg_id, room, sender, phone, content, msg_type, timestamp, reply_to))
         conn.commit()
     except sqlite3.Error as e:
         print(f"Error: {e}")
