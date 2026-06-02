@@ -6,8 +6,8 @@ import sqlite3
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 
-# إعداد SocketIO ليتوافق مع gunicorn و eventlet برابط مستقر
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+# التعديل هنا: استخدام gevent بدلاً من eventlet المتعب
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 # مسار قاعدة البيانات في المجلد المؤقت المسموح به على Render
 DB_PATH = os.path.join('/tmp', 'chat_database.db')
@@ -37,7 +37,7 @@ def index():
 def sw():
     return app.send_static_file('service-worker.js')
 
-# --- أحداث الشات وحفظ المحادثات للأبد ---
+# --- أحداث الشات وحفظ المحادثات ---
 
 @socketio.on('join_room')
 def handle_join_room(data):
