@@ -7,9 +7,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# --- إعداد وإنشاء قاعدة البيانات لحفظ الرسائل للأبد ---
+# تحديد مسار قاعدة البيانات في الفولدر المؤقت المسموح به على Render
+DB_PATH = os.path.join('/tmp', 'chat_database.db')
+
 def init_db():
-    conn = sqlite3.connect('chat_database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
@@ -23,6 +25,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+# تشغيل إنشاء الداتابيز بأمان
 init_db()
 
 @app.route('/')
@@ -33,7 +36,7 @@ def index():
 def sw():
     return app.send_static_file('service-worker.js')
 
-# --- التعامل مع أحداث الشات والربط السريع ---
+# --- هيدرز وأحداث الشات ---
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -43,8 +46,8 @@ def handle_join_room(data):
     join_room(room)
     print(f"👤 {username} دخل الغرفة: {room}")
     
-    # سحب أرشيف الغرفة من الداتابيز فوراً
-    conn = sqlite3.connect('chat_database.db')
+    # سحب الأرشيف بأمان
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('SELECT id, room, sender, content, msg_type FROM messages WHERE room = ?', (room,))
     rows = cursor.fetchall()
@@ -67,19 +70,18 @@ def handle_new_message(data):
     content = data.get('content')
     msg_type = data.get('type', 'text')
     
-    # حفظ الرسالة أو الفويس في قاعدة البيانات
-    conn = sqlite3.connect('chat_database.db')
+    # حفظ الرسائل والفويسات في المسار الصحيح
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
         cursor.execute('INSERT INTO messages (id, room, sender, content, msg_type) VALUES (?, ?, ?, ?, ?)',
                        (msg_id, room, sender, content, msg_type))
         conn.commit()
     except sqlite3.Error as e:
-        print(f"خطأ في الحفظ: {e}")
+        print(f"خطأ حفظ: {e}")
     finally:
         conn.close()
     
-    # إرسال الرسالة فوراً للغرفة المحددة
     emit('message', {
         'id': msg_id,
         'room': room,
@@ -93,14 +95,12 @@ def handle_delete_message(data):
     room = data.get('room')
     msg_id = data.get('id')
     
-    # حذف نهائي من الداتابيز
-    conn = sqlite3.connect('chat_database.db')
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('DELETE FROM messages WHERE id = ?', (msg_id,))
     conn.commit()
     conn.close()
     
-    # مسح من الشاشات عند الجميع فوراً
     emit('delete_message_client', {'id': msg_id}, room=room)
 
 if __name__ == '__main__':
