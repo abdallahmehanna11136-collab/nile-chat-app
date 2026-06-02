@@ -3,46 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نايل شات الآمن | Nile Chat</title>
+    <title>نايل شات الآمن | Nile Chat Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link rel="manifest" href="/manifest.json">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: sans-serif; background-color: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
-        #main-layout { display: flex; width: 100%; max-width: 1000px; height: 95vh; background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; }
-        #rooms-sidebar { width: 30%; background: #ffffff; border-left: 1px solid #ddd; display: flex; flex-direction: column; }
-        .sidebar-header { background: #008069; color: white; padding: 15px; text-align: center; font-weight: bold; font-size: 16px; }
-        #add-room-btn { width: 90%; margin: 10px auto; padding: 10px; background: #008069; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; }
-        #rooms-list { flex: 1; overflow-y: auto; background: #fff; }
-        .room-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: bold; transition: 0.2s; text-align: right; color: #333; }
-        .room-item:hover { background-color: #f0f2f5; }
-        .room-item.active { background-color: #e9edef; color: #008069; }
-        #chat-container { width: 70%; display: flex; flex-direction: column; }
-        header { background-color: #008069; color: white; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; }
-        #chat-window { flex: 1; padding: 20px; background-color: #efeae2; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        body { font-family: sans-serif; background-color: #111b21; height: 100vh; display: flex; justify-content: center; align-items: center; color: #e9edef; }
         
-        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-break: break-word; position: relative; display: flex; flex-direction: column; }
-        .sent { background: #d9fdd3; align-self: flex-end; }
-        .received { background: #fff; align-self: flex-start; }
-        .sent .delete-btn { display: block; background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 11px; align-self: flex-end; margin-top: 5px; font-weight: bold; }
+        /* شاشة الدخول الاحترافية - نظام الواتساب */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111b21; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; padding: 20px; }
+        .login-box { background: #222e35; padding: 30px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; }
+        .login-box h2 { color: #00a884; margin-bottom: 10px; font-size: 24px; }
+        .login-box p { color: #8696a0; font-size: 14px; margin-bottom: 25px; }
+        .form-group { margin-bottom: 15px; text-align: right; }
+        .form-group label { display: block; font-size: 14px; color: #e9edef; margin-bottom: 5px; font-weight: bold; }
+        .phone-input-container { display: flex; gap: 10px; dir: ltr; }
+        .login-box select { background: #2a3942; color: #fff; border: 1px solid #3b4a54; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; text-align: center; }
+        .login-box input { width: 100%; background: #2a3942; color: #fff; border: 1px solid #3b4a54; padding: 12px; border-radius: 8px; font-size: 16px; outline: none; text-align: right; }
+        .login-box input.phone-field { text-align: left; }
+        #login-btn { width: 100%; background: #00a884; color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        #login-btn:hover { background: #00664f; }
+
+        /* الواجهة الرئيسية للشات */
+        #main-layout { display: flex; width: 100%; max-width: 1000px; height: 95vh; background: #222e35; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.5); overflow: hidden; }
+        #rooms-sidebar { width: 30%; background: #111b21; border-left: 1px solid #2f3b43; display: flex; flex-direction: column; }
+        .sidebar-header { background: #202c33; color: #e9edef; padding: 15px; text-align: center; font-weight: bold; font-size: 16px; border-bottom: 1px solid #2f3b43; }
+        #add-room-btn { width: 90%; margin: 10px auto; padding: 10px; background: #00a884; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; text-align: center; font-size: 14px; }
+        #rooms-list { flex: 1; overflow-y: auto; }
+        .room-item { padding: 15px; border-bottom: 1px solid #222e35; cursor: pointer; font-weight: bold; transition: 0.2s; color: #e9edef; display: flex; justify-content: space-between; align-items: center; }
+        .room-item:hover { background-color: #202c33; }
+        .room-item.active { background-color: #2a3942; color: #00a884; }
+        
+        #chat-container { width: 70%; display: flex; flex-direction: column; background: #0b141a; }
+        header { background-color: #202c33; color: #e9edef; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; border-bottom: 1px solid #2f3b43; }
+        #chat-window { flex: 1; padding: 20px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        
+        .message { padding: 10px 14px; border-radius: 8px; font-size: 15px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.3); word-break: break-word; position: relative; display: flex; flex-direction: column; color: #e9edef; }
+        .sent { background: #005c4b; align-self: flex-end; }
+        .received { background: #202c33; align-self: flex-start; }
+        .sent .delete-btn { display: block; background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: 11px; align-self: flex-end; margin-top: 5px; font-weight: bold; }
         .received .delete-btn { display: none; }
         audio { max-width: 100%; margin-top: 5px; }
 
-        footer { display: flex; padding: 10px; gap: 10px; background: #f0f2f5; border-top: 1px solid #ccc; align-items: center; }
-        #message-input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 15px; }
-        #send-btn, #voice-btn { border: none; border-radius: 50%; background: #008069; color: white; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        footer { display: flex; padding: 10px; gap: 10px; background: #202c33; border-top: 1px solid #2f3b43; align-items: center; }
+        #message-input { flex: 1; padding: 12px; border: 1px solid #2a3942; background: #2a3942; color: #fff; border-radius: 8px; outline: none; font-size: 15px; }
+        #send-btn, #voice-btn { border: none; border-radius: 50%; background: #00a884; color: white; width: 45px; height: 45px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
         #voice-btn.recording { background: #ff4d4d; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-    </style>
+        </style>
 </head>
 <body>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>نايل شات الآمن 💬</h2>
+            <p>أدخل بياناتك للتفعيل والدخول المباشر للمحادثات</p>
+            
+            <div class="form-group">
+                <label>اسم البروفايل (المستعار):</label>
+                <input type="text" id="login-name" placeholder="اكتب اسمك هنا...">
+            </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف الخاص بك:</label>
+                <div class="phone-input-container">
+                    <select id="login-country">
+                        <option value="+20">+20 (مصر)</option>
+                        <option value="+966">+966 (السعودية)</option>
+                        <option value="+964">+964 (العراق)</option>
+                        <option value="+965">+965 (الكويت)</option>
+                        <option value="+971">+971 (الإمارات)</option>
+                        <option value="+212">+212 (المغرب)</option>
+                    </select>
+                    <input type="tel" id="login-phone" class="phone-field" placeholder="123456789">
+                </div>
+            </div>
+
+            <button id="login-btn" onclick="submitLogin()">دخول وتفعيل الحساب 🚀</button>
+        </div>
+    </div>
 
     <div id="main-layout">
         <div id="rooms-sidebar">
             <div class="sidebar-header">المحادثات السريّة 💬</div>
-            <button id="add-room-btn" onclick="createNewSecretRoom()">➕ إنشاء غرفة سرية جديدة</button>
+            <button id="add-room-btn" onclick="createNewSecretRoom()">➕ بدء شات جديد برقم الهاتف</button>
             <div id="rooms-list">
-                <div class="room-item" id="general-room-tab" onclick="switchRoom('عامة')">👥 الانتقال للغرفة العامة</div>
+                <div class="room-item" id="general-room-tab" onclick="switchRoom('عامة')">
+                    <span>👥 الانتقال للغرفة العامة</span>
+                </div>
                 <div id="dynamic-rooms"></div>
             </div>
         </div>
@@ -61,64 +109,89 @@
     <script>
         const socket = io();
         
-        let myName = prompt("من فضلك اكتب اسمك المستعار للدخول للشات:") || "مجهول";
-        
+        let myName = localStorage.getItem('myName');
+        let myCountryCode = localStorage.getItem('myCountryCode');
+        let myPhone = localStorage.getItem('myPhone');
         let secretRooms = JSON.parse(localStorage.getItem('secretRoomsList')) || [];
-        if (secretRooms.length === 0) {
-            let firstRoom = prompt("اكتب رقم أو اسم غرفتك السرية الأولى:") || "123";
-            secretRooms.push(firstRoom);
-            localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
-        }
-
-        let myRoom = secretRooms[0];
-        let activeTabId = 'room-' + myRoom;
+        let myRoom = "عامة";
 
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
 
-        document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
-
-        if ("Notification" in window) {
-            if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission();
+        window.onload = function() {
+            if (myName && myCountryCode && myPhone) {
+                document.getElementById('login-screen').style.display = 'none';
+                if(secretRooms.length > 0) {
+                    myRoom = secretRooms[0];
+                }
+                initChat();
             }
+        };
+
+        function submitLogin() {
+            const nameInput = document.getElementById('login-name').value.trim();
+            const phoneInput = document.getElementById('login-phone').value.trim();
+            const countrySelect = document.getElementById('login-country').value;
+
+            if (nameInput === "" || phoneInput === "") {
+                alert("برجاء إدخال الاسم ورقم الهاتف بالكامل!");
+                return;
+            }
+
+            localStorage.setItem('myName', nameInput);
+            localStorage.setItem('myCountryCode', countrySelect);
+            localStorage.setItem('myPhone', phoneInput);
+
+            myName = nameInput;
+            myCountryCode = countrySelect;
+            myPhone = phoneInput;
+
+            document.getElementById('login-screen').style.display = 'none';
+            initChat();
         }
 
-       function renderRooms() {
+        function initChat() {
+            document.getElementById('chat-header').innerText = `نايل شات 💬 (${myName}) - غرفة: ${myRoom}`;
+            
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+
+            socket.emit('join_room', { username: myName, room: myRoom });
+            renderRooms();
+            switchRoom(myRoom);
+        }
+
+        function renderRooms() {
             const container = document.getElementById('dynamic-rooms');
             container.innerHTML = '';
             
             secretRooms.forEach(room => {
                 const roomWrapper = document.createElement('div');
-                roomWrapper.style.display = 'flex';
-                roomWrapper.style.justify = 'space-between';
-                roomWrapper.style.alignItems = 'center';
                 roomWrapper.className = 'room-item';
                 roomWrapper.id = 'room-' + room;
                 
-                // هنا اسم الغرفة لما تضغط عليه ينقلك ليها
                 const roomClick = document.createElement('span');
-                roomClick.innerText = `🔒 غرفة: ${room}`;
+                roomClick.innerText = `🔒 شات: ${room}`;
                 roomClick.style.flex = '1';
                 roomClick.onclick = function() { switchRoom(room); };
                 
-                // زرار الحذف (الاكس الأحمر)
                 const deleteRoomBtn = document.createElement('span');
                 deleteRoomBtn.innerText = '❌';
                 deleteRoomBtn.style.cursor = 'pointer';
                 deleteRoomBtn.style.padding = '0 5px';
+                deleteRoomBtn.style.color = '#ff4d4d';
                 deleteRoomBtn.onclick = function(e) {
-                    e.stopPropagation(); // عشان ما ينقلش للغرفة بالخطأ أثناء المسح
-                    if (confirm(`هل تريد حذف الغرفة "${room}" نهائياً من قائمتك؟`)) {
+                    e.stopPropagation();
+                    if (confirm(`هل تريد حذف المحادثة مع "${room}" نهائياً؟`)) {
                         secretRooms = secretRooms.filter(r => r !== room);
                         localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
-                        
-                        // لو مسحت الأوضة اللي أنت واقف جواها حالياً، ينقلك للغرفة العامة
                         if (myRoom === room) {
                             switchRoom('عامة');
                         }
-                        
                         renderRooms();
                     }
                 };
@@ -146,19 +219,17 @@
         }
 
         function createNewSecretRoom() {
-            let newRoomName = prompt("اكتب اسم أو رقم الغرفة السرية الجديدة:");
-            if (newRoomName && newRoomName.trim() !== "") {
-                newRoomName = newRoomName.trim();
-                if (!secretRooms.includes(newRoomName)) {
-                    secretRooms.push(newRoomName);
+            let targetPhone = prompt("أدخل رقم هاتف الصديق (مع كود الدولة مثل +20123...) لبدء شات خاص معه:");
+            if (targetPhone && targetPhone.trim() !== "") {
+                targetPhone = targetPhone.trim();
+                if (!secretRooms.includes(targetPhone)) {
+                    secretRooms.push(targetPhone);
                     localStorage.setItem('secretRoomsList', JSON.stringify(secretRooms));
                     renderRooms();
                 }
-                switchRoom(newRoomName);
+                switchRoom(targetPhone);
             }
         }
-
-        socket.emit('join_room', { username: myName, room: myRoom });
 
         socket.on('message', function(data) {
             const chatWindow = document.getElementById('chat-window');
@@ -185,7 +256,7 @@
 
             if (data.sender !== myName) {
                 let notificationSound = new Audio("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg");
-                notificationSound.play().catch(err => console.log("الصوت يحتاج كليك أولاً"));
+                notificationSound.play().catch(err => console.log("الصومت معلق"));
             }
 
             if (data.sender !== myName && Notification.permission === "granted") {
@@ -277,15 +348,6 @@
             socket.emit('join_room', { username: myName, room: myRoom });
             updateActiveTab();
         }
-
-        const savedSecretRooms = JSON.parse(localStorage.getItem('secretRoomsList'));
-        if (savedSecretRooms && savedSecretRooms.length > 0) {
-            secretRooms = savedSecretRooms;
-            myRoom = secretRooms[0];
-        }
-
-        renderRooms();
-        switchRoom(myRoom);
     </script>
 </body>
 </html>
