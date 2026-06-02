@@ -1,23 +1,23 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'abdu_secret_nile_key'
+app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-# إنشاء قاعدة البيانات والجداول بناءً على هيكلة كودك الأصلي
+# --- إعداد وإنشاء قاعدة البيانات لحفظ الرسائل للأبد ---
 def init_db():
-    conn = sqlite3.connect('nile_rooms.db')
+    conn = sqlite3.connect('chat_database.db')
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY,
             room TEXT,
             sender TEXT,
             content TEXT,
-            msg_id TEXT
+            msg_type TEXT
         )
     ''')
     conn.commit()
@@ -29,59 +29,80 @@ init_db()
 def index():
     return render_template('index.html')
 
-@app.route('/manifest.json')
-def manifest():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'manifest.json')
+@app.route('/service-worker.js')
+def sw():
+    return app.send_static_file('service-worker.js')
 
-@app.route('/icon.png')
-def icon():
-    return send_from_directory(os.path.join(app.root_path, 'static'), 'icon.png')
+# --- التعامل مع أحداث الشات والربط السريع ---
 
 @socketio.on('join_room')
 def handle_join_room(data):
+    username = data.get('username')
     room = data.get('room', 'عامة')
+    
     join_room(room)
+    print(f"👤 {username} دخل الغرفة: {room}")
+    
+    # سحب أرشيف الغرفة من الداتابيز فوراً
+    conn = sqlite3.connect('chat_database.db')
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, room, sender, content, msg_type FROM messages WHERE room = ?', (room,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    for row in rows:
+        emit('message', {
+            'id': row[0],
+            'room': row[1],
+            'sender': row[2],
+            'content': row[3],
+            'type': row[4]
+        })
 
 @socketio.on('new_message')
 def handle_new_message(data):
-    room = data['room']
-    sender = data['sender']
-    content = data['content']
     msg_id = data.get('id')
-    msg_type = data.get('type', 'text') # استقبال نوع الرسالة (صوت أو نص)
-
-    conn = sqlite3.connect('nile_rooms.db')
+    room = data.get('room', 'عامة')
+    sender = data.get('sender')
+    content = data.get('content')
+    msg_type = data.get('type', 'text')
+    
+    # حفظ الرسالة أو الفويس في قاعدة البيانات
+    conn = sqlite3.connect('chat_database.db')
     cursor = conn.cursor()
     try:
-        # الحفظ متوافق تماماً مع حقول الداتابيز اللي عندك
-        cursor.execute("INSERT INTO messages (room, sender, content, msg_id) VALUES (?, ?, ?, ?)", 
-                       (room, sender, content, msg_id))
+        cursor.execute('INSERT INTO messages (id, room, sender, content, msg_type) VALUES (?, ?, ?, ?, ?)',
+                       (msg_id, room, sender, content, msg_type))
         conn.commit()
-    except Exception as e:
-        print(f"Error writing to database: {e}")
+    except sqlite3.Error as e:
+        print(f"خطأ في الحفظ: {e}")
     finally:
         conn.close()
-
-    # إرسال الرسالة للغرفة المحددة مع تمرير النوع ليعرضها المتصفح بشكل صحيح
-    emit('message', {'sender': sender, 'content': content, 'id': msg_id, 'type': msg_type}, to=room)
+    
+    # إرسال الرسالة فوراً للغرفة المحددة
+    emit('message', {
+        'id': msg_id,
+        'room': room,
+        'sender': sender,
+        'content': content,
+        'type': msg_type
+    }, room=room)
 
 @socketio.on('delete_message_server')
 def handle_delete_message(data):
-    room = data['room']
-    msg_id = data['id']
-
-    conn = sqlite3.connect('nile_rooms.db')
+    room = data.get('room')
+    msg_id = data.get('id')
+    
+    # حذف نهائي من الداتابيز
+    conn = sqlite3.connect('chat_database.db')
     cursor = conn.cursor()
-    try:
-        cursor.execute("DELETE FROM messages WHERE msg_id = ?", (msg_id,))
-        conn.commit()
-    except Exception as e:
-        print(f"Error deleting message: {e}")
-    finally:
-        conn.close()
-
+    cursor.execute('DELETE FROM messages WHERE id = ?', (msg_id,))
+    conn.commit()
+    conn.close()
+    
+    # مسح من الشاشات عند الجميع فوراً
     emit('delete_message_client', {'id': msg_id}, room=room)
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    socketio.run(app, host='0.0.0.0', port=port, allow_unsafe_werkzeug=True)
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=True)
