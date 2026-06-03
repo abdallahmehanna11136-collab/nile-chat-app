@@ -185,18 +185,24 @@
 
         function toggleSidebar() { document.body.classList.toggle('sidebar-hidden'); }
 
-        function submitLogin() {
-            const name = document.getElementById('login-name').value.trim();
-            const phoneCode = document.getElementById('login-country').value;
-            const phoneNum = document.getElementById('login-phone').value.trim();
-            if(!name || !phoneNum) return alert("املاً البيانات!");
-            myName = name; myPhone = phoneCode + phoneNum;
-            localStorage.setItem('myName', myName);
-            localStorage.setItem('myPhone', myPhone);
-            document.getElementById('login-screen').style.display = 'none';
-            initChat();
-        }
-
+       function submitLogin() {
+    const name = document.getElementById('login-name').value.trim();
+    const phoneCode = document.getElementById('login-country').value;
+    const phoneNum = document.getElementById('login-phone').value.trim();
+    
+    if (!name || !phoneNum) {
+        return alert("برجاء إدخال الاسم ورقم الهاتف كاملاً!");
+    }
+    
+    myName = name; 
+    myPhone = phoneCode + phoneNum;
+    
+    localStorage.setItem('myName', myName);
+    localStorage.setItem('myPhone', myPhone);
+    
+    document.getElementById('login-screen').style.display = 'none';
+    initChat();
+}
         function createNewRoom(type) {
             const name = prompt("اسم المجموعة:");
             if(!name) return;
