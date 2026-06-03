@@ -8,34 +8,29 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# 🛠️ تصحيح الخطأ الفني: استخدام os.path.join المظبوطة لمنع كراش Render
-DB_PATH = os.path.join('/tmp', 'chat_database.db')
+DB_PATH = os.path.join('/tmp', 'chat_database.db') if os.path.exists('/tmp') else 'chat_database.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # جدول الرسائل: يدعم التعديل، الحذف، التحويل، الرد، والصحين
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id TEXT PRIMARY KEY,
             room TEXT,
             sender TEXT,
-            sender_phone TEXT,
-            content TEXT,
-            msg_type TEXT,
+            phone TEXT,
+            text TEXT,
             timestamp REAL,
             reply_to TEXT,
-            is_forwarded INTEGER DEFAULT 0,
-            is_read INTEGER DEFAULT 0
+            is_edited INTEGER DEFAULT 0,
+            is_forwarded INTEGER DEFAULT 0
         )
     ''')
-    # جدول الغرف والمجموعات
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS created_rooms (
-            room_name TEXT PRIMARY KEY,
-            room_type TEXT,
-            password TEXT,
-            creator_phone TEXT
+        CREATE TABLE IF NOT EXISTS profiles (
+            phone TEXT PRIMARY KEY,
+            avatar TEXT,
+            status_text TEXT
         )
     ''')
     conn.commit()
@@ -47,177 +42,101 @@ init_db()
 def index():
     return render_template('index.html')
 
+@app.route('/manifest.json')
+def manifest():
+    return send_from_directory(app.static_folder or 'static', 'manifest.json')
+
 @app.route('/service-worker.js')
 def sw():
     return send_from_directory(app.static_folder or 'static', 'service-worker.js')
 
-@socketio.on('get_all_rooms')
-def handle_get_rooms(data):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT room_name, room_type FROM created_rooms')
-    rows = cursor.fetchall()
-    rooms = [{'name': row[0], 'type': row[1]} for row in rows]
-    conn.close()
-    emit('receive_rooms_list', rooms)
-
-@socketio.on('create_new_room_server')
-def handle_create_room(data):
-    name = data.get('name')
-    room_type = data.get('type')
-    password = data.get('password', '')
-    creator = data.get('phone')
-    
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO created_rooms VALUES (?, ?, ?, ?)', (name, room_type, password, creator))
-        conn.commit()
-        conn.close()
-        handle_get_rooms({'phone': creator})
-    except sqlite3.Error:
-        emit('room_error', 'اسم الغرفة موجود بالفعل!')
-
-@socketio.on('join_room')
-def handle_join_room(data):
-    room = data.get('room')
-    password = data.get('password', '')
-    phone = data.get('phone')
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute('SELECT room_type, password FROM created_rooms WHERE room_name = ?', (room,))
-    row = cursor.fetchone()
-    
-    if row and row[0] == 'private' and row[1] != password:
-        conn.close()
-        emit('auth_failed', {'room': room})
-        return
-        
-    if '-' in room and phone not in room:
-        conn.close()
-        return
-        
-    # 🔒 حماية وعزل غرف الذكاء الاصطناعي بناءً على رقم هاتف المستخدم لمنع التداخل
-    if room.startswith('AI-Chat-') and room != f"AI-Chat-{phone}":
-        conn.close()
-        return
-
+@socketio.on('join')
+def on_join(data):
+    room = data.get('room', 'العامة')
     join_room(room)
     
-    # تحديث علامات الصح لتصبح مقروءة عند دخول الطرف الآخر
-    cursor.execute('UPDATE messages SET is_read = 1 WHERE room = ? AND sender_phone != ?', (room, phone))
-    conn.commit()
-    
-    cursor.execute('SELECT id, sender, content, msg_type, timestamp, reply_to, is_forwarded, is_read, sender_phone FROM messages WHERE room = ?', (room,))
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, room, sender, text, reply_to, is_edited, is_forwarded FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
     rows = cursor.fetchall()
+    
+    cursor.execute("SELECT phone, avatar, status_text FROM profiles")
+    p_rows = cursor.fetchall()
+    profiles = {r[0]: {"avatar": r[1], "status": r[2]} for r in p_rows}
     conn.close()
     
+    history = []
     for r in rows:
-        emit('message', {
-            'id': r[0], 'sender': r[1], 'content': r[2], 'type': r[3],
-            'timestamp': r[4], 'reply_to': r[5], 'is_forwarded': r[6], 'is_read': r[7], 'phone': r[8], 'room': room
+        history.append({
+            "id": r[0], "room": r[1], "sender": r[2], "text": r[3],
+            "reply_to": r[4], "is_edited": bool(r[5]), "is_forwarded": bool(r[6])
         })
+    
+    emit('chat_history', {'messages': history, 'profiles': profiles})
 
-@socketio.on('new_message')
-def handle_new_message(data):
-    msg_id = data.get('id')
-    room = data.get('room')
-    sender = data.get('sender')
-    phone = data.get('phone')
-    content = data.get('content')
-    msg_type = data.get('type', 'text')
-    reply_to = data.get('reply_to', '')
+@socketio.on('send_message')
+def on_send_message(data):
+    msg_id = data['id']
+    room = data['room']
+    sender = data['sender']
+    phone = data['phone']
+    text = data['text']
+    reply_to = data.get('reply_to', None)
     is_forwarded = data.get('is_forwarded', 0)
     ts = time.time()
     
-    if room.startswith('AI-Chat-') and room != f"AI-Chat-{phone}":
-        return
-        
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)', 
-                   (msg_id, room, sender, phone, content, msg_type, ts, reply_to, is_forwarded))
+    cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                   (msg_id, room, sender, phone, text, ts, reply_to, is_forwarded))
     conn.commit()
     conn.close()
     
     emit('message', {
         'id': msg_id, 'room': room, 'sender': sender, 'phone': phone,
-        'content': content, 'type': msg_type, 'reply_to': reply_to, 
-        'is_forwarded': is_forwarded, 'is_read': 0, 'timestamp': ts
-    }, to=room)
+        'text': text, 'reply_to': reply_to, 'is_edited': False, 'is_forwarded': bool(is_forwarded)
+    }, room=room)
 
-    # 🤖 معالجة رد بوت الذكاء الاصطناعي (NileAI) وإرساله للمستخدم صاحب الرقم فقط
-    if room == f"AI-Chat-{phone}":
-        ai_response = f"أهلاً بك يا فنان في نظام نايل الذكي. شاتك هنا مؤمن ومعزول تماماً ومستحيل مستخدم تاني يشوفه على السيرفر. رسالتك هي: {content}"
-        ai_msg_id = f"ai-{int(time.time()*1000)}"
-        
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', 
-                       (ai_msg_id, room, 'NileAI', 'AI-System', ai_response, 'text', ts+1, '', 0))
-        conn.commit()
-        conn.close()
-        
-        emit('message', {
-            'id': ai_msg_id, 'room': room, 'sender': '🤖 NileAI', 'phone': 'AI-System',
-            'content': ai_response, 'type': 'text', 'reply_to': '', 
-            'is_forwarded': 0, 'is_read': 1, 'timestamp': ts+1
-        }, to=room)
-
-@socketio.on('mark_as_read')
-def handle_mark_read(data):
-    room = data.get('room')
-    phone = data.get('phone')
+@socketio.on('edit_message')
+def on_edit_message(data):
+    msg_id = data['id']
+    room = data['room']
+    new_text = data['text']
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('UPDATE messages SET is_read = 1 WHERE room = ? AND sender_phone != ?', (room, phone))
+    cursor.execute("UPDATE messages SET text = ?, is_edited = 1 WHERE id = ?", (new_text, msg_id))
     conn.commit()
     conn.close()
-    emit('messages_read_update', {'room': room}, to=room)
+    
+    emit('message_edited', {'id': msg_id, 'room': room, 'text': new_text}, room=room)
 
-@socketio.on('delete_message_server')
-def handle_delete_message(data):
-    msg_id = data.get('id')
-    room = data.get('room')
+@socketio.on('delete_message')
+def on_delete_message(data):
+    msg_id = data['id']
+    room = data['room']
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM messages WHERE id = ?', (msg_id,))
+    cursor.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
     conn.commit()
     conn.close()
-    emit('delete_message_client', {'id': msg_id}, to=room)
+    
+    emit('message_deleted', {'id': msg_id, 'room': room}, room=room)
 
-@socketio.on('edit_message_server')
-def handle_edit_message(data):
-    msg_id = data.get('id')
-    room = data.get('room')
-    content = data.get('content')
+@socketio.on('update_profile')
+def on_update_profile(data):
+    phone = data['phone']
+    avatar = data.get('avatar', '')
+    status_text = data.get('status', '')
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('SELECT timestamp FROM messages WHERE id = ?', (msg_id,))
-    row = cursor.fetchone()
-    if row and (time.time() - row[0] <= 900): # صلاحية التعديل 15 دقيقة
-        cursor.execute('UPDATE messages SET content = ? WHERE id = ?', (content, msg_id))
-        conn.commit()
-        emit('edit_message_client', {'id': msg_id, 'content': content}, to=room)
+    cursor.execute("INSERT OR REPLACE INTO profiles (phone, avatar, status_text) VALUES (?, ?, ?)", (phone, avatar, status_text))
+    conn.commit()
     conn.close()
-
-@socketio.on('ice_candidate')
-def handle_ice(data):
-    emit('ice_candidate', data.get('candidate'), to=data.get('room'), include_self=False)
-
-@socketio.on('call_user')
-def handle_call(data):
-    emit('call_received', data, to=data.get('room'), include_self=False)
-
-@socketio.on('answer_call')
-def handle_answer(data):
-    emit('call_answered', data, to=data.get('room'), include_self=False)
-
-@socketio.on('end_call')
-def handle_end(data):
-    emit('end_call', to=data.get('room'))
+    
+    emit('profile_updated', {'phone': phone, 'avatar': avatar, 'status': status_text}, broadcast=True)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000)
