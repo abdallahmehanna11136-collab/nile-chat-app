@@ -189,5 +189,54 @@ def on_ice_candidate(data):
     room = data.get('room', 'العامة')
     emit('ice_candidate_received', data, room=room, include_self=False)
 
+@socketio.on('create_community')
+def on_create_community(data):
+    community_name = data.get('name')
+    members = data.get('members', [])
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS communities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS community_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            community_id INTEGER,
+            phone TEXT NOT NULL,
+            FOREIGN KEY(community_id) REFERENCES communities(id)
+        )
+    ''')
+    
+    cursor.execute("INSERT INTO communities (name) VALUES (?)", (community_name,))
+    community_id = cursor.lastrowid
+    
+    for phone in members:
+        if phone.strip():
+            cursor.execute("INSERT INTO community_members (community_id, phone) VALUES (?, ?)", (community_id, phone.strip()))
+            
+    conn.commit()
+    
+    cursor.execute("SELECT id, name FROM communities")
+    all_coms = cursor.fetchall()
+    
+    updated_list = []
+    for com in all_coms:
+        cursor.execute("SELECT COUNT(*) FROM community_members WHERE community_id = ?", (com[0],))
+        count = cursor.fetchone()[0]
+        updated_list.append({
+            'id': com[0],
+            'name': com[1],
+            'members_count': count
+        })
+        
+    conn.close()
+    
+    emit('update_communities', updated_list, broadcast=True)
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
