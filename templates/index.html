@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>نايل شات - Nile Chat</title>
     <link rel="icon" type="image/png" href="/static/icon.png">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/static/manifest.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
     <style>
         /* نظام الألوان وتصميم واتساب الموبايل */
@@ -19,13 +19,12 @@
             --wa-text: #e9edef;
             --wa-muted: #8696a0;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--wa-dark-bg); color: var(--wa-text); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
         
         /* محاكي شاشة الهاتف الموبايل السريع */
         #phone-wrapper { width: 100%; max-width: 480px; height: 100%; background-color: var(--wa-dark-bg); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-
+        
         /* شاشة الدخول للمنصة */
         #login-screen { position: absolute; inset: 0; background-color: var(--wa-header-bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .login-box { background-color: var(--wa-surface); padding: 30px; border-radius: 12px; width: 100%; text-align: center; }
@@ -36,27 +35,20 @@
         .login-row select { width: 35%; background-color: #2a3942; color: #fff; border: none; border-radius: 8px; padding: 10px; font-size: 14px; }
         .login-row input { width: 65%; }
         .login-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background-color: var(--wa-green); color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
-
+        
         /* شاشات القوائم الرئيسية والتنقل السفلي */
         .app-view { display: none; flex-direction: column; width: 100%; height: 100%; padding-bottom: 65px; }
         .app-view.active { display: flex; }
-
-        /* شريط العنوان العلوي لواتساب */
         .wa-header { background-color: var(--wa-header-bg); padding: 15px; display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 500; }
         .wa-header .brand { color: var(--wa-text); font-size: 22px; }
         .wa-header-actions { display: flex; gap: 20px; font-size: 18px; cursor: pointer; }
-
-        /* شريط البحث */
         .search-bar-container { padding: 8px 12px; background-color: var(--wa-dark-bg); }
         .search-bar { background-color: var(--wa-surface); border-radius: 20px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; color: var(--wa-muted); font-size: 14px; }
         .search-bar input { background: none; border: none; color: white; width: 100%; outline: none; }
-
-        /* فلاتر القائمة (الكل، غير مقروءة، المفضلة، المجموعات) */
         .filter-tags { display: flex; gap: 8px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
         .filter-tags::-webkit-scrollbar { display: none; }
+        .tag { background-color: var(--wa-surface); padding: 6px 12px; border-radius: 15px; font-size: 13px; color: var(--wa-muted); cursor: pointer; }
         .tag.active { background-color: #1d5c4b; color: #00a884; font-weight: bold; }
-
-        /* قوائم العناصر (الشاتات - الحالات) */
         .item-list { flex: 1; overflow-y: auto; }
         .wa-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #222e35; cursor: pointer; }
         .wa-item:active { background-color: var(--wa-surface); }
@@ -67,23 +59,17 @@
         .wa-item-msg { font-size: 13px; color: var(--wa-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
         .wa-item-left { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font-size: 11px; color: var(--wa-muted); }
         .wa-badge { background-color: var(--wa-green); color: #111b21; border-radius: 50%; min-width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; }
-
-        /* شاشة الحالات والتحديثات المخصصة */
         .status-section-title { padding: 15px 16px 5px 16px; font-size: 16px; font-weight: bold; color: white; }
         .status-tray { display: flex; gap: 12px; padding: 15px 16px; overflow-x: auto; }
         .my-status-card { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 75px; text-align: center; }
         .my-status-card img { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); padding: 2px; object-fit: cover; }
         .add-status-plus { position: absolute; bottom: 20px; right: 10px; background-color: var(--wa-green); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: black; border: 1px solid var(--wa-dark-bg); }
         .status-label { font-size: 12px; color: var(--wa-text); margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-
-        /* شريط التنقل السفلي الثابت للتبديل بين الصفحات والميزات */
         .wa-nav-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--wa-header-bg); border-top: 1px solid #222e35; display: flex; justify-content: space-around; align-items: center; z-index: 900; }
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--wa-muted); font-size: 12px; cursor: pointer; text-decoration: none; position: relative; width: 20%; text-align: center; }
         .nav-item.active { color: var(--wa-green); font-weight: bold; }
         .nav-item-icon { font-size: 20px; }
         .nav-badge { position: absolute; top: -2px; right: 22px; background-color: var(--wa-green); color: black; font-size: 10px; font-weight: bold; border-radius: 10px; padding: 1px 5px; }
-
-        /* شاشة المحادثة المفتوحة المباشرة */
         #chat-view-container { display: none; position: absolute; inset: 0; background-color: var(--wa-dark-bg); flex-direction: column; z-index: 950; }
         .chat-view-header { background-color: var(--wa-header-bg); padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
         .chat-header-right { display: flex; align-items: center; gap: 8px; }
@@ -92,8 +78,6 @@
         .chat-header-info { display: flex; flex-direction: column; }
         .chat-header-title { font-size: 15px; font-weight: 500; }
         .chat-header-status { font-size: 11px; color: var(--wa-muted); }
-
-        /* منطقة نافذة عرض الرسائل بخلفية واتساب ونقشتها الشهيرة */
         #chat-window { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-repeat: repeat; }
         .message { max-width: 75%; padding: 8px 10px; border-radius: 8px; position: relative; font-size: 14.5px; word-wrap: break-word; display: flex; flex-direction: column; color: var(--wa-text); }
         .message.sent { background-color: var(--wa-bubble-sent); align-self: flex-start; border-top-left-radius: 0; }
@@ -103,53 +87,54 @@
         .message:hover .msg-actions { display: flex; }
         .msg-actions span { cursor: pointer; font-size: 11px; color: #fff; }
         .msg-reply-box { background: rgba(0,0,0,0.15); padding: 4px; border-right: 3px solid var(--wa-green); margin-bottom: 4px; font-size: 12px; border-radius: 4px; }
-
-        /* شريط إدخال وإرسال المحادثة السفلي لواتساب */
         #reply-preview-bar { background-color: #1f2c34; padding: 6px 12px; display: none; align-items: center; justify-content: space-between; border-top: 1px solid #2a3942; }
         .chat-input-bar { padding: 8px 10px; display: flex; align-items: center; gap: 8px; background: transparent; }
         .input-container-wa { flex: 1; background-color: var(--wa-surface); border-radius: 25px; padding: 6px 14px; display: flex; align-items: center; gap: 10px; }
         .input-container-wa input { flex: 1; background: none; border: none; color: white; font-size: 15px; outline: none; }
         .input-container-wa button { background: none; border: none; color: var(--wa-muted); font-size: 20px; cursor: pointer; }
         .wa-action-btn-circle { width: 44px; height: 44px; background-color: var(--wa-green); border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #111b21; cursor: pointer; }
-
-        /* النوافذ المنبثقة الصغيره للإعدادات */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 2000; padding: 15px; }
         .modal-content { background: var(--wa-surface); padding: 20px; border-radius: 12px; width: 100%; max-width: 360px; text-align: center; }
         .avatar-picker { display: flex; justify-content: center; gap: 8px; margin: 15px 0; flex-wrap: wrap; }
         .avatar-option { width: 52px; height: 52px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; object-fit: cover; }
         .avatar-option.selected { border-color: var(--wa-green); }
-
-        /* الزر الطائر لإنشاء غرف جديدة في أسفل الشاشة مثل واتساب */
         .fab-btn { position: absolute; bottom: 80px; left: 20px; width: 55px; height: 55px; background-color: var(--wa-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #111b21; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: none; cursor: pointer; z-index: 850; }
     </style>
-    <link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
-
     <div id="phone-wrapper">
+        <div id="login-screen">
+            <div class="login-box">
+                <img id="login-logo" src="/static/icon.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+                <h2>مرحباً بك في نايل شات</h2>
+                <p style="color: var(--wa-muted); margin-bottom: 15px;">أدخل بياناتك للمتابعة</p>
+                
+                <input type="text" id="login-name" class="login-input" placeholder="اكتب اسمك هنا..." required>
+                
+                <div class="login-row">
+                    <select id="login-country">
+                        <option value="+20"> Egypt (+20)</option>
+                        <option value="+966"> KSA (+966)</option>
+                        <option value="+971"> UAE (+971)</option>
+                    </select>
+                    <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف بدون كود الدولة..." required>
+                </div>
+                
+                <button class="login-btn" onclick="submitLogin()">الموافقة والمتابعة</button>
+            </div>
+        </div>
 
-    <div id="login-screen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh;">
-    <div class="login-box" style="text-align: center;">
-        <img id="login-logo" src="/static/icon.png" alt="Logo" style="width: 100px; height: 100px;">
-        <h2>مرحباً بك في نايل شات</h2>
-        <p>أدخل بياناتك للمتابعة</p>
-        
-        <input type="text" id="name-input" placeholder="اكتب اسمك هنا..." required style="margin: 10px; padding: 10px; width: 250px;">
-        <input type="tel" id="phone-input" placeholder="اكتب رقم هاتفك..." required style="margin: 10px; padding: 10px; width: 250px;">
-        
-        <button onclick="loginUser()" style="padding: 10px 20px; cursor: pointer;">الموافقة والمتابعة</button>
-    </div>
-</div>        <div id="view-chats" class="app-view active">
+        <div id="view-chats" class="app-view active">
             <div class="wa-header">
                 <span class="brand">واتساب نايل شات</span>
                 <div class="wa-header-actions">
-                    <span onclick="openModal('settings-modal')">⚙️</span>
-                    <span onclick="showQRCode()">📱</span>
+                    <span onclick="openModal('settings-modal')"> ⚙️ </span>
+                    <span onclick="showQRCode()"> 📱 </span>
                 </div>
             </div>
             <div class="search-bar-container">
                 <div class="search-bar">
-                    <span>🔍</span>
+                    <span> 🔍 </span>
                     <input type="text" placeholder="اسأل Meta AI أو ابحث">
                 </div>
             </div>
@@ -159,7 +144,6 @@
                 <div class="tag">المفضلة</div>
                 <div class="tag" onclick="triggerCreateRoom('public')">المجموعات +</div>
             </div>
-            
             <div class="item-list" id="rooms-list">
                 <div class="wa-item" onclick="switchRoom('العامة')">
                     <div class="wa-item-right">
@@ -175,14 +159,13 @@
                     </div>
                 </div>
             </div>
-            
-            <button class="fab-btn" onclick="triggerSecretDM()">💬</button>
-            </div>
+            <button class="fab-btn" onclick="triggerSecretDM()"> 💬 </button>
+        </div>
 
         <div id="view-status" class="app-view">
             <div class="wa-header">
                 <span class="brand">التحديثات</span>
-                <div class="wa-header-actions"><span>🔍</span><span>⚙️</span></div>
+                <div class="wa-header-actions"><span> 🔍 </span><span> ⚙️ </span></div>
             </div>
             <div class="status-section-title">الحالة</div>
             <div class="status-tray">
@@ -191,16 +174,16 @@
                     <div class="add-status-plus">+</div>
                     <div class="status-label">إضافة حالة</div>
                 </div>
-                <div class="my-status-card" onclick="alert('حالة عمر: متواجد بالعمل حالياً')">
+                <div class="my-status-card" onclick="alert('الحالة المخصصة غير متوفرة حالياً')">
                     <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png">
-                    <div class="status-label">Omar</div>
+                    <div class="status-label">تجربة حالة</div>
                 </div>
             </div>
             <div class="status-section-title">القنوات المستكشفة</div>
             <div class="item-list">
                 <div class="wa-item" onclick="openNileAI()">
                     <div class="wa-item-right">
-                        <span style="font-size:28px; padding:8px;">🤖</span>
+                        <span style="font-size:28px; padding:8px;"> 🤖 </span>
                         <div class="wa-item-info">
                             <div class="wa-item-name">ذكاء نايل الاصطناعي (NileAI)</div>
                             <div class="wa-item-msg">مساعدك الذكي الشخصي المعزول والخاص..</div>
@@ -213,7 +196,7 @@
         <div id="view-calls" class="app-view">
             <div class="wa-header">
                 <span class="brand">المكالمات</span>
-                <div class="wa-header-actions"><span>🔍</span></div>
+                <div class="wa-header-actions"><span> 🔍 </span></div>
             </div>
             <div class="status-section-title">السجلات الأخيرة</div>
             <div class="item-list">
@@ -221,8 +204,8 @@
                     <div class="wa-item-right">
                         <img class="wa-item-avatar" src="https://cdn-icons-png.flaticon.com/512/236/236832.png">
                         <div class="wa-item-info">
-                            <div class="wa-item-name">عبدالله اخي.</div>
-                            <div class="wa-item-msg">📳 مكالمة فيديو واردة فايتة</div>
+                            <div class="wa-item-name">مكالمة فائتة تجريبية</div>
+                            <div class="wa-item-msg"> 📳 مكالمة فيديو واردة فائتة </div>
                         </div>
                     </div>
                     <div class="wa-item-left"><div>أمس</div></div>
@@ -232,20 +215,20 @@
 
         <div class="wa-nav-bar">
             <div class="nav-item active" onclick="changeTab('chats', this)">
-                <div class="nav-item-icon">💬</div>
+                <div class="nav-item-icon"> 💬 </div>
                 <div>الدردشات</div>
                 <div class="nav-badge">١</div>
             </div>
             <div class="nav-item" onclick="changeTab('status', this)">
-                <div class="nav-item-icon">⭕</div>
+                <div class="nav-item-icon"> ⭕ </div>
                 <div>التحديثات</div>
             </div>
             <div class="nav-item" onclick="alert('سيتم توفير مجتمعات NileChat قريباً!')">
-                <div class="nav-item-icon">👥</div>
+                <div class="nav-item-icon"> 👥 </div>
                 <div>المجتمعات</div>
             </div>
             <div class="nav-item" onclick="changeTab('calls', this)">
-                <div class="nav-item-icon">📞</div>
+                <div class="nav-item-icon"> 📞 </div>
                 <div>المكالمات</div>
             </div>
         </div>
@@ -257,35 +240,31 @@
                     <img class="chat-header-avatar" id="current-chat-avatar" src="/static/icon.png">
                     <div class="chat-header-info">
                         <div class="chat-header-title" id="current-room-title">غرفة الدردشة العامة</div>
-                        <div class="chat-header-status" id="current-room-status">رقمي مصري جديد. (أنت)</div>
+                        <div class="chat-header-status" id="current-room-status">متصل الآن</div>
                     </div>
                 </div>
                 <div style="display:flex; gap:18px; color:white; font-size:18px; cursor:pointer;">
-                    <span onclick="startCall('video')">📹</span>
-                    <span onclick="startCall('audio')">📞</span>
+                    <span onclick="startCall('video')"> 📹 </span>
+                    <span onclick="startCall('audio')"> 📞 </span>
                 </div>
             </div>
-
             <div id="chat-window"></div>
-
             <div id="reply-preview-bar">
                 <div style="font-size:13px;">
                     <span style="color:var(--wa-green); font-weight:bold;">الرد على: </span>
                     <span id="reply-preview-text" style="color:var(--wa-muted);"></span>
                 </div>
-                <button onclick="cancelReply()" style="background:none; border:none; color:#ff3b30; font-size:16px; cursor:pointer;">✕</button>
+                <button onclick="cancelReply()" style="background:none; border:none; color:#ff3b30; font-size:16px; cursor:pointer;"> ✕ </button>
             </div>
-
             <div class="chat-input-bar">
                 <div class="input-container-wa">
-                    <button onclick="triggerMediaUpload('image')">🖼️</button>
+                    <button onclick="triggerMediaUpload('image')"> 🖼️ </button>
                     <input type="text" id="message-input" placeholder="مراسلة..." onkeypress="handleKeyPress(event)">
-                    <button onclick="triggerMediaUpload('video')">📎</button>
+                    <button onclick="triggerMediaUpload('video')"> 📎 </button>
                 </div>
-                <button class="wa-action-btn-circle" onclick="sendMessage()">🕊️</button>
+                <button class="wa-action-btn-circle" onclick="sendMessage()"> 🕊️ </button>
             </div>
         </div>
-
     </div>
 
     <div id="settings-modal" class="modal">
@@ -322,12 +301,20 @@
         let replyTargetId = null;
         let selectedAvatarUrl = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
         let allProfiles = {};
+        let localStream;
+        let peerConnection;
+
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
 
         window.onload = function() {
             const savedName = localStorage.getItem('myName');
             const savedPhone = localStorage.getItem('myPhone');
             const savedAvatar = localStorage.getItem('myAvatar');
-            const savedStatus = localStorage.getItem('myStatus');
             
             if (savedName && savedPhone) {
                 myName = savedName;
@@ -338,7 +325,7 @@
                 initChat();
             }
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js').catch(err => console.log(err));
+                navigator.serviceWorker.register('/static/sw.js').catch(err => console.log('SW Error:', err));
             }
         };
 
@@ -346,46 +333,85 @@
             const name = document.getElementById('login-name').value.trim();
             const phoneCode = document.getElementById('login-country').value;
             const phoneNum = document.getElementById('login-phone').value.trim();
+            
             if (!name || !phoneNum) return alert("برجاء إدخال اسمك ورقم الهاتف!");
             
             myName = name;
             myPhone = phoneCode + phoneNum;
+            
             localStorage.setItem('myName', myName);
             localStorage.setItem('myPhone', myPhone);
             localStorage.setItem('myAvatar', selectedAvatarUrl);
             localStorage.setItem('myStatus', "متوفر");
+            
             document.getElementById('my-status-avatar-tray').src = selectedAvatarUrl;
             document.getElementById('login-screen').style.display = 'none';
             initChat();
         }
 
         function initChat() {
-            socket = io({ transports: ['websocket'] });
+            socket = io({ transports: ['websocket', 'polling'] });
+            
             socket.on('connect', () => {
                 socket.emit('join', { room: currentRoom, name: myName, phone: myPhone });
             });
+
             socket.on('chat_history', (data) => {
                 allProfiles = data.profiles || {};
                 const win = document.getElementById('chat-window');
                 win.innerHTML = '';
-                data.messages.forEach(msg => appendMessage(msg));
+                if (data.messages) {
+                    data.messages.forEach(msg => appendMessage(msg));
+                }
                 win.scrollTop = win.scrollHeight;
             });
+
             socket.on('message', (data) => {
                 if (data.room === currentRoom) appendMessage(data);
                 const lastMsgEl = document.getElementById(`last-msg-${data.room}`);
                 if (lastMsgEl) lastMsgEl.innerText = `${data.sender}: ${data.text.substring(0, 25)}`;
             });
+
             socket.on('message_edited', (data) => {
                 const txtSpan = document.getElementById(`text-${data.id}`);
                 if (txtSpan) txtSpan.innerHTML = `${data.text} <small style="color:var(--wa-muted);">(معدلة)</small>`;
             });
+
             socket.on('message_deleted', (data) => {
                 const el = document.getElementById(`msg-container-${data.id}`);
                 if (el) el.remove();
             });
+
             socket.on('profile_updated', (data) => {
                 allProfiles[data.phone] = { avatar: data.avatar, status: data.status };
+            });
+
+            socket.on('call_received', async (data) => {
+                const accept = confirm(`مكالمة ${data.type} واردة من ${data.caller}. هل تقبل؟`);
+                if (accept) {
+                    await getMedia(data.type === 'video');
+                    createPeerConnection();
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    socket.emit('answer_call', { room: currentRoom, answer: answer });
+                }
+            });
+
+            socket.on('call_answered', async (data) => {
+                if (peerConnection) {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                }
+            });
+
+            socket.on('ice_candidate_received', async (data) => {
+                try {
+                    if (peerConnection) {
+                        await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    }
+                } catch (e) {
+                    console.error('Error adding received ice candidate', e);
+                }
             });
         }
 
@@ -409,8 +435,8 @@
             div.className = `message ${data.phone === myPhone ? 'sent' : 'received'}`;
             let avatarSrc = allProfiles[data.phone] && allProfiles[data.phone].avatar ? allProfiles[data.phone].avatar : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
             let replyHTML = data.reply_to ? `<div class="msg-reply-box">رسالة سابقة: ${data.reply_to}</div>` : "";
-            let forwardHTML = data.is_forwarded ? `<small style="color:var(--wa-muted); font-size:10px;">↪ محولة</small>` : "";
-
+            let forwardHTML = data.is_forwarded ? `<small style="color:var(--wa-muted); font-size:10px;"> ↪ محولة </small>` : "";
+            
             div.innerHTML = `
                 <div style="display:flex; gap:6px; align-items:center; margin-bottom:2px;">
                     <img src="${avatarSrc}" style="width:18px; height:18px; border-radius:50%;">
@@ -419,15 +445,55 @@
                 ${replyHTML} <span id="text-${data.id}">${data.text}</span>
                 <div class="msg-meta">
                     <span>${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                    ${data.phone === myPhone ? '<span style="color:#53bdeb;">✓✓</span>' : ''}
+                    ${data.phone === myPhone ? '<span style="color:#53bdeb;"> ✓✓ </span>' : ''}
                 </div>
                 <div class="msg-actions">
-                    <span onclick="setReply('${data.id}', '${data.text}')">رد</span> | <span onclick="forwardMessage('${data.text}')">تحويل</span>
+                    <span onclick="setReply('${data.id}', '${data.text}')">رد</span> |
+                    <span onclick="forwardMessage('${data.text}')">تحويل</span>
                     ${data.phone === myPhone ? `| <span onclick="editMessage('${data.id}')">تعديل</span> | <span onclick="deleteMessage('${data.id}')">حذف</span>` : ''}
                 </div>
             `;
             win.appendChild(div);
             win.scrollTop = win.scrollHeight;
+        }
+
+        function triggerMediaUpload(type) {
+            const url = prompt(`ضع رابط الملف المباشر (${type === 'image' ? 'صورة' : 'فيديو'}):`);
+            if (!url) return;
+            const msgId = 'msg-' + Date.now();
+            const textContent = type === 'image' ? `🖼️ [صورة](${url})` : `🎥 [فيديو](${url})`;
+            socket.emit('send_message', {
+                id: msgId, room: currentRoom, sender: myName, phone: myPhone, text: textContent, reply_to: null, is_forwarded: 0
+            });
+        }
+
+        async function getMedia(isVideo) {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo });
+            } catch (error) {
+                console.error('Error accessing media devices.', error);
+            }
+        }
+
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(iceServers);
+            if (localStream) {
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            }
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('ice_candidate', { room: currentRoom, candidate: event.candidate });
+                }
+            };
+        }
+
+        async function startCall(type) {
+            const isVideo = type === 'video';
+            await getMedia(isVideo);
+            createPeerConnection();
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('call_user', { room: currentRoom, caller: myPhone, type: type, offer: offer });
         }
 
         function changeTab(tabName, el) {
@@ -444,15 +510,12 @@
             socket.emit('join', { room: currentRoom, name: myName, phone: myPhone });
         }
 
-        function closeChatView() {
-            document.getElementById('chat-view-container').style.display = 'none';
-        }
-
+        function closeChatView() { document.getElementById('chat-view-container').style.display = 'none'; }
         function setReply(id, text) { replyTargetId = text; document.getElementById('reply-preview-text').innerText = text; document.getElementById('reply-preview-bar').style.display = 'flex'; }
         function cancelReply() { replyTargetId = null; document.getElementById('reply-preview-bar').style.display = 'none'; }
         function editMessage(id) { const newText = prompt("تعديل الرسالة:"); if (newText) socket.emit('edit_message', { id: id, room: currentRoom, text: newText }); }
         function deleteMessage(id) { if (confirm("حذف الرسالة؟")) socket.emit('delete_message', { id: id, room: currentRoom }); }
-        function forwardMessage(text) { const targetRoom = prompt("اسم الغرفة أو المحموعة المستهدفة للتحويل:", "العامة"); if (targetRoom) socket.emit('send_message', { id: 'msg-'+Date.now(), room: targetRoom, sender: myName, phone: myPhone, text: text, is_forwarded: 1 }); }
+        function forwardMessage(text) { const targetRoom = prompt("اسم الغرفة أو المجموعة المستهدفة للتحويل:", "العامة"); if (targetRoom) socket.emit('send_message', { id: 'msg-'+Date.now(), room: targetRoom, sender: myName, phone: myPhone, text: text, is_forwarded: 1 }); }
         function triggerCreateRoom(type) { const rName = prompt("أدخل اسم المجموعة المراد إنشاؤها:"); if (rName) { addRoomItem(rName); switchRoom(rName); } }
         function triggerSecretDM() { const targetPhone = prompt("أدخل رقم هاتف الطرف الآخر كاملاً لبدء شات سري:"); if (targetPhone) { const rName = `شات خاص-${targetPhone.substring(0,6)}`; addRoomItem(rName); switchRoom(rName); } }
         function openNileAI() { switchRoom(`NileAI-${myPhone}`); }
@@ -491,154 +554,6 @@
             socket.emit('update_profile', { phone: myPhone, avatar: selectedAvatarUrl, status: statusTxt });
             closeModal('settings-modal');
         }
-
-      <script>
-        const socket = io({ transports: ['websocket', 'polling'] });
-        let localStream;
-        let peerConnection;
-        const currentRoom = "العامة";
-        let userPhone = "";
-        let userName = "";
-
-        const iceServers = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        };
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/static/sw.js')
-                .then(reg => console.log('Service Worker Registered!'))
-                .catch(err => console.error('Service Worker Error', err));
-            });
-        }
-
-        function triggerMediaUpload(type) {
-            const url = prompt(`ضع رابط الملف المباشر (${type === 'image' ? 'صورة' : 'فيديو'}):`);
-            if (!url) return;
-
-            const msgData = {
-                id: 'msg-' + Date.now(),
-                room: currentRoom,
-                sender: userName,
-                phone: userPhone,
-                text: type === 'image' ? `🖼️ [صورة](${url})` : `🎥 [فيديو](${url})`,
-                reply_to: null,
-                is_forwarded: 0
-            };
-            socket.emit('send_message', msgData);
-        }
-
-        function loginUser() {
-            const phoneInput = document.getElementById('phone-input');
-            const nameInput = document.getElementById('name-input');
-            
-            if (!phoneInput || !phoneInput.value.trim()) {
-                alert("برجاء إدخال رقم الهاتف أولاً");
-                return;
-            }
-
-            userPhone = phoneInput.value.trim();
-            userName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'مستخدم_' + Math.floor(Math.random() * 1000);
-
-            localStorage.setItem('userPhone', userPhone);
-            localStorage.setItem('userName', userName);
-
-            if(document.getElementById('login-screen')) document.getElementById('login-screen').style.display = 'none';
-            if(document.getElementById('chat-screen')) document.getElementById('chat-screen').style.display = 'flex';
-
-            socket.emit('join', { room: currentRoom, phone: userPhone });
-        }
-
-        window.onload = function() {
-            const savedPhone = localStorage.getItem('userPhone');
-            const savedName = localStorage.getItem('userName');
-            if (savedPhone) {
-                userPhone = savedPhone;
-                userName = savedName || 'مستخدم';
-                if(document.getElementById('login-screen')) document.getElementById('login-screen').style.display = 'none';
-                socket.emit('join', { room: currentRoom, phone: userPhone });
-            }
-        };
-
-        async function getMedia(isVideo) {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: isVideo
-                });
-            } catch (error) {
-                console.error('Error accessing media devices.', error);
-            }
-        }
-
-        function createPeerConnection() {
-            peerConnection = new RTCPeerConnection(iceServers);
-            if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
-            }
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('ice_candidate', {
-                        room: currentRoom,
-                        candidate: event.candidate
-                    });
-                }
-            };
-        }
-
-        async function startCall(type) {
-            const isVideo = type === 'video';
-            await getMedia(isVideo);
-            createPeerConnection();
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-
-            socket.emit('call_user', {
-                room: currentRoom,
-                caller: userPhone,
-                type: type,
-                offer: offer
-            });
-        }
-
-        socket.on('call_received', async (data) => {
-            const accept = confirm(`مكالمة ${data.type} واردة من ${data.caller}. هل تقبل؟`);
-            if (accept) {
-                await getMedia(data.type === 'video');
-                createPeerConnection();
-
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-
-                socket.emit('answer_call', {
-                    room: currentRoom,
-                    answer: answer
-                });
-            }
-        });
-
-        socket.on('call_answered', async (data) => {
-            if (peerConnection) {
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-            }
-        });
-
-        socket.on('ice_candidate_received', async (data) => {
-            try {
-                if (peerConnection) {
-                    await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-                }
-            } catch (e) {
-                console.error('Error adding received ice candidate', e);
-            }
-        });
     </script>
 </body>
 </html>
