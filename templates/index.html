@@ -501,16 +501,57 @@
         function triggerMediaUpload(type) { const url = prompt("ضع رابط المرفق المباشر (صورة/فيديو):"); if (!url) return; const tag = type === 'image' ? `<img src="${url}" style="max-width:100%; border-radius:8px;">` : `<video src="${url}" controls style="max-width:100%; border-radius:8px;"></video>`; socket.emit('send_message', { id: 'msg-'+Date.now(), room: currentRoom, sender: myName, phone: myPhone, text: tag }); }
         function startCall(type) { alert(`جاري الاتصال العابر للطرفين ومحاكاة مكالمة الـ ${type}...`); }
 <script>
-        let localStream;
+       let localStream;
         let peerConnection;
-        const currentRoom = "العامة"; 
-        const userPhone = "01xxxxxxxxx"; 
+        const currentRoom = "العامة";
+        let userPhone = "";
+        let userName = "";
 
         const iceServers = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' }
             ]
+        };
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                .then(reg => console.log('Service Worker Registered!', reg))
+                .catch(err => console.error('Service Worker Error', err));
+            });
+        }
+
+        function loginUser() {
+            const phoneInput = document.getElementById('phone-input');
+            const nameInput = document.getElementById('name-input');
+            
+            if (!phoneInput || !phoneInput.value.trim()) {
+                alert("برجاء إدخال رقم الهاتف أولاً");
+                return;
+            }
+
+            userPhone = phoneInput.value.trim();
+            userName = (nameInput && nameInput.value.trim()) ? nameInput.value.trim() : 'مستخدم_' + Math.floor(Math.random() * 1000);
+
+            localStorage.setItem('userPhone', userPhone);
+            localStorage.setItem('userName', userName);
+
+            if(document.getElementById('login-screen')) document.getElementById('login-screen').style.display = 'none';
+            if(document.getElementById('chat-screen')) document.getElementById('chat-screen').style.display = 'flex';
+
+            socket.emit('join', { room: currentRoom, phone: userPhone });
+        }
+
+        window.onload = function() {
+            const savedPhone = localStorage.getItem('userPhone');
+            const savedName = localStorage.getItem('userName');
+            if (savedPhone) {
+                userPhone = savedPhone;
+                userName = savedName || 'مستخدم';
+                if(document.getElementById('login-screen')) document.getElementById('login-screen').style.display = 'none';
+                socket.emit('join', { room: currentRoom, phone: userPhone });
+            }
         };
 
         async function getMedia(isVideo) {
@@ -521,18 +562,17 @@
                 });
             } catch (error) {
                 console.error('Error accessing media devices.', error);
+                alert("تأكد من استخدام رابط آمن HTTPS لتشغيل الميكروفون والكاميرا والمكالمات");
             }
         }
 
         function createPeerConnection() {
             peerConnection = new RTCPeerConnection(iceServers);
-
             if (localStream) {
                 localStream.getTracks().forEach(track => {
                     peerConnection.addTrack(track, localStream);
                 });
             }
-
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
                     socket.emit('ice_candidate', {
@@ -565,19 +605,6 @@
                 await getMedia(data.type === 'video');
                 createPeerConnection();
 
-                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-
-                socket.emit('answer_call', {
-                    room: currentRoom,
-                    answer: answer
-                });
-            }
-        });
-
-        socket.on('call_answered', async (data) => {
-            if (peerConnection) {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
             }
         });
