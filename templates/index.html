@@ -128,23 +128,18 @@
 
     <div id="phone-wrapper">
 
-        <div id="login-screen">
-            <div class="login-box">
-                <img id="login-logo" src="/static/icon.png" alt="Logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
-                <h2>نايل شات - Nile Chat</h2>
-                <input type="text" id="login-name" class="login-input" placeholder="اسم المستخدم">
-                <div class="login-row">
-                    <select id="login-country">
-                        <option value="+20">مصر (+20)</option>
-                        <option value="+966">السعودية (+966)</option>
-                        <option value="+971">الإمارات (+971)</option>
-                    </select>
-                    <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف">
-                </div>
-                <button class="login-btn" onclick="submitLogin()">الموافقة والمتابعة</button>
-            </div>
-        </div>
-
+       <div id="login-screen">
+    <div class="login-box">
+        <img id="login-logo" src="/static/icon.png" alt="Logo">
+        <h2>مرحباً بك في نايل شات</h2>
+        <p>أدخل بياناتك للمتابعة</p>
+        
+        <input type="text" id="name-input" placeholder="اكتب اسمك هنا..." required>
+        <input type="tel" id="phone-input" placeholder="اكتب رقم هاتفك..." required>
+        
+        <button onclick="loginUser()">الموافقة والمتابعة</button>
+    </div>
+</div>
         <div id="view-chats" class="app-view active">
             <div class="wa-header">
                 <span class="brand">واتساب نايل شات</span>
@@ -498,10 +493,9 @@
             closeModal('settings-modal');
         }
 
-        function triggerMediaUpload(type) { const url = prompt("ضع رابط المرفق المباشر (صورة/فيديو):"); if (!url) return; const tag = type === 'image' ? `<img src="${url}" style="max-width:100%; border-radius:8px;">` : `<video src="${url}" controls style="max-width:100%; border-radius:8px;"></video>`; socket.emit('send_message', { id: 'msg-'+Date.now(), room: currentRoom, sender: myName, phone: myPhone, text: tag }); }
-        function startCall(type) { alert(`جاري الاتصال العابر للطرفين ومحاكاة مكالمة الـ ${type}...`); }
-<script>
-       let localStream;
+       <script>
+        const socket = io({ transports: ['websocket', 'polling'] });
+        let localStream;
         let peerConnection;
         const currentRoom = "العامة";
         let userPhone = "";
@@ -517,9 +511,23 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/static/sw.js')
-                .then(reg => console.log('Service Worker Registered!', reg))
+                .then(reg => console.log('Service Worker Registered!'))
                 .catch(err => console.error('Service Worker Error', err));
             });
+       function triggerMediaUpload(type) {
+            const url = prompt(`ضع رابط الملف المباشر (${type === 'image' ? 'صورة' : 'فيديو'}):`);
+            if (!url) return;
+
+            const msgData = {
+                id: 'msg-' + Date.now(),
+                room: currentRoom,
+                sender: userName,
+                phone: userPhone,
+                text: type === 'image' ? `🖼️ [صورة](${url})` : `🎥 [فيديو](${url})`,
+                reply_to: null,
+                is_forwarded: 0
+            };
+            socket.emit('send_message', msgData);
         }
 
         function loginUser() {
@@ -562,7 +570,6 @@
                 });
             } catch (error) {
                 console.error('Error accessing media devices.', error);
-                alert("تأكد من استخدام رابط آمن HTTPS لتشغيل الميكروفون والكاميرا والمكالمات");
             }
         }
 
@@ -605,6 +612,19 @@
                 await getMedia(data.type === 'video');
                 createPeerConnection();
 
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                socket.emit('answer_call', {
+                    room: currentRoom,
+                    answer: answer
+                });
+            }
+        });
+
+        socket.on('call_answered', async (data) => {
+            if (peerConnection) {
                 await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
             }
         });
