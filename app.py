@@ -10,7 +10,7 @@ app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 # تكبير حجم بافر البيانات لـ 50 ميجا عشان يرفع الصور والفيديوهات الصغيره كـ Base64 مستقر
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', max_http_buffer_size=50 * 1024 * 1024)
 
-DB_PATH = os.path.path.join('/tmp', 'chat_database.db') if os.path.exists('/tmp') else 'chat_database.db'
+DB_PATH = os.path.join('/tmp', 'chat_database.db')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
