@@ -137,6 +137,20 @@ def on_update_profile(data):
     conn.close()
     
     emit('profile_updated', {'phone': phone, 'avatar': avatar, 'status': status_text}, broadcast=True)
+@socketio.on('call_user')
+def on_call_user(data):
+    room = data.get('room', 'العامة')
+    emit('call_received', data, room=room, include_self=False)
+
+@socketio.on('answer_call')
+def on_answer_call(data):
+    room = data.get('room', 'العامة')
+    emit('call_answered', data, room=room, include_self=False)
+
+@socketio.on('ice_candidate')
+def on_ice_candidate(data):
+    room = data.get('room', 'العامة')
+    emit('ice_candidate_received', data, room=room, include_self=False)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
