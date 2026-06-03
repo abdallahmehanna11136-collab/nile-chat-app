@@ -499,22 +499,97 @@
 
         function triggerMediaUpload(type) { const url = prompt("ضع رابط المرفق المباشر (صورة/فيديو):"); if (!url) return; const tag = type === 'image' ? `<img src="${url}" style="max-width:100%; border-radius:8px;">` : `<video src="${url}" controls style="max-width:100%; border-radius:8px;"></video>`; socket.emit('send_message', { id: 'msg-'+Date.now(), room: currentRoom, sender: myName, phone: myPhone, text: tag }); }
         function startCall(type) { alert(`جاري الاتصال العابر للطرفين ومحاكاة مكالمة الـ ${type}...`); }
+   <script>
+        let localStream;
+        let peerConnection;
+        const currentRoom = "العامة"; 
+        const userPhone = "01xxxxxxxxx"; 
+
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        async function getMedia(isVideo) {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: isVideo
+                });
+            } catch (error) {
+                console.error('Error accessing media devices.', error);
+            }
+        }
+
+        function createPeerConnection() {
+            peerConnection = new RTCPeerConnection(iceServers);
+
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+            }
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('ice_candidate', {
+                        room: currentRoom,
+                        candidate: event.candidate
+                    });
+                }
+            };
+        }
+
+        async function startCall(type) {
+            const isVideo = type === 'video';
+            await getMedia(isVideo);
+            createPeerConnection();
+
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+
+            socket.emit('call_user', {
+                room: currentRoom,
+                caller: userPhone,
+                type: type,
+                offer: offer
+            });
+        }
+
+        socket.on('call_received', async (data) => {
+            const accept = confirm(`مكالمة ${data.type} واردة من ${data.caller}. هل تقبل؟`);
+            if (accept) {
+                await getMedia(data.type === 'video');
+                createPeerConnection();
+
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+
+                socket.emit('answer_call', {
+                    room: currentRoom,
+                    answer: answer
+                });
+            }
+        });
+
+        socket.on('call_answered', async (data) => {
+            if (peerConnection) {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
+        });
+
+        socket.on('ice_candidate_received', async (data) => {
+            try {
+                if (peerConnection) {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                }
+            } catch (e) {
+                console.error('Error adding received ice candidate', e);
+            }
+        });
     </script>
 </body>
 </html>
-                <div class="input-container-wa">
-                    <button onclick="triggerMediaUpload('image')">🖼️</button>
-                    <input type="text" id="message-input" placeholder="مراسلة..." onkeypress="handleKeyPress(event)">
-                    <button onclick="triggerMediaUpload('video')">📎</button>
-                </div>
-                <button class="wa-action-btn-circle" onclick="sendMessage()">🕊️</button>
-            </div>
-        </div>
-
-    </div>
-
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <h3 style="color:var(--wa-green); margin-bottom:10px;">إعدادات ملفك الشخصي</h3>
-            <p style="font-size:12px; color:var(--wa-muted);">اختر صورتك المخصصة من الأفاتارز المتاحة:</p>
-            <div class="avatar-picker">
