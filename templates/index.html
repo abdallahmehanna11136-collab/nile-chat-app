@@ -248,6 +248,35 @@
                     <span onclick="startCall('audio')"> 📞 </span>
                 </div>
             </div>
+            <div id="communities" class="tab-content" style="display: none; padding: 20px; color: white; height: calc(100vh - 140px); overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #2a3942; padding-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 22px;">المجتمعات</h2>
+        <button onclick="showCreateCommunityModal()" style="background-color: #00a884; color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 14px;">
+            + مجتمع جديد
+        </button>
+    </div>
+
+    <div id="communities-list" style="display: flex; flex-direction: column; gap: 10px;">
+        <p style="color: #8696a0; text-align: center; margin-top: 50px;">لم تنضم إلى أي مجتمع بعد.</p>
+    </div>
+</div>
+
+<div id="community-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #222e35; padding: 25px; border-radius: 15px; width: 90%; max-width: 420px; text-align: right; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        <h3 style="color: white; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #2a3942; padding-bottom: 10px;">إنشاء مجتمع جديد</h3>
+        
+        <label style="color: #e9edef; display: block; margin-bottom: 8px; font-size: 14px;">اسم المجتمع:</label>
+        <input type="text" id="community-name-input" placeholder="مثال: مبرمجين نايل شات" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 15px; background: #2a3942; color: white; box-sizing: border-box; text-align: right;">
+        
+        <label style="color: #e9edef; display: block; margin-bottom: 8px; font-size: 14px;">أرقام هواتف الأعضاء (افصل بينهم بفاصلة ,):</label>
+        <input type="text" id="community-members-input" placeholder="مثال: 01000000000, 01200000000" style="width: 100%; padding: 12px; border-radius: 8px; border: none; margin-bottom: 20px; background: #2a3942; color: white; box-sizing: border-box; text-align: left; direction: ltr;">
+        
+        <div style="display: flex; justify-content: flex-start; gap: 10px; direction: ltr;">
+            <button onclick="submitNewCommunity()" style="background: #00a884; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: bold;">إنشاء</button>
+            <button onclick="hideCreateCommunityModal()" style="background: transparent; color: #f15c6d; border: 1px solid #f15c6d; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: bold;">إلغاء</button>
+        </div>
+    </div>
+</div>
             <div id="chat-window"></div>
             <div id="reply-preview-bar">
                 <div style="font-size:13px;">
@@ -294,6 +323,55 @@
     </div>
 
     <script>
+        function showCreateCommunityModal() {
+    document.getElementById('community-modal').style.display = 'flex';
+}
+
+function hideCreateCommunityModal() {
+    document.getElementById('community-modal').style.display = 'none';
+}
+
+function submitNewCommunity() {
+    let name = document.getElementById('community-name-input').value.trim();
+    let membersText = document.getElementById('community-members-input').value.trim();
+    
+    if (!name) {
+        alert("من فضلك اكتب اسم المجتمع أولاً!");
+        return;
+    }
+    
+    let members = membersText ? membersText.split(',').map(m => m.trim()).filter(m => m !== "") : [];
+    
+    socket.emit('create_community', {
+        name: name,
+        members: members
+    });
+    
+    document.getElementById('community-name-input').value = '';
+    document.getElementById('community-members-input').value = '';
+    hideCreateCommunityModal();
+}
+
+socket.on('update_communities', function(communities) {
+    let listDiv = document.getElementById('communities-list');
+    if (communities.length === 0) {
+        listDiv.innerHTML = '<p style="color: #8696a0; text-align: center; margin-top: 50px;">لم تنضم إلى أي مجتمع بعد.</p>';
+        return;
+    }
+    
+    listDiv.innerHTML = '';
+    communities.forEach(com => {
+        listDiv.innerHTML += `
+            <div style="background: #202c33; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #00a884;">
+                <div>
+                    <h4 style="margin: 0 0 5px 0; color: white;">${com.name}</h4>
+                    <p style="margin: 0; font-size: 12px; color: #8696a0;">عدد الأعضاء: ${com.members_count}</p>
+                </div>
+                <span style="font-size: 12px; background: #2a3942; padding: 4px 10px; border-radius: 10px; color: #00a884;">مجتمع نشط</span>
+            </div>
+        `;
+    });
+});
         let socket;
         let myName = "";
         let myPhone = "";
