@@ -4,6 +4,12 @@ import os
 import sqlite3
 import time
 
+from groq import Groq
+
+groq_client = Groq(
+    api_key=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
+)
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
@@ -84,14 +90,45 @@ def on_send_message(data):
     reply_to = data.get('reply_to', None)
     is_forwarded = data.get('is_forwarded', 0)
     ts = time.time()
-    
+
+    if room.startswith("NileAI"):
+        try:
+            chat_completion = groq_client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "أنت مساعد ذكي مبرمج داخل تطبيق (نايل شات - Nile Chat). ترد بذكاء واختصار شديد بالعامية المصرية المحبوبة، وتساعد المستخدم في أي سؤال."
+                    },
+                    {
+                        "role": "user",
+                        "content": text
+                    }
+                ],
+                model="llama3-8b-8192",
+            )
+            
+            reply_text = chat_completion.choices[0].message.content
+            
+            emit('message', {
+                'id': f"msg-bot-{int(time.time() * 1000)}",
+                'room': room,
+                'sender': "ذكاء نايل (NileAI)",
+                'phone': "bot-system",
+                'text': reply_text,
+                'reply_to': None,
+                'is_forwarded': 0
+            }, room=room)
+            
+        except Exception as e:
+            print("Error with Groq:", e)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                    (msg_id, room, sender, phone, text, ts, reply_to, is_forwarded))
     conn.commit()
     conn.close()
-    
+
     emit('message', {
         'id': msg_id, 'room': room, 'sender': sender, 'phone': phone,
         'text': text, 'reply_to': reply_to, 'is_edited': False, 'is_forwarded': bool(is_forwarded)
