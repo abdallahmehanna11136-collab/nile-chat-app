@@ -122,6 +122,7 @@
         /* الزر الطائر لإنشاء غرف جديدة في أسفل الشاشة مثل واتساب */
         .fab-btn { position: absolute; bottom: 80px; left: 20px; width: 55px; height: 55px; background-color: var(--wa-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #111b21; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: none; cursor: pointer; z-index: 850; }
     </style>
+    <link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
 
@@ -499,7 +500,7 @@
 
         function triggerMediaUpload(type) { const url = prompt("ضع رابط المرفق المباشر (صورة/فيديو):"); if (!url) return; const tag = type === 'image' ? `<img src="${url}" style="max-width:100%; border-radius:8px;">` : `<video src="${url}" controls style="max-width:100%; border-radius:8px;"></video>`; socket.emit('send_message', { id: 'msg-'+Date.now(), room: currentRoom, sender: myName, phone: myPhone, text: tag }); }
         function startCall(type) { alert(`جاري الاتصال العابر للطرفين ومحاكاة مكالمة الـ ${type}...`); }
-   <script>
+<script>
         let localStream;
         let peerConnection;
         const currentRoom = "العامة"; 
