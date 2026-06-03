@@ -8,13 +8,13 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# تصحيح مسار قاعدة البيانات النظيف لمنع خطأ Render القديم
+# 🛠️ تصحيح الخطأ الفني: استخدام os.path.join المظبوطة لمنع كراش Render
 DB_PATH = os.path.join('/tmp', 'chat_database.db')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # جدول الرسائل يدعم الرد، التحويل، وحالة الصحين (is_read)
+    # جدول الرسائل: يدعم التعديل، الحذف، التحويل، الرد، والصحين
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id TEXT PRIMARY KEY,
@@ -29,7 +29,7 @@ def init_db():
             is_read INTEGER DEFAULT 0
         )
     ''')
-    # جدول الغرف
+    # جدول الغرف والمجموعات
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS created_rooms (
             room_name TEXT PRIMARY KEY,
@@ -98,9 +98,14 @@ def handle_join_room(data):
         conn.close()
         return
         
+    # 🔒 حماية وعزل غرف الذكاء الاصطناعي بناءً على رقم هاتف المستخدم لمنع التداخل
+    if room.startswith('AI-Chat-') and room != f"AI-Chat-{phone}":
+        conn.close()
+        return
+
     join_room(room)
     
-    # عند دخول الغرفة، نجعل الرسائل المستلمة مقروءة (تحديث الصحين)
+    # تحديث علامات الصح لتصبح مقروءة عند دخول الطرف الآخر
     cursor.execute('UPDATE messages SET is_read = 1 WHERE room = ? AND sender_phone != ?', (room, phone))
     conn.commit()
     
@@ -126,6 +131,9 @@ def handle_new_message(data):
     is_forwarded = data.get('is_forwarded', 0)
     ts = time.time()
     
+    if room.startswith('AI-Chat-') and room != f"AI-Chat-{phone}":
+        return
+        
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)', 
@@ -138,6 +146,24 @@ def handle_new_message(data):
         'content': content, 'type': msg_type, 'reply_to': reply_to, 
         'is_forwarded': is_forwarded, 'is_read': 0, 'timestamp': ts
     }, to=room)
+
+    # 🤖 معالجة رد بوت الذكاء الاصطناعي (NileAI) وإرساله للمستخدم صاحب الرقم فقط
+    if room == f"AI-Chat-{phone}":
+        ai_response = f"أهلاً بك يا فنان في نظام نايل الذكي. شاتك هنا مؤمن ومعزول تماماً ومستحيل مستخدم تاني يشوفه على السيرفر. رسالتك هي: {content}"
+        ai_msg_id = f"ai-{int(time.time()*1000)}"
+        
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)', 
+                       (ai_msg_id, room, 'NileAI', 'AI-System', ai_response, 'text', ts+1, '', 0))
+        conn.commit()
+        conn.close()
+        
+        emit('message', {
+            'id': ai_msg_id, 'room': room, 'sender': '🤖 NileAI', 'phone': 'AI-System',
+            'content': ai_response, 'type': 'text', 'reply_to': '', 
+            'is_forwarded': 0, 'is_read': 1, 'timestamp': ts+1
+        }, to=room)
 
 @socketio.on('mark_as_read')
 def handle_mark_read(data):
@@ -170,7 +196,7 @@ def handle_edit_message(data):
     cursor = conn.cursor()
     cursor.execute('SELECT timestamp FROM messages WHERE id = ?', (msg_id,))
     row = cursor.fetchone()
-    if row and (time.time() - row[0] <= 900): # 15 دقيقة
+    if row and (time.time() - row[0] <= 900): # صلاحية التعديل 15 دقيقة
         cursor.execute('UPDATE messages SET content = ? WHERE id = ?', (content, msg_id))
         conn.commit()
         emit('edit_message_client', {'id': msg_id, 'content': content}, to=room)
