@@ -492,7 +492,7 @@
             closeModal('settings-modal');
         }
 
-       <script>
+      <script>
         const socket = io({ transports: ['websocket', 'polling'] });
         let localStream;
         let peerConnection;
@@ -513,7 +513,9 @@
                 .then(reg => console.log('Service Worker Registered!'))
                 .catch(err => console.error('Service Worker Error', err));
             });
-       function triggerMediaUpload(type) {
+        }
+
+        function triggerMediaUpload(type) {
             const url = prompt(`ضع رابط الملف المباشر (${type === 'image' ? 'صورة' : 'فيديو'}):`);
             if (!url) return;
 
