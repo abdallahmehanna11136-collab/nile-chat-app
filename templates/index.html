@@ -117,7 +117,7 @@
                         <option value="+966"> KSA (+966)</option>
                         <option value="+971"> UAE (+971)</option>
                     </select>
-                    <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف بدون كود الدولة..." required>
+                    <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف مع كود الدولة..." required>
                 </div>
                 
                 <button class="login-btn" onclick="submitLogin()">الموافقة والمتابعة</button>
@@ -323,6 +323,7 @@
     </div>
 
     <script>
+        const socket = io();
         function showCreateCommunityModal() {
     document.getElementById('community-modal').style.display = 'flex';
 }
