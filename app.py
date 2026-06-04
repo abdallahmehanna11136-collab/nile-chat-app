@@ -8,7 +8,7 @@ from groq import Groq
 groq_client = Groq(api_key='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')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 DB_PATH = os.path.join('/tmp', 'chat_database.db') if os.path.exists('/tmp') else 'chat_database.db'
 
