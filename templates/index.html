@@ -372,7 +372,7 @@ socket.on('update_communities', function(communities) {
         `;
     });
 });
-        let socket = io();
+        let socket = io({ transports: ['websocket', 'polling'] });
         let myName = "";
         let myPhone = "";
         let currentRoom = "العامة";
