@@ -235,4 +235,4 @@ def on_create_community(data):
     
     emit('update_communities', updated_list, broadcast=True)
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
