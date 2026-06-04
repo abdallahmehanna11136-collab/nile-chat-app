@@ -5,7 +5,6 @@ import sqlite3
 import time
 from groq import Groq
 
-# تفعيل محرك الذكاء الاصطناعي بنجاح
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
@@ -27,7 +26,8 @@ def init_db():
             timestamp REAL,
             reply_to TEXT,
             is_edited INTEGER DEFAULT 0,
-            is_forwarded INTEGER DEFAULT 0
+            is_forwarded INTEGER DEFAULT 0,
+            is_voice INTEGER DEFAULT 0
         )
     ''')
     cursor.execute('''
@@ -72,7 +72,6 @@ def manifest():
 def sw():
     return send_from_directory(app.static_folder or 'static', 'service-worker.js')
 
-# --- تصحيح استقبال حدث الانضمام (join_room) ---
 @socketio.on('join_room')
 def on_join_room(data):
     room = data.get('room', 'public_room')
@@ -80,7 +79,7 @@ def on_join_room(data):
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, room, sender, text, reply_to, is_edited, is_forwarded FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
+    cursor.execute("SELECT id, room, sender, text, reply_to, is_edited, is_forwarded, is_voice FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
     rows = cursor.fetchall()
     
     cursor.execute("SELECT phone, avatar, status_text FROM profiles")
@@ -92,15 +91,13 @@ def on_join_room(data):
     for r in rows:
         history.append({
             "id": r[0], "room": r[1], "sender": r[2], "text": r[3],
-            "reply_to": r[4], "is_edited": bool(r[5]), "is_forwarded": bool(r[6])
+            "reply_to": r[4], "is_edited": bool(r[5]), "is_forwarded": bool(r[6]), "is_voice": bool(r[7])
         })
     
     emit('chat_history', {'messages': history, 'profiles': profiles})
 
-# --- تصحيح وإصلاح استقبال وإرسال الرسائل والـ AI (message) ---
 @socketio.on('message')
 def handle_message_event(data):
-    # توليد معرف للرسالة إذا لم يكن موجوداً لمنع الأخطاء
     msg_id = data.get('id', f"msg-{int(time.time() * 1000)}")
     room = data.get('room', 'public_room')
     sender = data.get('sender', 'مستخدم')
@@ -111,23 +108,19 @@ def handle_message_event(data):
     is_ai = data.get('is_ai', False)
     ts = time.time()
 
-    # حفظ رسالة المستخدم أولاً في قاعدة البيانات
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded, is_voice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)",
                    (msg_id, room, sender, phone, text, ts, reply_to, is_forwarded))
     conn.commit()
     conn.close()
 
-    # بث رسالة المستخدم لباقي الأعضاء في الغرفة
     emit('message', {
         'id': msg_id, 'room': room, 'sender': sender, 'phone': phone,
-        'text': text, 'reply_to': reply_to, 'is_edited': False, 'is_forwarded': bool(is_forwarded)
+        'text': text, 'reply_to': reply_to, 'is_edited': False, 'is_forwarded': bool(is_forwarded), 'is_voice': False
     }, room=room, include_self=False)
 
-    # معالجة رد الذكاء الاصطناعي إذا كانت الغرفة مخصصة للـ AI أو تم تحديد miza الـ AI
-    if is_ai or room == 'ai' or room.startswith("NileAI"):
-        # إرسال حالة الإدخال (يكتب الآن) للواجهة
+    if is_ai or room == 'ai' or room.startswith("NileAI") or room == 'NileAI_room':
         emit('bot_status', {'status': 'جاري التفكير والرد...'}, room=room)
         try:
             chat_completion = groq_client.chat.completions.create(
@@ -147,55 +140,65 @@ def handle_message_event(data):
             reply_text = chat_completion.choices[0].message.content
             bot_msg_id = f"msg-bot-{int(time.time() * 1000)}"
             
-            # حفظ رد الـ AI في قاعدة البيانات
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forwarded, is_voice) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)",
                            (bot_msg_id, room, "ذكاء نايل (NileAI)", "bot-system", reply_text, time.time(), None, 0))
             conn.commit()
             conn.close()
             
-            # إرجاع الحالة إلى نشط وبث رسالة البوت
             emit('bot_status', {'status': 'مساعد الذكاء الاصطناعي نشط...'}, room=room)
             emit('message', {
-                'id': bot_msg_id,
-                'room': room,
-                'sender': "ذكاء نايل (NileAI)",
-                'phone': "bot-system",
-                'text': reply_text,
-                'reply_to': None,
-                'is_forwarded': 0
+                'id': bot_msg_id, 'room': room, 'sender': "ذكاء نايل (NileAI)", 'phone': "bot-system",
+                'text': reply_text, 'reply_to': None, 'is_forwarded': 0, 'is_voice': False
             }, room=room)
             
         except Exception as e:
             print("Error with Groq:", e)
             emit('bot_status', {'status': 'متصل حالياً'}, room=room)
 
+@socketio.on('send_voice')
+def handle_send_voice(data):
+    msg_id = data.get('id', f"voice-{int(time.time() * 1000)}")
+    room = data.get('room', 'public_room')
+    sender = data.get('sender', 'مستخدم')
+    phone = data.get('phone', '')
+    voice_base64 = data.get('audio') 
+    ts = time.time()
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("INSERT OR REPLACE INTO messages (id, room, sender, phone, text, timestamp, is_voice) VALUES (?, ?, ?, ?, ?, ?, 1)",
+                   (msg_id, room, sender, phone, voice_base64, ts))
+    conn.commit()
+    conn.close()
+
+    emit('message', {
+        'id': msg_id, 'room': room, 'sender': sender, 'phone': phone,
+        'text': voice_base64, 'is_voice': True, 'is_edited': False, 'is_forwarded': False
+    }, room=room, include_self=False)
+
 @socketio.on('edit_message')
 def on_edit_message(data):
     msg_id = data['id']
     room = data['room']
     new_text = data['text']
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE messages SET text = ?, is_edited = 1 WHERE id = ?", (new_text, msg_id))
     conn.commit()
     conn.close()
-    
     emit('message_edited', {'id': msg_id, 'room': room, 'text': new_text}, room=room)
 
 @socketio.on('delete_message')
 def on_delete_message(data):
     msg_id = data['id']
     room = data['room']
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
     conn.commit()
     conn.close()
-    
     emit('message_deleted', {'id': msg_id, 'room': room}, room=room)
 
 @socketio.on('update_profile')
@@ -203,63 +206,33 @@ def on_update_profile(data):
     phone = data['phone']
     avatar = data.get('avatar', '')
     status_text = data.get('status', '')
-    
     conn = sqlite3.connect(DB_PATH)
-    cursor = conn.constants() if hasattr(sqlite3, 'constants') else conn.cursor()
     cursor = conn.cursor()
     cursor.execute("INSERT OR REPLACE INTO profiles (phone, avatar, status_text) VALUES (?, ?, ?)", (phone, avatar, status_text))
     conn.commit()
     conn.close()
-    
     emit('profile_updated', {'phone': phone, 'avatar': avatar, 'status': status_text}, broadcast=True)
-
-@socketio.on('call_user')
-def on_call_user(data):
-    room = data.get('room', 'public_room')
-    emit('call_received', data, room=room, include_self=False)
-
-@socketio.on('answer_call')
-def on_answer_call(data):
-    room = data.get('room', 'public_room')
-    emit('call_answered', data, room=room, include_self=False)
-
-@socketio.on('ice_candidate')
-def on_ice_candidate(data):
-    room = data.get('room', 'public_room')
-    emit('ice_candidate_received', data, room=room, include_self=False)
 
 @socketio.on('create_community')
 def on_create_community(data):
     community_name = data.get('name')
     members = data.get('members', [])
-    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
     cursor.execute("INSERT INTO communities (name) VALUES (?)", (community_name,))
     community_id = cursor.lastrowid
-    
     for phone in members:
         if phone.strip():
             cursor.execute("INSERT INTO community_members (community_id, phone) VALUES (?, ?)", (community_id, phone.strip()))
-            
     conn.commit()
-    
     cursor.execute("SELECT id, name FROM communities")
     all_coms = cursor.fetchall()
-    
     updated_list = []
     for com in all_coms:
         cursor.execute("SELECT COUNT(*) FROM community_members WHERE community_id = ?", (com[0],))
         count = cursor.fetchone()[0]
-        updated_list.append({
-            'id': com[0],
-            'name': com[1],
-            'members_count': count
-        })
-        
+        updated_list.append({'id': com[0], 'name': com[1], 'members_count': count})
     conn.close()
-    
     emit('update_communities', updated_list, broadcast=True)
 
 if __name__ == '__main__':
