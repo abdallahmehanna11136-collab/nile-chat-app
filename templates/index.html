@@ -407,25 +407,33 @@ socket.on('update_communities', function(communities) {
             }
         };
 
-        function submitLogin() {
-            const name = document.getElementById('login-name').value.trim();
-            const phoneCode = document.getElementById('login-country').value;
-            const phoneNum = document.getElementById('login-phone').value.trim();
-            
-            if (!name || !phoneNum) return alert("برجاء إدخال اسمك ورقم الهاتف!");
-            
-            myName = name;
-            myPhone = phoneCode + phoneNum;
-            
-            localStorage.setItem('myName', myName);
-            localStorage.setItem('myPhone', myPhone);
-            localStorage.setItem('myAvatar', selectedAvatarUrl);
-            localStorage.setItem('myStatus', "متوفر");
-            
-            document.getElementById('my-status-avatar-tray').src = selectedAvatarUrl;
-            document.getElementById('login-screen').style.display = 'none';
-            initChat();
-        }
+       function submitLogin() {
+    const name = document.getElementById('login-name').value.trim();
+    const phoneCode = document.getElementById('login-country').value;
+    const phoneNum = document.getElementById('login-phone').value.trim();
+
+    if (name === "" || phoneNum === "") {
+        alert("برجاء إدخال اسمك ورقم الهاتف!");
+        return;
+    }
+
+    myName = name;
+    myPhone = phoneCode + phoneNum;
+
+    localStorage.setItem('myName', myName);
+    localStorage.setItem('myPhone', myPhone);
+    localStorage.setItem('myAvatar', selectedAvatarUrl);
+    localStorage.setItem('myStatus', "متوفر");
+
+    const avatarTray = document.getElementById('my-status-avatar-tray');
+    if (avatarTray) avatarTray.src = selectedAvatarUrl;
+
+    document.getElementById('login-screen').style.display = 'none';
+    
+    if (typeof initChat === "function") {
+        initChat();
+    }
+}
 
         function initChat() {
             socket = io({ transports: ['websocket', 'polling'] });
