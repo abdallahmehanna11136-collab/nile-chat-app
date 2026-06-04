@@ -3,13 +3,9 @@ from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
 import time
-
 from groq import Groq
 
-groq_client = Groq(
-    'api_key=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'
-)
-
+groq_client = Groq(api_key='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')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secret_key_123'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
