@@ -323,7 +323,6 @@
     </div>
 
     <script>
-        const socket = io();
         function showCreateCommunityModal() {
     document.getElementById('community-modal').style.display = 'flex';
 }
@@ -373,7 +372,7 @@ socket.on('update_communities', function(communities) {
         `;
     });
 });
-        let socket;
+        let socket = io();
         let myName = "";
         let myPhone = "";
         let currentRoom = "العامة";
