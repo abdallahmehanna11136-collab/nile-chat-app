@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, make_response
 from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
@@ -44,8 +44,8 @@ init_db()
 def index():
     response = make_response(render_template('index.html'))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
     return response
-
 @app.route('/manifest.json')
 def manifest():
     return send_from_directory(app.static_folder or 'static', 'manifest.json')
