@@ -407,29 +407,15 @@ socket.on('update_communities', function(communities) {
             }
         };
 
-       function submitLogin() {
-    const name = document.getElementById('login-name').value.trim();
-    const phoneCode = document.getElementById('login-country').value;
-    const phoneNum = document.getElementById('login-phone').value.trim();
-
-    if (name === "" || phoneNum === "") {
-        alert("برجاء إدخال اسمك ورقم الهاتف!");
-        return;
-    }
-
-    myName = name;
-    myPhone = phoneCode + phoneNum;
-
-    localStorage.setItem('myName', myName);
-    localStorage.setItem('myPhone', myPhone);
-    localStorage.setItem('myAvatar', selectedAvatarUrl);
-    localStorage.setItem('myStatus', "متوفر");
-
-    const avatarTray = document.getElementById('my-status-avatar-tray');
-    if (avatarTray) avatarTray.src = selectedAvatarUrl;
-
+function submitLogin() {
+    // 1. إخفاء شاشة تسجيل الدخول فوراً
     document.getElementById('login-screen').style.display = 'none';
     
+    // 2. إظهار شاشة الشات الرئيسية
+    const wrapper = document.getElementById('phone-wrapper');
+    if (wrapper) wrapper.style.display = 'block';
+    
+    // 3. تشغيل اتصال السوكيت
     if (typeof initChat === "function") {
         initChat();
     }
