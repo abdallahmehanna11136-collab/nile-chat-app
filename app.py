@@ -7,7 +7,7 @@ import time
 from groq import Groq
 
 groq_client = Groq(
-    api_key=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
+    'api_key=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'
 )
 
 app = Flask(__name__)
