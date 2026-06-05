@@ -3,200 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نايل شات - Nile Chat</title>
+    <title>Nile Chat Pro</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --wa-green: #00a884;
-            --wa-dark-bg: #0b141a;
-            --wa-header-bg: #111b21;
-            --wa-surface: #222e35;
-            --wa-bubble-sent: #005c4b;
-            --wa-bubble-recv: #202c33;
-            --wa-text: #e9edef;
-            --wa-muted: #8696a0;
-        }
-        .light-theme {
-            --wa-dark-bg: #efeae2;
-            --wa-header-bg: #f0f2f5;
-            --wa-surface: #ffffff;
-            --wa-bubble-sent: #d9fdd3;
-            --wa-bubble-recv: #ffffff;
-            --wa-text: #111b21;
-            --wa-muted: #667781;
+            --wa-green: #00a884; --wa-dark-bg: #0b141a; --wa-header-bg: #111b21;
+            --wa-surface: #222e35; --wa-bubble-sent: #005c4b; --wa-bubble-recv: #202c33;
+            --wa-text: #e9edef; --wa-muted: #8696a0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; transition: all 0.3s; }
+        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; }
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: #111b21; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #222e35; }
-        .login-input { width: 100%; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; font-size: 16px; margin-bottom: 15px; text-align: right; outline: none; }
-        .login-btn { width: 100%; padding: 14px; background: var(--wa-green); border: none; border-radius: 8px; color: #111b21; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .login-box { background: #111b21; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; }
+        .login-input { width: 100%; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; margin-bottom: 15px; text-align: right; outline: none; }
+        .login-btn { padding: 12px 20px; background: var(--wa-green); border: none; border-radius: 8px; color: #111b21; font-weight: bold; cursor: pointer; }
         
         #phone-wrapper { width: 100%; height: 100%; display: none; flex-direction: column; }
-        .app-header { background: var(--wa-header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--wa-surface); }
-        .header-title { font-size: 20px; font-weight: bold; color: var(--wa-green); display: flex; align-items: center; gap: 10px; }
-
+        .app-header { background: var(--wa-header-bg); padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--wa-surface); }
+        
         .main-content { flex: 1; overflow-y: auto; display: none; }
         .main-content.active { display: block; }
-
-        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--wa-surface); cursor: pointer; position: relative; }
-        .item-avatar { width: 48px; height: 48px; border-radius: 50%; margin-left: 15px; background: var(--wa-surface); display: flex; justify-content: center; align-items: center; }
-        .item-avatar i { font-size: 22px; color: var(--wa-green); }
+        
+        .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--wa-surface); cursor: pointer; }
+        .item-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--wa-surface); display: flex; justify-content: center; align-items: center; margin-left: 15px; color: var(--wa-green); }
         .item-details { flex: 1; }
-        .item-name { font-weight: 600; font-size: 16px; margin-bottom: 2px; }
-        .item-msg { font-size: 13px; color: var(--wa-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-dark-bg); z-index: 500; display: none; flex-direction: column; }
         .chat-header { background: var(--wa-header-bg); padding: 12px; display: flex; align-items: center; border-bottom: 1px solid var(--wa-surface); }
-        .back-btn { font-size: 20px; padding: 5px 10px; color: var(--wa-green); cursor: pointer; margin-left: 5px; }
-        .chat-user-info { flex: 1; margin-right: 10px; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--wa-dark-bg); }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; line-height: 1.4; display: flex; flex-direction: column; cursor: pointer; }
-        .msg-bubble.sent { background: var(--wa-bubble-sent); align-self: flex-start; border-top-left-radius: 0; }
-        .msg-bubble.received { background: var(--wa-bubble-recv); align-self: flex-end; border-top-right-radius: 0; }
-        .msg-meta { font-size: 10px; color: var(--wa-muted); text-align: left; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-        .msg-sender { font-size: 11px; color: #0df9c4; font-weight: bold; display: block; margin-bottom: 4px; }
+        .msg-bubble { max-width: 75%; padding: 10px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; cursor: pointer; }
+        .msg-bubble.sent { background: var(--wa-bubble-sent); align-self: flex-start; }
+        .msg-bubble.received { background: var(--wa-bubble-recv); align-self: flex-end; }
         .reaction-badge { position: absolute; bottom: -10px; left: 10px; background: var(--wa-surface); border-radius: 10px; padding: 2px 6px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-
-        .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--wa-surface); }
-        .chat-input-field { flex: 1; padding: 12px; background: var(--wa-surface); border: 1px solid var(--wa-muted); border-radius: 8px; color: var(--wa-text); outline: none; text-align: right; font-size: 15px; }
-        .icon-btn { font-size: 22px; color: var(--wa-green); cursor: pointer; padding: 5px; }
         
-        /* تصميم الأزرار المنفصلة جنب بعض */
-        .voice-btn { width: 45px; height: 45px; background: var(--wa-surface); border: none; border-radius: 50%; color: var(--wa-green); font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; }
-        .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #fff; font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-
+        .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .chat-input-field { flex: 1; padding: 12px; background: var(--wa-surface); border: none; border-radius: 8px; color: #fff; text-align: right; outline: none; }
+        
+        .voice-btn { width: 45px; height: 45px; background: var(--wa-surface); border: none; border-radius: 50%; color: var(--wa-green); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        
+        .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
+        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 12px; cursor: pointer; background: var(--wa-surface); color: var(--wa-text); text-align: center; }
+        
         .reaction-picker { display: none; position: fixed; background: var(--wa-header-bg); border: 1px solid var(--wa-surface); border-radius: 30px; padding: 8px 15px; gap: 12px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .reaction-picker span { font-size: 22px; cursor: pointer; transition: transform 0.1s; }
+        .reaction-picker span { font-size: 22px; cursor: pointer; }
 
         .nav-bar { background: var(--wa-header-bg); height: 60px; display: flex; border-top: 1px solid var(--wa-surface); }
-        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--wa-muted); font-size: 12px; cursor: pointer; gap: 4px; }
-        .nav-item i { font-size: 18px; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--wa-muted); font-size: 12px; cursor: pointer; }
         .nav-item.active { color: var(--wa-green); }
-
-        .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
-        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 11px; cursor: pointer; text-align: center; background: var(--wa-surface); overflow: hidden; padding: 2px; color: var(--wa-text); }
 
         #calling-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,20,26,0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; }
         .video-box { display: flex; gap: 10px; width: 90%; max-width: 500px; }
         video { width: 50%; background: #000; border-radius: 8px; border: 1px solid var(--wa-green); transform: scaleX(-1); }
-        .call-btn-hangup { background: #ff3b30; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; }
-
-        #qr-modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:20000; display:none; justify-content:center; align-items:center; }
-        .qr-box { background:var(--wa-header-bg); padding:25px; border-radius:12px; text-align:center; }
+        
         #story-view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 25000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; }
     </style>
 </head>
 <body>
 
-    <audio id="ringtone-player" src="https://assets.mixkit.co/active_storage/sfx/1353/1353-84.wav" loop></audio>
-
     <div id="story-view-modal" onclick="this.style.display='none'; document.getElementById('story-media-content').innerHTML=''">
         <h4 id="story-view-sender" style="margin-bottom:15px; color:var(--wa-green);"></h4>
         <div id="story-media-content" style="max-width:100%; max-height:70vh;"></div>
-        <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">انقر في أي مكان للإغلاق</p>
-    </div>
-
-    <div id="qr-modal" onclick="this.style.display='none'">
-        <div class="qr-box" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:15px;">كود كيو آر الشخصي 📱</h3>
-            <div id="qr-code-target" style="background:#fff; padding:15px; display:inline-block; border-radius:8px;"></div>
-            <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">امسح الكود لمشاركة رقم الهاتف فوراً</p>
-        </div>
     </div>
 
     <div id="calling-screen">
-        <h3 id="call-status-text" style="color:var(--wa-green);">جاري الاتصال لايف...</h3>
+        <h3 style="color:var(--wa-green)">مكالمة جارية لايف...</h3>
         <div class="video-box">
             <video id="localVideo" autoplay playsinline muted></video>
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
-        <button class="call-btn-hangup" onclick="endLiveCall()">إنهاء المكالمة 🚫</button>
+        <button style="background:#ff3b30; color:#fff; padding:15px 30px; border:none; border-radius:30px; font-weight:bold; cursor:pointer;" onclick="endLiveCall()">إنهاء المكالمة 🚫</button>
     </div>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:var(--wa-green); margin-bottom:15px;">نايل شات - Nile Chat 🟢</h2>
+            <h2 style="color:var(--wa-green); margin-bottom:15px;">Nile Chat Pro 🟢</h2>
             <input type="text" id="login-name" class="login-input" placeholder="اسم المستخدم...">
             <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف...">
-            <button class="login-btn" onclick="submitLogin()">تسجيل الدخول</button>
+            <button class="login-btn" onclick="submitLogin()">دخول</button>
         </div>
     </div>
 
     <div id="phone-wrapper">
         <div class="app-header">
-            <div class="header-title">
-                <span>Nile Chat</span>
-                <i class="fas fa-adjust icon-btn" onclick="toggleThemeMode()" title="تغيير المظهر"></i>
-                <i class="fas fa-qrcode icon-btn" onclick="showMyQrCode()" title="كود QR"></i>
-            </div>
-            <div style="display:flex; gap:6px; align-items:center;">
-                <button class="login-btn" style="padding:5px 10px; font-size:12px;" onclick="addNewPrivateChat()">+ شات خاص</button>
-                <div id="user-display-tag" style="font-size:12px; color:var(--wa-muted); font-weight:bold;"></div>
+            <span style="color:var(--wa-green); font-weight:bold; font-size:20px;">Nile Chat</span>
+            <div style="display:flex; gap:8px;">
+                <button class="login-btn" style="padding:6px 12px; font-size:12px;" onclick="createNewGroup()">+ جروب جديد</button>
+                <button class="login-btn" style="padding:6px 12px; font-size:12px; background:#333; color:#fff;" onclick="addNewPrivateChat()">+ شات خاص</button>
             </div>
         </div>
 
         <div id="screen-chats" class="main-content active">
             <div class="story-container" id="stories-tray">
-                <div class="story-circle" style="border-color:var(--wa-muted);" onclick="openStoryUploaderMenu()">+ حالة</div>
+                <div class="story-circle" onclick="openStoryUploaderMenu()">+ حالة</div>
             </div>
             <input type="file" id="story-file-input" style="display:none;" onchange="uploadStoryMedia(this)">
 
-            <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', 'fa-users', '')">
+            <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', '')">
                 <div class="item-avatar"><i class="fas fa-users"></i></div>
                 <div class="item-details">
                     <div class="item-name">مجموعة نايل العامة 💬</div>
-                    <div class="item-msg">شات جماعي لايف.. منشن @NileAI ليسألك الذكاء الاصطناعي.</div>
+                    <div class="item-msg">اكتب @NileAI للرد الفوري من الذكاء الاصطناعي</div>
                 </div>
             </div>
+            <div id="groups-list-target"></div>
             <div id="custom-private-chats-list"></div>
         </div>
 
         <div id="screen-ai" class="main-content">
-            <div class="list-item" onclick="openChatWindow('NileAI_room', 'مساعد NileAI الشخصي 🤖', 'fa-robot', '')">
+            <div class="list-item" onclick="openChatWindow('NileAI_room', 'مساعد NileAI الشخصي 🤖', '')">
                 <div class="item-avatar"><i class="fas fa-robot"></i></div>
                 <div class="item-details">
                     <div class="item-name">مساعد NileAI الشخصي 🤖</div>
-                    <div class="item-msg">شات مباشر وسريع ومحفوظ مع الذكاء الاصطناعي.</div>
+                    <div class="item-msg">دردشة مباشرة وسريعة مع الذكاء الاصطناعي الذكي</div>
                 </div>
             </div>
         </div>
 
         <div class="nav-bar">
-            <div class="nav-item active" onclick="switchTab('chats', this)"><i class="fas fa-comment-dots"></i>الدردشات</div>
-            <div class="nav-item" onclick="switchTab('ai', this)"><i class="fas fa-robot"></i>الذكاء الاصطناعي</div>
+            <div class="nav-item active" id="tab-chats" onclick="switchTab('chats')">الدردشات</div>
+            <div class="nav-item" id="tab-ai" onclick="switchTab('ai')">الذكاء الاصطناعي</div>
         </div>
     </div>
 
     <div id="chat-window">
         <div class="chat-header">
-            <div class="back-btn" onclick="closeChatWindow()"><i class="fas fa-arrow-right"></i></div>
-            <div class="item-avatar" style="width:38px; height:38px;"><i id="chat-win-icon" class="fas"></i></div>
-            <div class="chat-user-info">
-                <div class="item-name" id="chat-win-name"></div>
-                <div style="font-size:12px; color:var(--wa-muted);" id="chat-win-status">متصل حالياً</div>
+            <button style="background:none; border:none; color:var(--wa-green); font-size:20px; margin-left:15px; cursor:pointer;" onclick="closeChatWindow()"><i class="fas fa-arrow-right"></i></button>
+            <div class="chat-user-info" style="flex:1;">
+                <h4 id="chat-win-name"></h4>
             </div>
-            <div id="call-actions-holder" style="display:none; gap:15px; margin-left:10px; font-size:18px; color:var(--wa-green);">
+            <div id="call-actions" style="display:none; gap:20px; color:var(--wa-green); font-size:20px;">
                 <i class="fas fa-phone" style="cursor:pointer;" onclick="startCallEngine('audio')"></i>
                 <i class="fas fa-video" style="cursor:pointer;" onclick="startCallEngine('video')"></i>
             </div>
         </div>
-        
         <div class="chat-messages" id="chat-messages-container"></div>
-        
         <div class="chat-input-bar">
-            <i class="fas fa-paperclip icon-btn" onclick="document.getElementById('global-file-input').click()" title="إرفاق ملف أو صورة"></i>
-            
+            <i class="fas fa-paperclip" style="font-size:20px; color:var(--wa-green); cursor:pointer;" onclick="document.getElementById('global-file-input').click()"></i>
             <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة..." onkeypress="if(event.key === 'Enter') sendMsg()">
-            
-            <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()" title="تسجيل رسالة صوتية">
-                <i class="fas fa-microphone"></i>
-            </button>
-            
-            <button class="send-btn" onclick="sendMsg()" title="إرسال"><i class="fas fa-paper-plane"></i></button>
+            <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()"><i class="fas fa-microphone"></i></button>
+            <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -211,70 +160,43 @@
     </div>
 
     <script>
-        let socket, myName = "", myPhone = "", currentChatTarget = "public_room", currentTargetPhone = "";
-        let mediaRecorder, audioChunks = [], isRecording = false;
+        let socket, myName="", myPhone="", currentChatTarget="public_room", currentTargetPhone="";
+        let mediaRecorder, audioChunks=[], isRecording=false, localStream, peerConnection;
         let activeReactionMsgId = null;
-        let localStream, peerConnection;
         const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
         window.onload = function() {
-            let savedName = localStorage.getItem('n_f_name');
-            let savedPhone = localStorage.getItem('n_f_phone');
-            if (savedName && savedPhone) {
-                myName = savedName; myPhone = savedPhone;
-                bypassLogin();
-            }
-            loadPrivateChatsList();
-            document.addEventListener('click', () => {
-                document.getElementById('global-reaction-picker').style.display = 'none';
-            });
+            loadPrivateChats();
+            document.addEventListener('click', () => { document.getElementById('global-reaction-picker').style.display = 'none'; });
         };
 
         function submitLogin() {
-            let nameInp = document.getElementById('login-name').value.trim();
-            let phoneInp = document.getElementById('login-phone').value.trim();
-            if (!nameInp || !phoneInp) return alert("أدخل بياناتك كاملة!");
-            myName = nameInp; myPhone = phoneInp;
-            localStorage.setItem('n_f_name', myName);
-            localStorage.setItem('n_f_phone', myPhone);
-            bypassLogin();
+            myName = document.getElementById('login-name').value.trim();
+            myPhone = document.getElementById('login-phone').value.trim();
+            if(!myName || !myPhone) return alert("اكتب بياناتك أولاً!");
+            document.getElementById('login-screen').style.display='none';
+            document.getElementById('phone-wrapper').style.display='flex';
+            initSocket();
         }
 
-        function bypassLogin() {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('phone-wrapper').style.display = 'flex';
-            document.getElementById('user-display-tag').innerText = myName;
-            initSocketConnection();
-        }
-
-        function initSocketConnection() {
-            socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
-            
+        function initSocket() {
+            socket = io(window.location.origin);
             socket.emit('register_user', { phone: myPhone, name: myName });
-            socket.emit('join_room', { room: currentChatTarget });
             socket.emit('get_stories');
+            socket.emit('get_groups');
 
-            setInterval(() => {
-                if(socket && myPhone) socket.emit('ping_status', { phone: myPhone });
-            }, 5000);
+            socket.on('message', (data) => {
+                if(data.room === currentChatTarget) appendBubble(data.sender, data.text, data.id, data.file_type, data.reactions);
+            });
 
-            socket.on('chat_history', function(data) {
-                let container = document.getElementById('chat-messages-container');
-                container.innerHTML = "";
-                if (data.messages) {
-                    data.messages.forEach(msg => {
-                        appendBubble(msg.sender, msg.text, msg.id, msg.sender === myName, msg.file_type, msg.reactions);
-                    });
+            socket.on('chat_history', (data) => {
+                document.getElementById('chat-messages-container').innerHTML = "";
+                if(data.messages) {
+                    data.messages.forEach(m => appendBubble(m.sender, m.text, m.id, m.file_type, m.reactions));
                 }
             });
 
-            socket.on('message', function(data) {
-                if (data.room === currentChatTarget) {
-                    appendBubble(data.sender, data.text, data.id, data.sender === myName, data.file_type, data.reactions);
-                }
-            });
-
-            socket.on('reaction_updated', function(data) {
+            socket.on('reaction_updated', (data) => {
                 let badge = document.getElementById('react-'+data.id);
                 if(badge) {
                     badge.innerText = data.reactions;
@@ -282,104 +204,65 @@
                 }
             });
 
-            socket.on('stories_list', function(data) {
+            socket.on('stories_list', (data) => {
                 let tray = document.getElementById('stories-tray');
-                tray.innerHTML = `<div class="story-circle" style="border-color:var(--wa-muted);" onclick="openStoryUploaderMenu()">+ حالة</div>`;
-                data.stories.forEach(st => {
-                    let div = document.createElement('div'); div.className = "story-circle";
-                    div.innerText = st.sender; 
-                    div.onclick = () => viewStoryLive(st.sender, st.text, st.file_type);
-                    tray.appendChild(div);
+                tray.innerHTML = `<div class="story-circle" onclick="openStoryUploaderMenu()">+ حالة</div>`;
+                data.stories.forEach(s => {
+                    let d = document.createElement('div'); d.className = "story-circle";
+                    d.innerText = s.sender;
+                    d.onclick = () => viewStoryLive(s.sender, s.text, s.file_type);
+                    tray.appendChild(d);
                 });
             });
 
-            socket.on('new_story_alert', function() { socket.emit('get_stories'); });
+            socket.on('new_story_alert', () => socket.emit('get_stories'));
+            socket.on('group_created_alert', () => socket.emit('get_groups'));
 
-            socket.on('call_signal', async function(data) {
-                let ring = document.getElementById('ringtone-player');
+            socket.on('groups_list', (data) => {
+                let target = document.getElementById('groups-list-target');
+                target.innerHTML = "";
+                data.groups.forEach(g => {
+                    target.innerHTML += `
+                        <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name}', '')">
+                            <div class="item-avatar"><i class="fas fa-users"></i></div>
+                            <div class="item-details"><div class="item-name">${g.name}</div></div>
+                        </div>`;
+                });
+            });
+
+            socket.on('call_signal', async (data) => {
                 if (data.type === 'offer') {
-                    try { ring.play(); } catch(e){}
                     if (confirm(`مكالمة واردة من ${data.caller_name}. هل تقبل؟`)) {
-                        ring.pause();
                         document.getElementById('calling-screen').style.display = 'flex';
                         localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
                         document.getElementById('localVideo').srcObject = localStream;
-                        
                         peerConnection = new RTCPeerConnection(rtcConfig);
-                        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                        localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
                         peerConnection.onicecandidate = e => {
-                            if (e.candidate) socket.emit('call_signal', { target_phone: data.caller_phone, type: 'candidate', candidate: e.candidate });
+                            if(e.candidate) socket.emit('call_signal', { target_phone: data.caller_phone, type: 'candidate', candidate: e.candidate });
                         };
-                        peerConnection.ontrack = e => {
-                            document.getElementById('remoteVideo').srcObject = e.streams[0];
-                        };
+                        peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
                         let ans = await peerConnection.createAnswer();
                         await peerConnection.setLocalDescription(ans);
                         socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: ans });
-                    } else {
-                        ring.pause();
-                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'hangup' });
                     }
                 } else if (data.type === 'answer') {
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
                 } else if (data.type === 'candidate') {
-                    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{});
+                    if(peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
                 } else if (data.type === 'hangup') {
-                    ring.pause();
-                    document.getElementById('calling-screen').style.display = 'none';
-                    if (localStream) localStream.getTracks().forEach(track => track.stop());
-                    if (peerConnection) peerConnection.close();
+                    endLiveCall();
                 }
             });
         }
 
-        function openStoryUploaderMenu() {
-            let choice = prompt("اختر نوع الحالة لتحديثها فوراً:\n1. حالة نصية\n2. رفع ميديا (صور/فيديو)");
-            if (choice === "1") {
-                let txt = prompt("اكتب حالتك النصية الجديدة:");
-                if (txt && txt.trim() !== "") {
-                    socket.emit('add_story', { sender: myName, phone: myPhone, text: txt.trim(), file_type: 'text' });
-                }
-            } else if (choice === "2") {
-                document.getElementById('story-file-input').click();
-            }
-        }
-
-        function uploadStoryMedia(element) {
-            let file = element.files[0]; if (!file) return;
-            let reader = new FileReader();
-            let fType = 'image';
-            if (file.type.startsWith('video/')) fType = 'video';
-            else if (file.type.startsWith('audio/')) fType = 'audio';
-
-            reader.readAsDataURL(file);
-            reader.onloadend = () => {
-                socket.emit('add_story', { sender: myName, phone: myPhone, text: reader.result, file_type: fType });
-                element.value = "";
-            };
-        }
-
-        function viewStoryLive(sender, content, type) {
-            let modal = document.getElementById('story-view-modal');
-            let mediaBox = document.getElementById('story-media-content');
-            document.getElementById('story-view-sender').innerText = `حالة: ${sender}`;
-            mediaBox.innerHTML = "";
-            
-            if (type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; height:60vh; border-radius:10px;"></video>`;
-            else if (type === 'audio') mediaBox.innerHTML = `<audio src="${content}" autoplay controls style="width:100%;"></audio>`;
-            else if (type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:65vh; border-radius:10px;">`;
-            else mediaBox.innerHTML = `<div style="font-size:20px; padding:30px; background:#222e35; border-radius:12px; text-align:center; color:#fff;">${content}</div>`;
-            
-            modal.style.display = "flex";
-        }
-
         function sendMsg() {
-            let input = document.getElementById('chat-input');
-            let txt = input.value.trim();
+            let inp = document.getElementById('chat-input');
+            let txt = inp.value.trim();
             if(!txt) return;
             socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: txt, file_type: 'text' });
-            input.value = "";
+            inp.value = "";
         }
 
         function handleGlobalFileSharing(element) {
@@ -394,6 +277,38 @@
                 socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: reader.result, file_type: fType });
                 element.value = "";
             };
+        }
+
+        function openStoryUploaderMenu() {
+            let choice = prompt("اختر نوع الحالة:\n1. حالة نصية\n2. رفع ميديا من الجهاز");
+            if(choice === "1") {
+                let txt = prompt("اكتب حالتك:");
+                if(txt) socket.emit('add_story', { sender: myName, phone: myPhone, text: txt, file_type: 'text' });
+            } else if(choice === "2") {
+                document.getElementById('story-file-input').click();
+            }
+        }
+
+        function uploadStoryMedia(element) {
+            let file = element.files[0]; if(!file) return;
+            let reader = new FileReader();
+            let fType = file.type.startsWith('video/') ? 'video' : 'image';
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                socket.emit('add_story', { sender: myName, phone: myPhone, text: reader.result, file_type: fType });
+                element.value = "";
+            };
+        }
+
+        function viewStoryLive(sender, content, type) {
+            let modal = document.getElementById('story-view-modal');
+            let mediaBox = document.getElementById('story-media-content');
+            document.getElementById('story-view-sender').innerText = `حالة: ${sender}`;
+            mediaBox.innerHTML = "";
+            if(type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; max-height:70vh;"></video>`;
+            else if(type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:70vh;">`;
+            else mediaBox.innerHTML = `<div style="font-size:18px; padding:20px; background:#222e35; color:#fff; border-radius:8px;">${content}</div>`;
+            modal.style.display = 'flex';
         }
 
         async function toggleVoiceRecording() {
@@ -413,45 +328,37 @@
                 };
                 mediaRecorder.start();
                 isRecording = true;
-                btn.style.background = '#ff3b30';
-                btn.style.color = '#fff';
+                btn.style.background = '#ff3b30'; btn.style.color = '#fff';
             } else {
                 mediaRecorder.stop();
                 isRecording = false;
-                btn.style.background = 'var(--wa-surface)';
-                btn.style.color = 'var(--wa-green)';
+                btn.style.background = 'var(--wa-surface)'; btn.style.color = 'var(--wa-green)';
             }
         }
 
-        function appendBubble(sender, text, msgId, isMe, type, reactions) {
-            let container = document.getElementById('chat-messages-container');
+        function appendBubble(sender, text, msgId, type, reactions) {
+            let box = document.getElementById('chat-messages-container');
             if(document.getElementById(msgId)) return;
-            let bubble = document.createElement('div');
-            bubble.className = "msg-bubble " + (isMe ? 'sent' : 'received');
-            bubble.id = msgId;
+            let b = document.createElement('div');
+            b.className = "msg-bubble " + (sender === myName ? 'sent' : 'received');
+            b.id = msgId;
             
-            bubble.addEventListener('click', function(e) {
+            b.addEventListener('click', (e) => {
                 e.stopPropagation();
                 activeReactionMsgId = msgId;
                 let picker = document.getElementById('global-reaction-picker');
                 picker.style.display = 'flex';
-                picker.style.top = e.pageY + 'px';
-                picker.style.left = e.pageX + 'px';
+                picker.style.top = e.pageY + 'px'; picker.style.left = e.pageX + 'px';
             });
 
-            let contentHtml = text;
-            if(type === 'image') contentHtml = `<img src="${text}" style="max-width:100%; border-radius:6px;">`;
-            else if(type === 'video') contentHtml = `<video src="${text}" controls style="max-width:100%; border-radius:6px;"></video>`;
-            else if(type === 'audio') contentHtml = `<audio src="${text}" controls style="max-width:100%;"></audio>`;
+            let content = text;
+            if(type === 'image') content = `<img src="${text}" style="max-width:100%; border-radius:6px;">`;
+            else if(type === 'video') content = `<video src="${text}" controls style="max-width:100%; border-radius:6px;"></video>`;
+            else if(type === 'audio') content = `<audio src="${text}" controls style="max-width:100%;"></audio>`;
 
-            bubble.innerHTML = `
-                <span class="msg-sender">${sender}</span>
-                <div>${contentHtml}</div>
-                <div class="reaction-badge" id="react-${msgId}" style="display:${reactions?'block':'none'}">${reactions||''}</div>
-                <div class="msg-meta">${new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})}</div>
-            `;
-            container.appendChild(bubble);
-            container.scrollTop = container.scrollHeight;
+            b.innerHTML = `<strong>${sender}:</strong><div>${content}</div><div class="reaction-badge" id="react-${msgId}" style="display:${reactions?'block':'none'}">${reactions||''}</div>`;
+            box.appendChild(b);
+            box.scrollTop = box.scrollHeight;
         }
 
         function applyReaction(emo) {
@@ -460,37 +367,9 @@
             }
         }
 
-        async function startCallEngine(type) {
-            if(!currentTargetPhone) return;
-            document.getElementById('calling-screen').style.display = 'flex';
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
-            document.getElementById('localVideo').srcObject = localStream;
-
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            peerConnection.onicecandidate = e => {
-                if (e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
-            };
-            peerConnection.ontrack = e => {
-                document.getElementById('remoteVideo').srcObject = e.streams[0];
-            };
-            let offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: type });
-        }
-
-        function endLiveCall() {
-            document.getElementById('calling-screen').style.display = 'none';
-            if (localStream) localStream.getTracks().forEach(track => track.stop());
-            if (peerConnection) peerConnection.close();
-            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
-        }
-
-        function toggleThemeMode() { document.body.classList.toggle('light-theme'); }
-
-        function showMyQrCode() {
-            document.getElementById('qr-modal').style.display = 'flex';
-            document.getElementById('qr-code-target').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${myPhone}">`;
+        function createNewGroup() {
+            let name = prompt("اكتب اسم الجروب الجديد:");
+            if(name) socket.emit('create_group', { name: name });
         }
 
         function addNewPrivateChat() {
@@ -500,38 +379,63 @@
                 let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
                 chats.push({name, phone});
                 localStorage.setItem('p_chats', JSON.stringify(chats));
-                loadPrivateChatsList();
+                loadPrivateChats();
             }
         }
 
-        function loadPrivateChatsList() {
-            let container = document.getElementById('custom-private-chats-list');
-            container.innerHTML = "";
+        function loadPrivateChats() {
+            let target = document.getElementById('custom-private-chats-list');
+            target.innerHTML = "";
             let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
             chats.forEach(c => {
                 let rId = [myPhone, c.phone].sort().join("_");
-                container.innerHTML += `
-                    <div class="list-item" onclick="openChatWindow('${rId}', '${c.name}', 'fa-user', '${c.phone}')">
+                target.innerHTML += `
+                    <div class="list-item" onclick="openChatWindow('${rId}', '${c.name}', '${c.phone}')">
                         <div class="item-avatar"><i class="fas fa-user"></i></div>
-                        <div class="item-details"><div class="item-name">${c.name}</div><div class="item-msg">شات خاص آمن ومحفوظ</div></div>
+                        <div class="item-details"><div class="item-name">${c.name}</div></div>
                     </div>`;
             });
         }
 
-        function openChatWindow(roomId, roomName, icon, targetPhone) {
+        async function startCallEngine(type) {
+            if(!currentTargetPhone) return;
+            document.getElementById('calling-screen').style.display = 'flex';
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
+            document.getElementById('localVideo').srcObject = localStream;
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+            peerConnection.onicecandidate = e => {
+                if(e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
+            };
+            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
+            let offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: type });
+        }
+
+        function endLiveCall() {
+            document.getElementById('calling-screen').style.display = 'none';
+            if(localStream) localStream.getTracks().forEach(t => t.stop());
+            if(peerConnection) peerConnection.close();
+            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
+        }
+
+        function openChatWindow(roomId, roomName, targetPhone) {
             currentChatTarget = roomId; currentTargetPhone = targetPhone;
             document.getElementById('chat-win-name').innerText = roomName;
-            document.getElementById('chat-win-icon').className = "fas " + icon;
-            document.getElementById('call-actions-holder').style.display = targetPhone ? 'flex' : 'none';
+            document.getElementById('call-actions').style.display = targetPhone ? 'flex' : 'none';
             document.getElementById('chat-window').style.display = 'flex';
             socket.emit('join_room', { room: currentChatTarget });
         }
 
-        function closeChatWindow() { document.getElementById('chat-window').style.display = 'none'; }
-        function switchTab(t, e) {
+        function closeChatWindow() { document.getElementById('chat-window').style.display='none'; }
+        
+        function switchTab(t) {
             document.querySelectorAll('.main-content').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            e.classList.add('active'); document.getElementById('screen-'+t).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('screen-'+t).classList.add('active');
+            if(t === 'chats') document.getElementById('tab-chats').classList.add('active');
+            if(t === 'ai') document.getElementById('tab-ai').classList.add('active');
         }
     </script>
 </body>
