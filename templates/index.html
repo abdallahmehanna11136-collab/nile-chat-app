@@ -17,17 +17,26 @@
             --wa-text: #e9edef;
             --wa-muted: #8696a0;
         }
+        .light-theme {
+            --wa-dark-bg: #efeae2;
+            --wa-header-bg: #f0f2f5;
+            --wa-surface: #ffffff;
+            --wa-bubble-sent: #d9fdd3;
+            --wa-bubble-recv: #ffffff;
+            --wa-text: #111b21;
+            --wa-muted: #667781;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; }
+        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; transition: all 0.3s; }
         
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-dark-bg); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: var(--wa-header-bg); border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--wa-surface); }
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-box { background: #111b21; border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #222e35; }
         .login-input { width: 100%; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; font-size: 16px; margin-bottom: 15px; text-align: right; outline: none; }
         .login-btn { width: 100%; padding: 14px; background: var(--wa-green); border: none; border-radius: 8px; color: #111b21; font-size: 16px; font-weight: bold; cursor: pointer; }
         
         #phone-wrapper { width: 100%; height: 100%; display: none; flex-direction: column; }
         .app-header { background: var(--wa-header-bg); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--wa-surface); }
-        .header-title { font-size: 20px; font-weight: bold; color: var(--wa-green); }
+        .header-title { font-size: 20px; font-weight: bold; color: var(--wa-green); display: flex; align-items: center; gap: 10px; }
 
         .main-content { flex: 1; overflow-y: auto; display: none; }
         .main-content.active { display: block; }
@@ -43,44 +52,61 @@
         .chat-header { background: var(--wa-header-bg); padding: 12px; display: flex; align-items: center; border-bottom: 1px solid var(--wa-surface); }
         .back-btn { font-size: 20px; padding: 5px 10px; color: var(--wa-green); cursor: pointer; margin-left: 5px; }
         .chat-user-info { flex: 1; margin-right: 10px; }
-        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-image: radial-gradient(var(--wa-surface) 1px, transparent 0); background-size: 24px 24px; }
+        .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: var(--wa-dark-bg); }
         
-        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; line-height: 1.4; display: flex; flex-direction: column; }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; line-height: 1.4; display: flex; flex-direction: column; cursor: pointer; }
         .msg-bubble.sent { background: var(--wa-bubble-sent); align-self: flex-start; border-top-left-radius: 0; }
         .msg-bubble.received { background: var(--wa-bubble-recv); align-self: flex-end; border-top-right-radius: 0; }
         .msg-meta { font-size: 10px; color: var(--wa-muted); text-align: left; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .msg-sender { font-size: 11px; color: #0df9c4; font-weight: bold; display: block; margin-bottom: 4px; }
+        .reaction-badge { position: absolute; bottom: -10px; left: 10px; background: var(--wa-surface); border-radius: 10px; padding: 2px 6px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
         .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--wa-surface); }
-        .chat-input-field { flex: 1; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; outline: none; text-align: right; font-size: 15px; }
-        .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #111b21; font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .chat-input-field { flex: 1; padding: 12px; background: var(--wa-surface); border: 1px solid var(--wa-muted); border-radius: 8px; color: var(--wa-text); outline: none; text-align: right; font-size: 15px; }
+        .icon-btn { font-size: 22px; color: var(--wa-green); cursor: pointer; padding: 5px; }
+        
+        /* تصميم الأزرار المنفصلة جنب بعض */
+        .voice-btn { width: 45px; height: 45px; background: var(--wa-surface); border: none; border-radius: 50%; color: var(--wa-green); font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; }
+        .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #fff; font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 
-        .emoji-panel { display: none; background: #111b21; border-top: 1px solid var(--wa-surface); padding: 10px; grid-template-columns: repeat(8, 1fr); gap: 10px; font-size: 24px; max-height: 120px; overflow-y: auto; }
-        .emoji-item { cursor: pointer; text-align: center; }
+        .reaction-picker { display: none; position: fixed; background: var(--wa-header-bg); border: 1px solid var(--wa-surface); border-radius: 30px; padding: 8px 15px; gap: 12px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .reaction-picker span { font-size: 22px; cursor: pointer; transition: transform 0.1s; }
 
         .nav-bar { background: var(--wa-header-bg); height: 60px; display: flex; border-top: 1px solid var(--wa-surface); }
         .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--wa-muted); font-size: 12px; cursor: pointer; gap: 4px; }
         .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--wa-green); }
-        
-        .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
-        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 11px; cursor: pointer; text-align: center; background: var(--wa-surface); overflow: hidden; padding: 2px; }
-        
-        #offline-dino-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        #canvas-dino { background: #222e35; border: 2px solid var(--wa-green); display: block; margin-top: 15px; max-width: 100%; }
-        .add-user-btn { background: var(--wa-surface); color: var(--wa-green); border: 1px solid var(--wa-green); padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
 
-        #calling-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,20,26,0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; }
+        .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
+        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 11px; cursor: pointer; text-align: center; background: var(--wa-surface); overflow: hidden; padding: 2px; color: var(--wa-text); }
+
+        #calling-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,20,26,0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; }
         .video-box { display: flex; gap: 10px; width: 90%; max-width: 500px; }
         video { width: 50%; background: #000; border-radius: 8px; border: 1px solid var(--wa-green); transform: scaleX(-1); }
         .call-btn-hangup { background: #ff3b30; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        
-        #story-view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; }
+
+        #qr-modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:20000; display:none; justify-content:center; align-items:center; }
+        .qr-box { background:var(--wa-header-bg); padding:25px; border-radius:12px; text-align:center; }
+        #story-view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 25000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; }
     </style>
 </head>
 <body>
 
     <audio id="ringtone-player" src="https://assets.mixkit.co/active_storage/sfx/1353/1353-84.wav" loop></audio>
+
+    <div id="story-view-modal" onclick="this.style.display='none'; document.getElementById('story-media-content').innerHTML=''">
+        <h4 id="story-view-sender" style="margin-bottom:15px; color:var(--wa-green);"></h4>
+        <div id="story-media-content" style="max-width:100%; max-height:70vh;"></div>
+        <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">انقر في أي مكان للإغلاق</p>
+    </div>
+
+    <div id="qr-modal" onclick="this.style.display='none'">
+        <div class="qr-box" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom:15px;">كود كيو آر الشخصي 📱</h3>
+            <div id="qr-code-target" style="background:#fff; padding:15px; display:inline-block; border-radius:8px;"></div>
+            <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">امسح الكود لمشاركة رقم الهاتف فوراً</p>
+        </div>
+    </div>
 
     <div id="calling-screen">
         <h3 id="call-status-text" style="color:var(--wa-green);">جاري الاتصال لايف...</h3>
@@ -89,20 +115,6 @@
             <video id="remoteVideo" autoplay playsinline></video>
         </div>
         <button class="call-btn-hangup" onclick="endLiveCall()">إنهاء المكالمة 🚫</button>
-    </div>
-
-    <div id="story-view-modal" onclick="this.style.display='none'; document.getElementById('story-media-content').innerHTML=''">
-        <h4 id="story-view-sender" style="margin-bottom:15px; color:var(--wa-green);"></h4>
-        <div id="story-media-content" style="max-width:100%; max-height:70vh;"></div>
-        <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">انقر في أي مكان للإغلاق</p>
-    </div>
-
-    <div id="offline-dino-screen">
-        <h2 style="color:#ff3b30;"><i class="fas fa-wifi-slash"></i> انقطع الاتصال بالإنترنت!</h2>
-        <p style="color:var(--wa-text); margin-top:5px; font-size:14px;">العب ديناصور نايل شات لتسلية وقتك حتى يعود الاتصال</p>
-        <canvas id="canvas-dino" width="320" height="150"></canvas>
-        <div id="dino-score" style="font-weight:bold; margin-top:10px; color:var(--wa-green);">النقاط: 0</div>
-        <p style="font-size:12px; color:var(--wa-muted); margin-top:5px;">اضغط على الشاشة أو زر المسافة للقفز</p>
     </div>
 
     <div id="login-screen">
@@ -116,11 +128,14 @@
 
     <div id="phone-wrapper">
         <div class="app-header">
-            <div class="header-title">Nile Chat</div>
+            <div class="header-title">
+                <span>Nile Chat</span>
+                <i class="fas fa-adjust icon-btn" onclick="toggleThemeMode()" title="تغيير المظهر"></i>
+                <i class="fas fa-qrcode icon-btn" onclick="showMyQrCode()" title="كود QR"></i>
+            </div>
             <div style="display:flex; gap:6px; align-items:center;">
-                <button class="add-user-btn" onclick="addNewPrivateChat()"><i class="fas fa-user-plus"></i> + شخص</button>
-                <button class="add-user-btn" onclick="createNewGroupClick()"><i class="fas fa-users-cog"></i> + جروب</button>
-                <div id="user-display-tag" style="font-size:12px; color:var(--wa-muted); margin-right:5px;"></div>
+                <button class="login-btn" style="padding:5px 10px; font-size:12px;" onclick="addNewPrivateChat()">+ شات خاص</button>
+                <div id="user-display-tag" style="font-size:12px; color:var(--wa-muted); font-weight:bold;"></div>
             </div>
         </div>
 
@@ -137,16 +152,6 @@
                     <div class="item-msg">شات جماعي لايف.. منشن @NileAI ليسألك الذكاء الاصطناعي.</div>
                 </div>
             </div>
-
-            <div class="list-item" onclick="openSelfChat()">
-                <div class="item-avatar"><i class="fas fa-bookmark"></i></div>
-                <div class="item-details">
-                    <div class="item-name">مكتبتي الشخصية (مراسلة نفسك) 📑</div>
-                    <div class="item-msg">احفظ هنا ملاحظاتك وملفاتك وسجل شاتك الدائم...</div>
-                </div>
-            </div>
-
-            <div id="custom-groups-list"></div>
             <div id="custom-private-chats-list"></div>
         </div>
 
@@ -155,7 +160,7 @@
                 <div class="item-avatar"><i class="fas fa-robot"></i></div>
                 <div class="item-details">
                     <div class="item-name">مساعد NileAI الشخصي 🤖</div>
-                    <div class="item-msg">شات خاص مباشر وسريع مع الذكاء الاصطناعي.</div>
+                    <div class="item-msg">شات مباشر وسريع ومحفوظ مع الذكاء الاصطناعي.</div>
                 </div>
             </div>
         </div>
@@ -172,49 +177,47 @@
             <div class="item-avatar" style="width:38px; height:38px;"><i id="chat-win-icon" class="fas"></i></div>
             <div class="chat-user-info">
                 <div class="item-name" id="chat-win-name"></div>
-                <div style="font-size:12px; color:var(--wa-muted);" id="chat-win-status">جاري فحص الحالة...</div>
+                <div style="font-size:12px; color:var(--wa-muted);" id="chat-win-status">متصل حالياً</div>
             </div>
             <div id="call-actions-holder" style="display:none; gap:15px; margin-left:10px; font-size:18px; color:var(--wa-green);">
-                <i class="fas fa-phone" style="cursor:pointer;" onclick="startWebrtcCall('audio')"></i>
-                <i class="fas fa-video" style="cursor:pointer;" onclick="startWebrtcCall('video')"></i>
+                <i class="fas fa-phone" style="cursor:pointer;" onclick="startCallEngine('audio')"></i>
+                <i class="fas fa-video" style="cursor:pointer;" onclick="startCallEngine('video')"></i>
             </div>
         </div>
         
         <div class="chat-messages" id="chat-messages-container"></div>
-        <div class="emoji-panel" id="emoji-panel-box"></div>
         
         <div class="chat-input-bar">
-            <i class="far fa-laugh" style="font-size:22px; color:var(--wa-muted); cursor:pointer;" onclick="toggleEmojiPanel()"></i>
+            <i class="fas fa-paperclip icon-btn" onclick="document.getElementById('global-file-input').click()" title="إرفاق ملف أو صورة"></i>
+            
             <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة..." onkeypress="if(event.key === 'Enter') sendMsg()">
-            <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+            
+            <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()" title="تسجيل رسالة صوتية">
+                <i class="fas fa-microphone"></i>
+            </button>
+            
+            <button class="send-btn" onclick="sendMsg()" title="إرسال"><i class="fas fa-paper-plane"></i></button>
         </div>
+    </div>
+
+    <input type="file" id="global-file-input" style="display:none;" onchange="handleGlobalFileSharing(this)">
+
+    <div class="reaction-picker" id="global-reaction-picker">
+        <span onclick="applyReaction('❤️')">❤️</span>
+        <span onclick="applyReaction('👍')">👍</span>
+        <span onclick="applyReaction('😂')">😂</span>
+        <span onclick="applyReaction('😮')">😮</span>
+        <span onclick="applyReaction('😢')">😢</span>
     </div>
 
     <script>
         let socket, myName = "", myPhone = "", currentChatTarget = "public_room", currentTargetPhone = "";
-        const emojis = ["😀","😃","😄","😁","😆","😅","😂","😊","😍","🥰","👍","🔥","❤️","👏"];
-
+        let mediaRecorder, audioChunks = [], isRecording = false;
+        let activeReactionMsgId = null;
         let localStream, peerConnection;
         const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        let canvas, ctx, dinoY = 110, isJumping = false, jumpSpeed = 0, obstacleX = 320, score = 0, gameInterval = null;
-
         window.onload = function() {
-            if (Notification.permission !== "granted") {
-                Notification.requestPermission();
-            }
-            initEmojiPanel();
-            initDinoEngine();
-            
-            window.addEventListener('offline', () => {
-                document.getElementById('offline-dino-screen').style.display = 'flex';
-                startDinoGame();
-            });
-            window.addEventListener('online', () => {
-                document.getElementById('offline-dino-screen').style.display = 'none';
-                if(gameInterval) clearInterval(gameInterval);
-            });
-
             let savedName = localStorage.getItem('n_f_name');
             let savedPhone = localStorage.getItem('n_f_phone');
             if (savedName && savedPhone) {
@@ -222,10 +225,9 @@
                 bypassLogin();
             }
             loadPrivateChatsList();
-
-            setInterval(() => {
-                if(socket && myPhone) socket.emit('ping_status', { phone: myPhone });
-            }, 5000);
+            document.addEventListener('click', () => {
+                document.getElementById('global-reaction-picker').style.display = 'none';
+            });
         };
 
         function submitLogin() {
@@ -242,34 +244,41 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('phone-wrapper').style.display = 'flex';
             document.getElementById('user-display-tag').innerText = myName;
-            initChatConnection();
+            initSocketConnection();
         }
 
-        function initChatConnection() {
+        function initSocketConnection() {
             socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
             
             socket.emit('register_user', { phone: myPhone, name: myName });
-            socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
+            socket.emit('join_room', { room: currentChatTarget });
             socket.emit('get_stories');
-            socket.emit('get_groups');
+
+            setInterval(() => {
+                if(socket && myPhone) socket.emit('ping_status', { phone: myPhone });
+            }, 5000);
 
             socket.on('chat_history', function(data) {
                 let container = document.getElementById('chat-messages-container');
                 container.innerHTML = "";
                 if (data.messages) {
                     data.messages.forEach(msg => {
-                        appendMessageBubble(msg.sender, msg.text, msg.id, msg.sender === myName);
+                        appendBubble(msg.sender, msg.text, msg.id, msg.sender === myName, msg.file_type, msg.reactions);
                     });
                 }
             });
 
             socket.on('message', function(data) {
                 if (data.room === currentChatTarget) {
-                    appendMessageBubble(data.sender, data.text, data.id, data.sender === myName);
-                } else {
-                    if (Notification.permission === "granted" && data.sender !== myName) {
-                        new Notification(`رسالة جديدة من ${data.sender}`, { body: data.text });
-                    }
+                    appendBubble(data.sender, data.text, data.id, data.sender === myName, data.file_type, data.reactions);
+                }
+            });
+
+            socket.on('reaction_updated', function(data) {
+                let badge = document.getElementById('react-'+data.id);
+                if(badge) {
+                    badge.innerText = data.reactions;
+                    badge.style.display = data.reactions ? 'block' : 'none';
                 }
             });
 
@@ -284,58 +293,32 @@
                 });
             });
 
-            socket.on('groups_list', function(data) {
-                let container = document.getElementById('custom-groups-list');
-                container.innerHTML = "";
-                data.groups.forEach(g => {
-                    container.innerHTML += `
-                        <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name} 👥', 'fa-users', '')">
-                            <div class="item-avatar" style="background:#005c4b;"><i class="fas fa-users"></i></div>
-                            <div class="item-details">
-                                <div class="item-name">${g.name} 👥</div>
-                                <div class="item-msg">جروب عام منشأ حديثاً.. انقر للدخول لايف</div>
-                            </div>
-                        </div>`;
-                });
-            });
-
             socket.on('new_story_alert', function() { socket.emit('get_stories'); });
-            socket.on('group_created_alert', function() { socket.emit('get_groups'); });
 
             socket.on('call_signal', async function(data) {
-                let ringtone = document.getElementById('ringtone-player');
+                let ring = document.getElementById('ringtone-player');
                 if (data.type === 'offer') {
-                    try { ringtone.play(); } catch(e){}
-
-                    if (confirm(`لديك مكالمة ${data.media === 'video' ? 'فيديو' : 'صوت'} واردة من ${data.caller_name}، هل ترغب في الرد؟`)) {
-                        ringtone.pause();
-                        ringtone.currentTime = 0;
+                    try { ring.play(); } catch(e){}
+                    if (confirm(`مكالمة واردة من ${data.caller_name}. هل تقبل؟`)) {
+                        ring.pause();
                         document.getElementById('calling-screen').style.display = 'flex';
-                        
-                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' }).catch(err => {
-                            alert("يرجى إعطاء صلاحية الميكروفون/الكاميرا للمتصفح!");
-                        });
-                        if(!localStream) return;
-                        
+                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
                         document.getElementById('localVideo').srcObject = localStream;
                         
                         peerConnection = new RTCPeerConnection(rtcConfig);
                         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-                        
                         peerConnection.onicecandidate = e => {
                             if (e.candidate) socket.emit('call_signal', { target_phone: data.caller_phone, type: 'candidate', candidate: e.candidate });
                         };
                         peerConnection.ontrack = e => {
                             document.getElementById('remoteVideo').srcObject = e.streams[0];
                         };
-                        
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-                        let answer = await peerConnection.createAnswer();
-                        await peerConnection.setLocalDescription(answer);
-                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: answer });
+                        let ans = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(ans);
+                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: ans });
                     } else {
-                        ringtone.pause();
-                        ringtone.currentTime = 0;
+                        ring.pause();
                         socket.emit('call_signal', { target_phone: data.caller_phone, type: 'hangup' });
                     }
                 } else if (data.type === 'answer') {
@@ -343,8 +326,7 @@
                 } else if (data.type === 'candidate') {
                     if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{});
                 } else if (data.type === 'hangup') {
-                    ringtone.pause();
-                    ringtone.currentTime = 0;
+                    ring.pause();
                     document.getElementById('calling-screen').style.display = 'none';
                     if (localStream) localStream.getTracks().forEach(track => track.stop());
                     if (peerConnection) peerConnection.close();
@@ -352,47 +334,10 @@
             });
         }
 
-        async function startWebrtcCall(mediaType) {
-            if(!currentTargetPhone) return;
-            document.getElementById('calling-screen').style.display = 'flex';
-            document.getElementById('call-status-text').innerText = `جاري الرن لايف على الطرف الآخر...`;
-            
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mediaType === 'video' }).catch(err => {
-                alert("يرجى التأكد من تشغيل صلاحيات الميكروفون أو الكاميرا في المتصفح الخاص بك!");
-            });
-            if(!localStream) {
-                document.getElementById('calling-screen').style.display = 'none';
-                return;
-            }
-            
-            document.getElementById('localVideo').srcObject = localStream;
-            
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            
-            peerConnection.onicecandidate = e => {
-                if (e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
-            };
-            peerConnection.ontrack = e => {
-                document.getElementById('remoteVideo').srcObject = e.streams[0];
-            };
-            
-            let offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: mediaType });
-        }
-
-        function endLiveCall() {
-            document.getElementById('calling-screen').style.display = 'none';
-            if (localStream) localStream.getTracks().forEach(track => track.stop());
-            if (peerConnection) peerConnection.close();
-            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
-        }
-
         function openStoryUploaderMenu() {
-            let choice = prompt("اختر نوع الحالة:\n1. اكتب حالة نصية\n2. رفع ميديا");
+            let choice = prompt("اختر نوع الحالة لتحديثها فوراً:\n1. حالة نصية\n2. رفع ميديا (صور/فيديو)");
             if (choice === "1") {
-                let txt = prompt("اكتب حالتك النصية الآن:");
+                let txt = prompt("اكتب حالتك النصية الجديدة:");
                 if (txt && txt.trim() !== "") {
                     socket.emit('add_story', { sender: myName, phone: myPhone, text: txt.trim(), file_type: 'text' });
                 }
@@ -411,7 +356,6 @@
             reader.readAsDataURL(file);
             reader.onloadend = () => {
                 socket.emit('add_story', { sender: myName, phone: myPhone, text: reader.result, file_type: fType });
-                alert("تم رفع حالتك الجديدة بنجاح لايف!");
                 element.value = "";
             };
         }
@@ -419,40 +363,143 @@
         function viewStoryLive(sender, content, type) {
             let modal = document.getElementById('story-view-modal');
             let mediaBox = document.getElementById('story-media-content');
-            document.getElementById('story-view-sender').innerText = `حالة الطرف ${sender}`;
+            document.getElementById('story-view-sender').innerText = `حالة: ${sender}`;
             mediaBox.innerHTML = "";
             
             if (type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; height:60vh; border-radius:10px;"></video>`;
             else if (type === 'audio') mediaBox.innerHTML = `<audio src="${content}" autoplay controls style="width:100%;"></audio>`;
             else if (type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:65vh; border-radius:10px;">`;
-            else mediaBox.innerHTML = `<div style="font-size:22px; padding:30px; background:#222e35; border-radius:12px; text-align:center; color:#fff;">${content}</div>`;
+            else mediaBox.innerHTML = `<div style="font-size:20px; padding:30px; background:#222e35; border-radius:12px; text-align:center; color:#fff;">${content}</div>`;
             
             modal.style.display = "flex";
         }
 
-        function createNewGroupClick() {
-            let gName = prompt("أدخل اسم المجموعة (الجروب) الجديد:");
-            if (gName && gName.trim() !== "") {
-                socket.emit('create_group', { name: gName.trim(), creator: myName });
+        function sendMsg() {
+            let input = document.getElementById('chat-input');
+            let txt = input.value.trim();
+            if(!txt) return;
+            socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: txt, file_type: 'text' });
+            input.value = "";
+        }
+
+        function handleGlobalFileSharing(element) {
+            let file = element.files[0]; if(!file) return;
+            let reader = new FileReader();
+            let fType = 'image';
+            if(file.type.startsWith('video/')) fType = 'video';
+            else if(file.type.startsWith('audio/')) fType = 'audio';
+            
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: reader.result, file_type: fType });
+                element.value = "";
+            };
+        }
+
+        async function toggleVoiceRecording() {
+            let btn = document.getElementById('voice-record-btn');
+            if(!isRecording) {
+                let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    let blob = new Blob(audioChunks, { type: 'audio/ogg' });
+                    let r = new FileReader();
+                    r.readAsDataURL(blob);
+                    r.onloadend = () => {
+                        socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: r.result, file_type: 'audio' });
+                    };
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                btn.style.background = '#ff3b30';
+                btn.style.color = '#fff';
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.style.background = 'var(--wa-surface)';
+                btn.style.color = 'var(--wa-green)';
             }
         }
 
-        function switchTab(tabId, element) {
-            document.querySelectorAll('.main-content').forEach(screen => screen.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById('screen-' + tabId).classList.add('active');
+        function appendBubble(sender, text, msgId, isMe, type, reactions) {
+            let container = document.getElementById('chat-messages-container');
+            if(document.getElementById(msgId)) return;
+            let bubble = document.createElement('div');
+            bubble.className = "msg-bubble " + (isMe ? 'sent' : 'received');
+            bubble.id = msgId;
+            
+            bubble.addEventListener('click', function(e) {
+                e.stopPropagation();
+                activeReactionMsgId = msgId;
+                let picker = document.getElementById('global-reaction-picker');
+                picker.style.display = 'flex';
+                picker.style.top = e.pageY + 'px';
+                picker.style.left = e.pageX + 'px';
+            });
+
+            let contentHtml = text;
+            if(type === 'image') contentHtml = `<img src="${text}" style="max-width:100%; border-radius:6px;">`;
+            else if(type === 'video') contentHtml = `<video src="${text}" controls style="max-width:100%; border-radius:6px;"></video>`;
+            else if(type === 'audio') contentHtml = `<audio src="${text}" controls style="max-width:100%;"></audio>`;
+
+            bubble.innerHTML = `
+                <span class="msg-sender">${sender}</span>
+                <div>${contentHtml}</div>
+                <div class="reaction-badge" id="react-${msgId}" style="display:${reactions?'block':'none'}">${reactions||''}</div>
+                <div class="msg-meta">${new Date().toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'})}</div>
+            `;
+            container.appendChild(bubble);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function applyReaction(emo) {
+            if(activeReactionMsgId) {
+                socket.emit('add_reaction', { id: activeReactionMsgId, room: currentChatTarget, reaction: emo });
+            }
+        }
+
+        async function startCallEngine(type) {
+            if(!currentTargetPhone) return;
+            document.getElementById('calling-screen').style.display = 'flex';
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
+            document.getElementById('localVideo').srcObject = localStream;
+
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            peerConnection.onicecandidate = e => {
+                if (e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
+            };
+            peerConnection.ontrack = e => {
+                document.getElementById('remoteVideo').srcObject = e.streams[0];
+            };
+            let offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: type });
+        }
+
+        function endLiveCall() {
+            document.getElementById('calling-screen').style.display = 'none';
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
+            if (peerConnection) peerConnection.close();
+            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
+        }
+
+        function toggleThemeMode() { document.body.classList.toggle('light-theme'); }
+
+        function showMyQrCode() {
+            document.getElementById('qr-modal').style.display = 'flex';
+            document.getElementById('qr-code-target').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${myPhone}">`;
         }
 
         function addNewPrivateChat() {
-            let pName = prompt("اسم الشخص:");
-            let pPhone = prompt("رقم الهاتف:");
-            if(pName && pPhone) {
-                let list = JSON.parse(localStorage.getItem('p_chats') || "[]");
-                if(!list.some(x => x.phone === pPhone)) {
-                    list.push({name: pName, phone: pPhone});
-                    localStorage.setItem('p_chats', JSON.stringify(list));
-                }
+            let name = prompt("اسم الشخص:");
+            let phone = prompt("رقم هاتف الشخص:");
+            if(name && phone) {
+                let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
+                chats.push({name, phone});
+                localStorage.setItem('p_chats', JSON.stringify(chats));
                 loadPrivateChatsList();
             }
         }
@@ -460,111 +507,31 @@
         function loadPrivateChatsList() {
             let container = document.getElementById('custom-private-chats-list');
             container.innerHTML = "";
-            let list = JSON.parse(localStorage.getItem('p_chats') || "[]");
-            list.forEach(c => {
-                let roomId = [myPhone, c.phone].sort().join("_");
+            let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
+            chats.forEach(c => {
+                let rId = [myPhone, c.phone].sort().join("_");
                 container.innerHTML += `
-                    <div class="list-item" onclick="openChatWindow('${roomId}', '${c.name} 👤', 'fa-user', '${c.phone}')">
+                    <div class="list-item" onclick="openChatWindow('${rId}', '${c.name}', 'fa-user', '${c.phone}')">
                         <div class="item-avatar"><i class="fas fa-user"></i></div>
-                        <div class="item-details">
-                            <div class="item-name">${c.name} 👤</div>
-                            <div class="item-msg">شات خاص آمن ومستقر ومحدث بالكامل.</div>
-                        </div>
+                        <div class="item-details"><div class="item-name">${c.name}</div><div class="item-msg">شات خاص آمن ومحفوظ</div></div>
                     </div>`;
             });
         }
 
-        function openChatWindow(roomId, roomName, iconClass, targetPhone) {
-            currentChatTarget = roomId;
-            currentTargetPhone = targetPhone;
+        function openChatWindow(roomId, roomName, icon, targetPhone) {
+            currentChatTarget = roomId; currentTargetPhone = targetPhone;
             document.getElementById('chat-win-name').innerText = roomName;
-            document.getElementById('chat-win-icon').className = "fas " + iconClass;
-            document.getElementById('chat-messages-container').innerHTML = "";
+            document.getElementById('chat-win-icon').className = "fas " + icon;
+            document.getElementById('call-actions-holder').style.display = targetPhone ? 'flex' : 'none';
             document.getElementById('chat-window').style.display = 'flex';
-            
-            let statusLabel = document.getElementById('chat-win-status');
-            let callActions = document.getElementById('call-actions-holder');
-            
-            if(targetPhone) {
-                callActions.style.display = 'flex';
-                statusLabel.innerText = "جاري فحص حالة المستخدم الرقمية...";
-                fetch(`/api/check_user/${targetPhone}`)
-                    .then(r => r.json())
-                    .then(res => {
-                        if(res.exists && res.online) {
-                            statusLabel.innerText = "متصل الآن 🟢";
-                        } else {
-                            statusLabel.innerText = "غير متصل حالياً 🔴";
-                        }
-                    }).catch(() => { statusLabel.innerText = "شات محمي"; });
-            } else {
-                callActions.style.display = 'none';
-                statusLabel.innerText = "غرفة عامة نشطة";
-            }
-
-            if (socket) socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
+            socket.emit('join_room', { room: currentChatTarget });
         }
 
-        function openSelfChat() { openChatWindow('self_' + myPhone, 'مكتبتي الشخصية 📑', 'fa-bookmark', ''); }
         function closeChatWindow() { document.getElementById('chat-window').style.display = 'none'; }
-
-        function initEmojiPanel() {
-            let panel = document.getElementById('emoji-panel-box');
-            emojis.forEach(emo => {
-                let span = document.createElement('span'); span.className = "emoji-item"; span.innerText = emo;
-                span.onclick = () => { document.getElementById('chat-input').value += emo; };
-                panel.appendChild(span);
-            });
-        }
-
-        function toggleEmojiPanel() {
-            let panel = document.getElementById('emoji-panel-box');
-            panel.style.display = (panel.style.display === 'grid') ? 'none' : 'grid';
-        }
-
-        function sendMsg() {
-            let inputField = document.getElementById('chat-input');
-            let text = inputField.value.trim();
-            if (text === "") return;
-
-            let msgId = "msg-" + Date.now();
-            socket.emit('message', { id: msgId, room: currentChatTarget, sender: myName, phone: myPhone, text: text });
-            inputField.value = "";
-            document.getElementById('emoji-panel-box').style.display = 'none';
-        }
-
-        function appendMessageBubble(sender, text, msgId, isMe) {
-            let container = document.getElementById('chat-messages-container');
-            if (document.getElementById(msgId)) return;
-            
-            let bubble = document.createElement('div');
-            bubble.className = "msg-bubble " + (isMe ? "sent" : "received");
-            bubble.id = msgId;
-            let senderHtml = !isMe ? `<span class="msg-sender">${sender}</span>` : '';
-
-            let timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            bubble.innerHTML = `${senderHtml}<div class="msg-text-content">${text}</div><div class="msg-meta"><span>${timeStr}</span> <span>${isMe ? '✓✓' : ''}</span></div>`;
-            container.appendChild(bubble);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function initDinoEngine() {
-            canvas = document.getElementById('canvas-dino'); ctx = canvas.getContext('2d');
-            window.addEventListener('keydown', function(e) { if(e.code === 'Space') { isJumping = true; jumpSpeed = -10; } });
-            canvas.addEventListener('touchstart', function() { isJumping = true; jumpSpeed = -10; });
-        }
-        function startDinoGame() {
-            dinoY = 110; isJumping = false; obstacleX = 320; score = 0;
-            if(gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(updateDinoGame, 30);
-        }
-        function updateDinoGame() {
-            ctx.clearRect(0, 0, 320, 150);
-            if (isJumping) { dinoY += jumpSpeed; jumpSpeed += 1; if (dinoY >= 110) { dinoY = 110; isJumping = false; } }
-            obstacleX -= 6; if (obstacleX < -10) { obstacleX = 320; score += 10; document.getElementById('dino-score').innerText = "النقاط: " + score; }
-            ctx.fillStyle = "#00a884"; ctx.fillRect(20, dinoY, 20, 20);
-            ctx.fillStyle = "#ff3b30"; ctx.fillRect(obstacleX, 115, 12, 15);
-            if (obstacleX > 20 && obstacleX < 40 && dinoY >= 95) { clearInterval(gameInterval); alert("انتهت اللعبة! نقاطك: " + score); startDinoGame(); }
+        function switchTab(t, e) {
+            document.querySelectorAll('.main-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            e.classList.add('active'); document.getElementById('screen-'+t).classList.add('active');
         }
     </script>
 </body>
