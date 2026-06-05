@@ -51,10 +51,6 @@
         .msg-meta { font-size: 10px; color: var(--wa-muted); text-align: left; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
         .msg-sender { font-size: 11px; color: #0df9c4; font-weight: bold; display: block; margin-bottom: 4px; }
 
-        .msg-actions { display: none; position: absolute; top: -25px; left: 10px; background: #111b21; border: 1px solid var(--wa-surface); border-radius: 4px; padding: 2px; gap: 5px; z-index: 10; }
-        .msg-bubble:hover .msg-actions { display: flex; }
-        .action-btn { background: none; border: none; color: #fff; cursor: pointer; font-size: 12px; padding: 2px 5px; }
-        
         .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--wa-surface); }
         .chat-input-field { flex: 1; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; outline: none; text-align: right; font-size: 15px; }
         .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #111b21; font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -83,6 +79,8 @@
     </style>
 </head>
 <body>
+
+    <audio id="ringtone-player" src="https://assets.mixkit.co/active_storage/sfx/1353/1353-84.wav" loop></audio>
 
     <div id="calling-screen">
         <h3 id="call-status-text" style="color:var(--wa-green);">جاري الاتصال لايف...</h3>
@@ -227,7 +225,7 @@
 
             setInterval(() => {
                 if(socket && myPhone) socket.emit('ping_status', { phone: myPhone });
-            }, 10000);
+            }, 5000);
         };
 
         function submitLogin() {
@@ -305,15 +303,20 @@
             socket.on('group_created_alert', function() { socket.emit('get_groups'); });
 
             socket.on('call_signal', async function(data) {
+                let ringtone = document.getElementById('ringtone-player');
                 if (data.type === 'offer') {
-                    let audioRing = new Audio('https://assets.mixkit.co/active_storage/sfx/1353/1353-84.wav');
-                    audioRing.loop = true;
-                    audioRing.play().catch(()=>{});
+                    try { ringtone.play(); } catch(e){}
 
-                    if (confirm(`لديك مكالمة ${data.media === 'video' ? 'فيديو' : 'صوت'} من ${data.caller_name}، هل ترغب في الرد؟`)) {
-                        audioRing.pause();
+                    if (confirm(`لديك مكالمة ${data.media === 'video' ? 'فيديو' : 'صوت'} واردة من ${data.caller_name}، هل ترغب في الرد؟`)) {
+                        ringtone.pause();
+                        ringtone.currentTime = 0;
                         document.getElementById('calling-screen').style.display = 'flex';
-                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
+                        
+                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' }).catch(err => {
+                            alert("يرجى إعطاء صلاحية الميكروفون/الكاميرا للمتصفح!");
+                        });
+                        if(!localStream) return;
+                        
                         document.getElementById('localVideo').srcObject = localStream;
                         
                         peerConnection = new RTCPeerConnection(rtcConfig);
@@ -331,7 +334,8 @@
                         await peerConnection.setLocalDescription(answer);
                         socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: answer });
                     } else {
-                        audioRing.pause();
+                        ringtone.pause();
+                        ringtone.currentTime = 0;
                         socket.emit('call_signal', { target_phone: data.caller_phone, type: 'hangup' });
                     }
                 } else if (data.type === 'answer') {
@@ -339,6 +343,8 @@
                 } else if (data.type === 'candidate') {
                     if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{});
                 } else if (data.type === 'hangup') {
+                    ringtone.pause();
+                    ringtone.currentTime = 0;
                     document.getElementById('calling-screen').style.display = 'none';
                     if (localStream) localStream.getTracks().forEach(track => track.stop());
                     if (peerConnection) peerConnection.close();
@@ -349,9 +355,16 @@
         async function startWebrtcCall(mediaType) {
             if(!currentTargetPhone) return;
             document.getElementById('calling-screen').style.display = 'flex';
-            document.getElementById('call-status-text').innerText = `جاري الرن على الطرف الآخر...`;
+            document.getElementById('call-status-text').innerText = `جاري الرن لايف على الطرف الآخر...`;
             
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mediaType === 'video' });
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mediaType === 'video' }).catch(err => {
+                alert("يرجى التأكد من تشغيل صلاحيات الميكروفون أو الكاميرا في المتصفح الخاص بك!");
+            });
+            if(!localStream) {
+                document.getElementById('calling-screen').style.display = 'none';
+                return;
+            }
+            
             document.getElementById('localVideo').srcObject = localStream;
             
             peerConnection = new RTCPeerConnection(rtcConfig);
