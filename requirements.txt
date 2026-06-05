@@ -3,3 +3,4 @@ Flask-SocketIO==5.3.6
 gunicorn==21.2.0
 groq
 eventlet
+firebase-admin
