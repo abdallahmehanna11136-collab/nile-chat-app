@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from groq import Groq
 
 # 1. إعداد عميل الذكاء الاصطناعي بقراءة المفتاح من البيئة المحيطة لتجنب الحظر
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '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')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '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')
 groq_client = Groq(api_key=GROQ_API_KEY)
 
 app = Flask(__name__)
