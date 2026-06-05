@@ -1,17 +1,16 @@
 from flask import Flask, render_template, make_response, jsonify, request
 from flask_socketio import SocketIO, emit, join_room
-import os
 import sqlite3
 import time
 from groq import Groq
 
-# تفعيل العميل الخاص بالذكاء الاصطناعي بشكل سليم
+# ربط عميل الذكاء الاصطناعي
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_ultra_max_system'
-app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024
-socketio = SocketIO(app, cors_allowed_origins="*", max_decode_size=150 * 1024 * 1024)
+app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024
+socketio = SocketIO(app, cors_allowed_origins="*", max_decode_size=200 * 1024 * 1024)
 
 DB_PATH = 'nile_chat_database.db'
 
@@ -27,7 +26,8 @@ def init_db():
             text TEXT,
             timestamp REAL,
             file_type TEXT DEFAULT 'text',
-            file_name TEXT DEFAULT ''
+            file_name TEXT DEFAULT '',
+            reactions TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
@@ -109,11 +109,11 @@ def on_join_room(data):
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, room, sender, text, file_type, file_name FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
+    cursor.execute("SELECT id, room, sender, text, file_type, file_name, reactions FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
     rows = cursor.fetchall()
     conn.close()
     
-    history = [{"id": r[0], "room": r[1], "sender": r[2], "text": r[3], "file_type": r[4], "file_name": r[5]} for r in rows]
+    history = [{"id": r[0], "room": r[1], "sender": r[2], "text": r[3], "file_type": r[4], "file_name": r[5], "reactions": r[6]} for r in rows]
     emit('chat_history', {'messages': history})
 
 @socketio.on('message')
@@ -128,15 +128,14 @@ def handle_message_event(data):
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reactions) VALUES (?, ?, ?, ?, ?, ?, ?, ?, '')",
                    (msg_id, room, sender, phone, text, time.time(), file_type, file_name))
     conn.commit()
     conn.close()
 
-    # إرسال الرسالة فوراً لكل من في الغرفة لتظهر تلقائياً
-    emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name}, room=room)
+    emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name, 'reactions': ''}, room=room)
 
-    # معالجة رد الذكاء الاصطناعي
+    # معالجة فورية وحفظ رد الذكاء الاصطناعي لـ NileAI شات الخاص والعام
     if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
         try:
             prompt_content = text.replace('@NileAI', '').strip()
@@ -152,37 +151,26 @@ def handle_message_event(data):
             
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type) VALUES (?, ?, ?, ?, ?, ?, 'text')",
+            cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, reactions) VALUES (?, ?, ?, ?, ?, ?, 'text', '')",
                            (bot_msg_id, room, "NileAI 🤖", "bot-system", reply_text, time.time()))
             conn.commit()
             conn.close()
             
-            emit('message', {'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 'text': reply_text, 'file_type': 'text'}, room=room)
+            emit('message', {'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 'text': reply_text, 'file_type': 'text', 'reactions': ''}, room=room)
         except Exception:
             pass
 
-@socketio.on('delete_message')
-def handle_delete(data):
+@socketio.on('add_reaction')
+def handle_reaction(data):
     msg_id = data.get('id')
     room = data.get('room')
+    reaction = data.get('reaction')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM messages WHERE id = ?", (msg_id,))
+    cursor.execute("UPDATE messages SET reactions = ? WHERE id = ?", (reaction, msg_id))
     conn.commit()
     conn.close()
-    emit('message_deleted', {'id': msg_id}, room=room)
-
-@socketio.on('edit_message')
-def handle_edit(data):
-    msg_id = data.get('id')
-    room = data.get('room')
-    new_text = data.get('text')
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("UPDATE messages SET text = ? WHERE id = ?", (new_text, msg_id))
-    conn.commit()
-    conn.close()
-    emit('message_edited', {'id': msg_id, 'text': new_text}, room=room)
+    emit('reaction_updated', {'id': msg_id, 'reactions': reaction}, room=room)
 
 @socketio.on('add_story')
 def handle_story(data):
@@ -236,12 +224,8 @@ def get_groups():
 @socketio.on('call_signal')
 def handle_call_signal(data):
     target_phone = data.get('target_phone')
-    room = data.get('room')
-    # توجيه إشارة الرن للرقم المستهدف بشكل حقيقي ومباشر
     if target_phone:
         emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
-    else:
-        emit('call_signal', data, room=room, include_self=False)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
