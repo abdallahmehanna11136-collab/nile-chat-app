@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nile Chat Pro</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --wa-green: #00a884; --wa-dark-bg: #0b141a; --wa-header-bg: #111b21;
@@ -27,26 +28,27 @@
         .main-content.active { display: block; }
         
         .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid var(--wa-surface); cursor: pointer; }
-        .item-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--wa-surface); display: flex; justify-content: center; align-items: center; margin-left: 15px; color: var(--wa-green); }
+        .item-avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--wa-surface); display: flex; justify-content: center; align-items: center; margin-left: 15px; color: var(--wa-green); overflow: hidden; }
+        .item-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .item-details { flex: 1; }
 
         #chat-window { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-dark-bg); z-index: 500; display: none; flex-direction: column; }
         .chat-header { background: var(--wa-header-bg); padding: 12px; display: flex; align-items: center; border-bottom: 1px solid var(--wa-surface); }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         
-        .msg-bubble { max-width: 75%; padding: 10px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; cursor: pointer; }
+        .msg-bubble { max-width: 75%; padding: 10px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; margin-bottom: 5px; }
         .msg-bubble.sent { background: var(--wa-bubble-sent); align-self: flex-start; }
         .msg-bubble.received { background: var(--wa-bubble-recv); align-self: flex-end; }
-        .reaction-badge { position: absolute; bottom: -10px; left: 10px; background: var(--wa-surface); border-radius: 10px; padding: 2px 6px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .reaction-badge { position: absolute; bottom: -10px; left: 10px; background: var(--wa-surface); border-radius: 10px; padding: 2px 6px; font-size: 12px; }
         
         .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; }
         .chat-input-field { flex: 1; padding: 12px; background: var(--wa-surface); border: none; border-radius: 8px; color: #fff; text-align: right; outline: none; }
         
-        .voice-btn { width: 45px; height: 45px; background: var(--wa-surface); border: none; border-radius: 50%; color: var(--wa-green); cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .voice-btn, .send-btn { width: 45px; height: 45px; background: var(--wa-surface); border: none; border-radius: 50%; color: var(--wa-green); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .send-btn { background: var(--wa-green); color: #fff; }
         
         .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
-        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 12px; cursor: pointer; background: var(--wa-surface); color: var(--wa-text); text-align: center; }
+        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 12px; cursor: pointer; background: var(--wa-surface); color: var(--wa-text); }
         
         .reaction-picker { display: none; position: fixed; background: var(--wa-header-bg); border: 1px solid var(--wa-surface); border-radius: 30px; padding: 8px 15px; gap: 12px; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         .reaction-picker span { font-size: 22px; cursor: pointer; }
@@ -59,14 +61,34 @@
         .video-box { display: flex; gap: 10px; width: 90%; max-width: 500px; }
         video { width: 50%; background: #000; border-radius: 8px; border: 1px solid var(--wa-green); transform: scaleX(-1); }
         
-        #story-view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 25000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; }
+        #story-view-modal, #settings-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,20,26,0.95); z-index: 25000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: var(--wa-header-bg); border-radius: 12px; padding: 25px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--wa-surface); }
     </style>
 </head>
 <body>
 
     <div id="story-view-modal" onclick="this.style.display='none'; document.getElementById('story-media-content').innerHTML=''">
-        <h4 id="story-view-sender" style="margin-bottom:15px; color:var(--wa-green);"></h4>
         <div id="story-media-content" style="max-width:100%; max-height:70vh;"></div>
+    </div>
+
+    <div id="settings-modal">
+        <div class="modal-box">
+            <h3 style="color:var(--wa-green); margin-bottom:15px;">إعدادات الحساب والـ QR ⚙️</h3>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:15px;">
+                <div style="width:80px; height:80px; border-radius:50%; background:#333; overflow:hidden; cursor:pointer;" onclick="document.getElementById('profile-pic-input').click()">
+                    <img id="my-profile-img" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
+                    <span id="profile-placeholder" style="line-height:80px; font-size:12px; color:var(--wa-muted);">اضغط لتغييرها</span>
+                </div>
+                <input type="file" id="profile-pic-input" style="display:none;" onchange="updateProfilePicture(this)">
+                
+                <h4 id="settings-user-name"></h4>
+                <p id="settings-user-phone" style="color:var(--wa-muted); font-size:14px;"></p>
+                
+                <div id="qrcode-area" style="background:#fff; padding:10px; border-radius:8px; margin-top:10px;"></div>
+                
+                <button class="login-btn" style="background:#ff3b30; color:#fff; width:100%; margin-top:10px;" onclick="document.getElementById('settings-modal').style.display='none'">إغلاق</button>
+            </div>
+        </div>
     </div>
 
     <div id="calling-screen">
@@ -90,9 +112,9 @@
     <div id="phone-wrapper">
         <div class="app-header">
             <span style="color:var(--wa-green); font-weight:bold; font-size:20px;">Nile Chat</span>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; align-items:center;">
                 <button class="login-btn" style="padding:6px 12px; font-size:12px;" onclick="createNewGroup()">+ جروب جديد</button>
-                <button class="login-btn" style="padding:6px 12px; font-size:12px; background:#333; color:#fff;" onclick="addNewPrivateChat()">+ شات خاص</button>
+                <i class="fas fa-cog" style="font-size:20px; color:var(--wa-muted); cursor:pointer; margin-right:5px;" onclick="openSettingsModal()"></i>
             </div>
         </div>
 
@@ -106,7 +128,7 @@
                 <div class="item-avatar"><i class="fas fa-users"></i></div>
                 <div class="item-details">
                     <div class="item-name">مجموعة نايل العامة 💬</div>
-                    <div class="item-msg">اكتب @NileAI للرد الفوري من الذكاء الاصطناعي</div>
+                    <div class="item-msg">منشن @NileAI للرد الفوري من الذكاء الاصطناعي</div>
                 </div>
             </div>
             <div id="groups-list-target"></div>
@@ -143,7 +165,7 @@
         <div class="chat-messages" id="chat-messages-container"></div>
         <div class="chat-input-bar">
             <i class="fas fa-paperclip" style="font-size:20px; color:var(--wa-green); cursor:pointer;" onclick="document.getElementById('global-file-input').click()"></i>
-            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة..." onkeypress="if(event.key === 'Enter') sendMsg()">
+            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة...">
             <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()"><i class="fas fa-microphone"></i></button>
             <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
@@ -168,6 +190,12 @@
         window.onload = function() {
             loadPrivateChats();
             document.addEventListener('click', () => { document.getElementById('global-reaction-picker').style.display = 'none'; });
+            let savedPic = localStorage.getItem('my_profile_pic');
+            if(savedPic) {
+                document.getElementById('my-profile-img').src = savedPic;
+                document.getElementById('my-profile-img').style.display = 'block';
+                document.getElementById('profile-placeholder').style.display = 'none';
+            }
         };
 
         function submitLogin() {
@@ -229,38 +257,13 @@
                         </div>`;
                 });
             });
-
-            socket.on('call_signal', async (data) => {
-                if (data.type === 'offer') {
-                    if (confirm(`مكالمة واردة من ${data.caller_name}. هل تقبل؟`)) {
-                        document.getElementById('calling-screen').style.display = 'flex';
-                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
-                        document.getElementById('localVideo').srcObject = localStream;
-                        peerConnection = new RTCPeerConnection(rtcConfig);
-                        localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-                        peerConnection.onicecandidate = e => {
-                            if(e.candidate) socket.emit('call_signal', { target_phone: data.caller_phone, type: 'candidate', candidate: e.candidate });
-                        };
-                        peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
-                        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-                        let ans = await peerConnection.createAnswer();
-                        await peerConnection.setLocalDescription(ans);
-                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: ans });
-                    }
-                } else if (data.type === 'answer') {
-                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                } else if (data.type === 'candidate') {
-                    if(peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-                } else if (data.type === 'hangup') {
-                    endLiveCall();
-                }
-            });
         }
 
         function sendMsg() {
             let inp = document.getElementById('chat-input');
             let txt = inp.value.trim();
             if(!txt) return;
+            // الحفظ والإرسال الفوري لفك أي تعليق
             socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: txt, file_type: 'text' });
             inp.value = "";
         }
@@ -268,14 +271,33 @@
         function handleGlobalFileSharing(element) {
             let file = element.files[0]; if(!file) return;
             let reader = new FileReader();
-            let fType = 'image';
-            if(file.type.startsWith('video/')) fType = 'video';
-            else if(file.type.startsWith('audio/')) fType = 'audio';
-            
+            let fType = file.type.startsWith('video/') ? 'video' : (file.type.startsWith('audio/') ? 'audio' : 'image');
             reader.readAsDataURL(file);
             reader.onloadend = () => {
                 socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: reader.result, file_type: fType });
                 element.value = "";
+            };
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settings-user-name').innerText = myName;
+            document.getElementById('settings-user-phone').innerText = "رقمك: " + myPhone;
+            let area = document.getElementById('qrcode-area');
+            area.innerHTML = "";
+            // توليد الـ QR كود تلقائياً بناءً على رقم المستخدم
+            new QRCode(area, { text: myPhone, width: 120, height: 120 });
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+
+        function updateProfilePicture(element) {
+            let file = element.files[0]; if(!file) return;
+            let reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                localStorage.setItem('my_profile_pic', reader.result);
+                document.getElementById('my-profile-img').src = reader.result;
+                document.getElementById('my-profile-img').style.display = 'block';
+                document.getElementById('profile-placeholder').style.display = 'none';
             };
         }
 
@@ -303,37 +325,11 @@
         function viewStoryLive(sender, content, type) {
             let modal = document.getElementById('story-view-modal');
             let mediaBox = document.getElementById('story-media-content');
-            document.getElementById('story-view-sender').innerText = `حالة: ${sender}`;
+            modal.style.display = 'flex';
             mediaBox.innerHTML = "";
             if(type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; max-height:70vh;"></video>`;
             else if(type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:70vh;">`;
             else mediaBox.innerHTML = `<div style="font-size:18px; padding:20px; background:#222e35; color:#fff; border-radius:8px;">${content}</div>`;
-            modal.style.display = 'flex';
-        }
-
-        async function toggleVoiceRecording() {
-            let btn = document.getElementById('voice-record-btn');
-            if(!isRecording) {
-                let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    let blob = new Blob(audioChunks, { type: 'audio/ogg' });
-                    let r = new FileReader();
-                    r.readAsDataURL(blob);
-                    r.onloadend = () => {
-                        socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: r.result, file_type: 'audio' });
-                    };
-                };
-                mediaRecorder.start();
-                isRecording = true;
-                btn.style.background = '#ff3b30'; btn.style.color = '#fff';
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                btn.style.background = 'var(--wa-surface)'; btn.style.color = 'var(--wa-green)';
-            }
         }
 
         function appendBubble(sender, text, msgId, type, reactions) {
@@ -372,20 +368,9 @@
             if(name) socket.emit('create_group', { name: name });
         }
 
-        function addNewPrivateChat() {
-            let name = prompt("اسم الشخص:");
-            let phone = prompt("رقم هاتف الشخص:");
-            if(name && phone) {
-                let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
-                chats.push({name, phone});
-                localStorage.setItem('p_chats', JSON.stringify(chats));
-                loadPrivateChats();
-            }
-        }
-
         function loadPrivateChats() {
             let target = document.getElementById('custom-private-chats-list');
-            target.innerHTML = "";
+            if(!target) return; target.innerHTML = "";
             let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
             chats.forEach(c => {
                 let rId = [myPhone, c.phone].sort().join("_");
@@ -397,29 +382,6 @@
             });
         }
 
-        async function startCallEngine(type) {
-            if(!currentTargetPhone) return;
-            document.getElementById('calling-screen').style.display = 'flex';
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
-            document.getElementById('localVideo').srcObject = localStream;
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.onicecandidate = e => {
-                if(e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
-            };
-            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
-            let offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: type });
-        }
-
-        function endLiveCall() {
-            document.getElementById('calling-screen').style.display = 'none';
-            if(localStream) localStream.getTracks().forEach(t => t.stop());
-            if(peerConnection) peerConnection.close();
-            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
-        }
-
         function openChatWindow(roomId, roomName, targetPhone) {
             currentChatTarget = roomId; currentTargetPhone = targetPhone;
             document.getElementById('chat-win-name').innerText = roomName;
@@ -429,7 +391,6 @@
         }
 
         function closeChatWindow() { document.getElementById('chat-window').style.display='none'; }
-        
         function switchTab(t) {
             document.querySelectorAll('.main-content').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
