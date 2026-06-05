@@ -5,6 +5,7 @@ import sqlite3
 import time
 from groq import Groq
 
+# تفعيل العميل الخاص بالذكاء الاصطناعي بشكل سليم
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
@@ -76,11 +77,7 @@ def check_user(phone):
     if row:
         is_online = (time.time() - row[1]) < 30
         return jsonify({"exists": True, "name": row[0], "online": is_online})
-    return jsonify({"exists": False, "online": false})
-
-@socketio.on('connect')
-def handle_connect():
-    pass
+    return jsonify({"exists": False, "online": False})
 
 @socketio.on('register_user')
 def handle_register(data):
@@ -136,8 +133,10 @@ def handle_message_event(data):
     conn.commit()
     conn.close()
 
+    # إرسال الرسالة فوراً لكل من في الغرفة لتظهر تلقائياً
     emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name}, room=room)
 
+    # معالجة رد الذكاء الاصطناعي
     if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
         try:
             prompt_content = text.replace('@NileAI', '').strip()
@@ -238,6 +237,7 @@ def get_groups():
 def handle_call_signal(data):
     target_phone = data.get('target_phone')
     room = data.get('room')
+    # توجيه إشارة الرن للرقم المستهدف بشكل حقيقي ومباشر
     if target_phone:
         emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
     else:
