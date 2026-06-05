@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نايل شات الاحترافي المتكامل - Nile Chat</title>
+    <title>نايل شات - Nile Chat</title>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -18,19 +18,8 @@
             --wa-muted: #8696a0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; transition: 0.3s; }
+        body, html { width: 100%; height: 100%; background-color: var(--wa-dark-bg); color: var(--wa-text); overflow: hidden; }
         
-        /* ميزة تعديل الألوان والـ Dark / Light mode تلقائياً */
-        body.light-theme {
-            --wa-dark-bg: #f0f2f5;
-            --wa-header-bg: #ffffff;
-            --wa-surface: #e9edef;
-            --wa-bubble-sent: #d9fdd3;
-            --wa-bubble-recv: #ffffff;
-            --wa-text: #111b21;
-            --wa-muted: #667781;
-        }
-
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--wa-dark-bg); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-box { background: var(--wa-header-bg); border-radius: 12px; padding: 30px; width: 90%; max-width: 400px; text-align: center; border: 1px solid var(--wa-surface); }
         .login-input { width: 100%; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; font-size: 16px; margin-bottom: 15px; text-align: right; outline: none; }
@@ -56,7 +45,7 @@
         .chat-user-info { flex: 1; margin-right: 10px; }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background-image: radial-gradient(var(--wa-surface) 1px, transparent 0); background-size: 24px 24px; }
         
-        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; line-height: 1.4; display: flex; flex-direction: column; color: var(--wa-text); }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 15px; position: relative; word-break: break-word; line-height: 1.4; display: flex; flex-direction: column; }
         .msg-bubble.sent { background: var(--wa-bubble-sent); align-self: flex-start; border-top-left-radius: 0; }
         .msg-bubble.received { background: var(--wa-bubble-recv); align-self: flex-end; border-top-right-radius: 0; }
         .msg-meta { font-size: 10px; color: var(--wa-muted); text-align: left; margin-top: 5px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -68,7 +57,6 @@
         
         .chat-input-bar { background: var(--wa-header-bg); padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--wa-surface); }
         .chat-input-field { flex: 1; padding: 12px; background: #2a3942; border: none; border-radius: 8px; color: #fff; outline: none; text-align: right; font-size: 15px; }
-        body.light-theme .chat-input-field { background: #f0f2f5; color: #000; }
         .send-btn { width: 45px; height: 45px; background: var(--wa-green); border: none; border-radius: 50%; color: #111b21; font-size: 18px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
 
         .emoji-panel { display: none; background: #111b21; border-top: 1px solid var(--wa-surface); padding: 10px; grid-template-columns: repeat(8, 1fr); gap: 10px; font-size: 24px; max-height: 120px; overflow-y: auto; }
@@ -79,65 +67,75 @@
         .nav-item i { font-size: 18px; }
         .nav-item.active { color: var(--wa-green); }
         
-        .voice-status { color: #ff3b30; display: none; font-size: 13px; margin-right: 5px; font-weight: bold; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        .file-preview-box { display: none; background: #111b21; padding: 10px; border-top: 1px solid var(--wa-surface); text-align: center; color: var(--wa-green); font-size: 14px; }
-        
-        /* غرف ومجموعات منفصلة سريعة المظهر */
-        .ghost-active { border: 2px dashed #ff3b30 !important; background: #200b0b !important; }
         .story-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: var(--wa-header-bg); border-bottom: 1px solid var(--wa-surface); }
-        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 11px; cursor: pointer; text-align: center; background: var(--wa-surface); overflow: hidden; word-break: break-all; padding: 2px; }
+        .story-circle { min-width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--wa-green); display: flex; justify-content: center; align-items: center; font-size: 11px; cursor: pointer; text-align: center; background: var(--wa-surface); overflow: hidden; padding: 2px; }
         
-        #game-area { display: none; padding: 20px; text-align: center; flex-direction: column; gap: 15px; }
-        #canvas-dino { background: #222e35; border: 1px solid var(--wa-green); display: block; margin: 0 auto; }
+        #offline-dino-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        #canvas-dino { background: #222e35; border: 2px solid var(--wa-green); display: block; margin-top: 15px; max-width: 100%; }
+        .add-user-btn { background: var(--wa-surface); color: var(--wa-green); border: 1px solid var(--wa-green); padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
+
+        #calling-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,20,26,0.95); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; gap: 20px; }
+        .video-box { display: flex; gap: 10px; width: 90%; max-width: 500px; }
+        video { width: 50%; background: #000; border-radius: 8px; border: 1px solid var(--wa-green); transform: scaleX(-1); }
+        .call-btn-hangup { background: #ff3b30; color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        
+        #story-view-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20000; display: none; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 20px; }
     </style>
 </head>
 <body>
 
+    <div id="calling-screen">
+        <h3 id="call-status-text" style="color:var(--wa-green);">جاري الاتصال لايف...</h3>
+        <div class="video-box">
+            <video id="localVideo" autoplay playsinline muted></video>
+            </div>
+        <button class="call-btn-hangup" onclick="endLiveCall()">إنهاء المكالمة 🚫</button>
+    </div>
+
+    <div id="story-view-modal" onclick="this.style.display='none'; document.getElementById('story-media-content').innerHTML=''">
+        <h4 id="story-view-sender" style="margin-bottom:15px; color:var(--wa-green);"></h4>
+        <div id="story-media-content" style="max-width:100%; max-height:70vh;"></div>
+        <p style="margin-top:15px; font-size:12px; color:var(--wa-muted);">انقر في أي مكان للإغلاق</p>
+    </div>
+
+    <div id="offline-dino-screen">
+        <h2 style="color:#ff3b30;"><i class="fas fa-wifi-slash"></i> انقطع الاتصال بالإنترنت!</h2>
+        <p style="color:var(--wa-text); margin-top:5px; font-size:14px;">العب ديناصور نايل شات لتسلية وقتك حتى يعود الاتصال</p>
+        <canvas id="canvas-dino" width="320" height="150"></canvas>
+        <div id="dino-score" style="font-weight:bold; margin-top:10px; color:var(--wa-green);">النقاط: 0</div>
+        <p style="font-size:12px; color:var(--wa-muted); margin-top:5px;">اضغط على الشاشة أو زر المسافة للقفز</p>
+    </div>
+
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="color:var(--wa-green); margin-bottom:10px;">نايل شات - النظام الشامل 🟢</h2>
+            <h2 style="color:var(--wa-green); margin-bottom:15px;">نايل شات - Nile Chat 🟢</h2>
             <input type="text" id="login-name" class="login-input" placeholder="اسم المستخدم...">
             <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف...">
-            <button class="login-btn" onclick="submitLogin()">دخول آمن للمنصة</button>
+            <button class="login-btn" onclick="submitLogin()">تسجيل الدخول</button>
         </div>
     </div>
 
     <div id="phone-wrapper">
         <div class="app-header">
-            <div class="header-title">Nile Chat Pro</div>
-            <div style="display:flex; gap:15px; align-items:center;">
-                <i class="fas fa-moon" style="cursor:pointer;" onclick="toggleThemeMode()"></i>
-                <div id="user-display-tag" style="font-size:13px; color:var(--wa-muted);"></div>
+            <div class="header-title">Nile Chat</div>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <button class="add-user-btn" onclick="addNewPrivateChat()"><i class="fas fa-user-plus"></i> + شخص</button>
+                <button class="add-user-btn" onclick="createNewGroupClick()"><i class="fas fa-users-cog"></i> + جروب</button>
+                <div id="user-display-tag" style="font-size:12px; color:var(--wa-muted); margin-right:5px;"></div>
             </div>
         </div>
 
         <div id="screen-chats" class="main-content active">
             <div class="story-container" id="stories-tray">
-                <div class="story-circle" style="border-color:var(--wa-muted);" onclick="addNewStoryClick()">+ أضف حالة</div>
+                <div class="story-circle" style="border-color:var(--wa-muted);" onclick="openStoryUploaderMenu()">+ حالة</div>
             </div>
+            <input type="file" id="story-file-input" style="display:none;" onchange="uploadStoryMedia(this)">
 
             <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', 'fa-users')">
                 <div class="item-avatar"><i class="fas fa-users"></i></div>
                 <div class="item-details">
                     <div class="item-name">مجموعة نايل العامة 💬</div>
-                    <div class="item-msg">شات جماعي لايف.. منشن @NileAI للذكاء الاصطناعي هنا.</div>
-                </div>
-            </div>
-
-            <div class="list-item" onclick="openGhostChat()">
-                <div class="item-avatar" style="background:#4a0d0d;"><i class="fas fa-user-secret" style="color:#ff3b30;"></i></div>
-                <div class="item-details">
-                    <div class="item-name" style="color:#ff3b30;">شات سري مدمر ذاتياً (Ghost Mode) 🔒</div>
-                    <div class="item-msg">تختفي الرسائل فوراً بعد قراءتها بـ 5 ثواني وتُحذف للأبد!</div>
-                </div>
-            </div>
-
-            <div class="list-item" onclick="openChatWindow('nile_channel', 'قناة نايل الرسمية 📢', 'fa-bullhorn')">
-                <div class="item-avatar"><i class="fas fa-bullhorn"></i></div>
-                <div class="item-details">
-                    <div class="item-name">قناة نايل للإعلانات والمستجدات 📢</div>
-                    <div class="item-msg">تابع آخر أخبار المنصة والتحديثات أولاً بأول...</div>
+                    <div class="item-msg">شات جماعي لايف.. منشن @NileAI ليسألك الذكاء الاصطناعي.</div>
                 </div>
             </div>
 
@@ -145,9 +143,12 @@
                 <div class="item-avatar"><i class="fas fa-bookmark"></i></div>
                 <div class="item-details">
                     <div class="item-name">مكتبتي الشخصية (مراسلة نفسك) 📑</div>
-                    <div class="item-msg">احفظ ملاحظاتك وفويساتك المهمة هنا بكل أمان...</div>
+                    <div class="item-msg">احفظ هنا ملاحظاتك وملفاتك وسجل شاتك الدائم...</div>
                 </div>
             </div>
+
+            <div id="custom-groups-list"></div>
+            <div id="custom-private-chats-list"></div>
         </div>
 
         <div id="screen-ai" class="main-content">
@@ -155,25 +156,14 @@
                 <div class="item-avatar"><i class="fas fa-robot"></i></div>
                 <div class="item-details">
                     <div class="item-name">مساعد NileAI الشخصي 🤖</div>
-                    <div class="item-msg">شات سري وخاص بك تماماً.. اسأل الذكاء الاصطناعي في أي شيء.</div>
+                    <div class="item-msg">شات خاص مباشر وسريع مع الذكاء الاصطناعي.</div>
                 </div>
-            </div>
-        </div>
-
-        <div id="screen-games" class="main-content">
-            <div id="game-area">
-                <h3 style="color:var(--wa-green);">نايل شات 🦖</h3>
-                <p style="color:var(--wa-muted); font-size:13px;">اضغط على زر المسافة أو اضغط الشاشة للقفز وتفادي الصبار!</p>
-                <canvas id="canvas-dino" width="320" height="150"></canvas>
-                <button class="login-btn" onclick="startDinoGame()">ابدأ اللعب الآن</button>
-                <div id="dino-score" style="font-weight:bold; margin-top:5px;">النقاط: 0</div>
             </div>
         </div>
 
         <div class="nav-bar">
             <div class="nav-item active" onclick="switchTab('chats', this)"><i class="fas fa-comment-dots"></i>الدردشات</div>
             <div class="nav-item" onclick="switchTab('ai', this)"><i class="fas fa-robot"></i>الذكاء الاصطناعي</div>
-            <div class="nav-item" onclick="switchTab('games', this); initDinoEngine();"><i class="fas fa-gamepad"></i>الألعاب</div>
         </div>
     </div>
 
@@ -185,43 +175,51 @@
                 <div class="item-name" id="chat-win-name"></div>
                 <div style="font-size:12px; color:var(--wa-green);" id="chat-win-status">متصل حالياً</div>
             </div>
+            <div style="display:flex; gap:15px; margin-left:10px; font-size:18px; color:var(--wa-green);">
+                <i class="fas fa-phone" style="cursor:pointer;" onclick="startWebrtcCall('audio')"></i>
+                <i class="fas fa-video" style="cursor:pointer;" onclick="startWebrtcCall('video')"></i>
+            </div>
         </div>
         
         <div class="chat-messages" id="chat-messages-container"></div>
-        
-        <div class="file-preview-box" id="file-loading-box"><i class="fas fa-spinner fa-spin"></i> جاري معالجة ورفع الملف لايف...</div>
         <div class="emoji-panel" id="emoji-panel-box"></div>
         
         <div class="chat-input-bar">
             <i class="far fa-laugh" style="font-size:22px; color:var(--wa-muted); cursor:pointer;" onclick="toggleEmojiPanel()"></i>
-            
-            <i class="fas fa-paperclip" style="font-size:20px; color:var(--wa-muted); cursor:pointer;" onclick="document.getElementById('file-uploader').click()"></i>
-            <input type="file" id="file-uploader" style="display:none;" onchange="uploadFileLive(this)">
-
-            <span class="voice-status" id="voice-rec-loading"><i class="fas fa-microphone"></i> يسجل...</span>
-            
-            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة..." oninput="handleInputEvent(this)" onkeypress="if(event.key === 'Enter') sendMsgOrVoice()">
-            
-            <button class="send-btn" id="mic-send-btn" onclick="sendMsgOrVoice()"><i class="fas fa-microphone" id="send-icon-toggle"></i></button>
+            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالة..." onkeypress="if(event.key === 'Enter') sendMsg()">
+            <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
     <script>
-        let socket, myName = "", myPhone = "", currentChatTarget = "public_room", isGhostMode = false;
-        let mediaRecorder, audioChunks = [];
-        const emojis = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","😉","😍","🥰","👍","🔥","❤️","👏","🎉","🚀","❌","✅"];
+        let socket, myName = "", myPhone = "", currentChatTarget = "public_room";
+        const emojis = ["😀","😃","😄","😁","😆","😅","😂","😊","😍","🥰","👍","🔥","❤️","👏"];
 
-        // كود لعبة الديناصور المدمجة
+        let localStream, peerConnection;
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
         let canvas, ctx, dinoY = 110, isJumping = false, jumpSpeed = 0, obstacleX = 320, score = 0, gameInterval = null;
-        
+
         window.onload = function() {
             initEmojiPanel();
+            initDinoEngine();
+            
+            window.addEventListener('offline', () => {
+                document.getElementById('offline-dino-screen').style.display = 'flex';
+                startDinoGame();
+            });
+            window.addEventListener('online', () => {
+                document.getElementById('offline-dino-screen').style.display = 'none';
+                if(gameInterval) clearInterval(gameInterval);
+            });
+
             let savedName = localStorage.getItem('n_f_name');
             let savedPhone = localStorage.getItem('n_f_phone');
             if (savedName && savedPhone) {
                 myName = savedName; myPhone = savedPhone;
                 bypassLogin();
             }
+            loadPrivateChatsList();
         };
 
         function submitLogin() {
@@ -245,57 +243,160 @@
             socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
             socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
             socket.emit('get_stories');
+            socket.emit('get_groups');
 
             socket.on('chat_history', function(data) {
                 let container = document.getElementById('chat-messages-container');
                 container.innerHTML = "";
                 if (data.messages) {
                     data.messages.forEach(msg => {
-                        appendMessageBubble(msg.sender, msg.text, msg.id, msg.sender === myName, msg.file_type, msg.file_name);
+                        appendMessageBubble(msg.sender, msg.text, msg.id, msg.sender === myName);
                     });
                 }
             });
 
             socket.on('message', function(data) {
                 if (data.room === currentChatTarget) {
-                    appendMessageBubble(data.sender, data.text, data.id, data.sender === myName, data.file_type, data.file_name);
-                    if (data.room.startsWith('ghost_')) {
-                        triggerGhostDestruction(data.id);
-                    }
-                }
-            });
-
-            socket.on('bot_status', function(data) {
-                if (currentChatTarget === 'NileAI_room' || currentChatTarget === 'public_room') {
-                    document.getElementById('chat-win-status').innerText = data.status;
-                }
-            });
-
-            socket.on('message_deleted', function(data) {
-                let el = document.getElementById(data.id); if (el) el.remove();
-            });
-
-            socket.on('message_edited', function(data) {
-                let el = document.getElementById(data.id);
-                if (el) {
-                    let txt = el.querySelector('.msg-text-content');
-                    if (txt) txt.innerHTML = data.text + " <small style='color:var(--wa-muted); font-size:10px;'>(معدلة)</small>";
+                    appendMessageBubble(data.sender, data.text, data.id, data.sender === myName);
                 }
             });
 
             socket.on('stories_list', function(data) {
                 let tray = document.getElementById('stories-tray');
-                tray.innerHTML = `<div class="story-circle" style="border-color:var(--wa-muted);" onclick="addNewStoryClick()">+ أضف حالة</div>`;
+                tray.innerHTML = `<div class="story-circle" style="border-color:var(--wa-muted);" onclick="openStoryUploaderMenu()">+ حالة</div>`;
                 data.stories.forEach(st => {
-                    let div = document.createElement('div');
-                    div.className = "story-circle";
-                    div.innerText = st.sender;
-                    div.onclick = () => alert(`حالة ${st.sender}:\n${st.text}`);
+                    let div = document.createElement('div'); div.className = "story-circle";
+                    div.innerText = st.sender; 
+                    div.onclick = () => viewStoryLive(st.sender, st.text, st.file_type);
                     tray.appendChild(div);
                 });
             });
 
+            socket.on('groups_list', function(data) {
+                let container = document.getElementById('custom-groups-list');
+                container.innerHTML = "";
+                data.groups.forEach(g => {
+                    container.innerHTML += `
+                        <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name} 👥', 'fa-users')">
+                            <div class="item-avatar" style="background:#005c4b;"><i class="fas fa-users"></i></div>
+                            <div class="item-details">
+                                <div class="item-name">${g.name} 👥</div>
+                                <div class="item-msg">جروب عام منشأ حديثاً.. انقر للدخول لايف</div>
+                            </div>
+                        </div>`;
+                });
+            });
+
             socket.on('new_story_alert', function() { socket.emit('get_stories'); });
+            socket.on('group_created_alert', function() { socket.emit('get_groups'); });
+
+            socket.on('call_signal', async function(data) {
+                if (data.type === 'offer') {
+                    if (confirm(`لديك مكالمة ${data.media} واردة من طرف آخر في الغرفة، هل تقبلها؟`)) {
+                        document.getElementById('calling-screen').style.display = 'flex';
+                        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
+                        document.getElementById('localVideo').srcObject = localStream;
+                        
+                        peerConnection = new RTCPeerConnection(rtcConfig);
+                        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                        
+                        peerConnection.onicecandidate = e => {
+                            if (e.candidate) socket.emit('call_signal', { room: currentChatTarget, type: 'candidate', candidate: e.candidate });
+                        };
+                        peerConnection.ontrack = e => {
+                            document.getElementById('remoteVideo').srcObject = e.streams[0];
+                        };
+                        
+                        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                        let answer = await peerConnection.createAnswer();
+                        await peerConnection.setLocalDescription(answer);
+                        socket.emit('call_signal', { room: currentChatTarget, type: 'answer', answer: answer });
+                    }
+                } else if (data.type === 'answer') {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+                } else if (data.type === 'candidate') {
+                    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } else if (data.type === 'hangup') {
+                    endLiveCall();
+                }
+            });
+        }
+
+        async function startWebrtcCall(mediaType) {
+            document.getElementById('calling-screen').style.display = 'flex';
+            document.getElementById('call-status-text').innerText = `جاري رن مكالمة ${mediaType === 'video' ? 'فيديو' : 'صوت'}...`;
+            
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mediaType === 'video' });
+            document.getElementById('localVideo').srcObject = localStream;
+            
+            peerConnection = new RTCPeerConnection(rtcConfig);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+            
+            peerConnection.onicecandidate = e => {
+                if (e.candidate) socket.emit('call_signal', { room: currentChatTarget, type: 'candidate', candidate: e.candidate });
+            };
+            peerConnection.ontrack = e => {
+                document.getElementById('remoteVideo').srcObject = e.streams[0];
+            };
+            
+            let offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('call_signal', { room: currentChatTarget, type: 'offer', offer: offer, media: mediaType });
+        }
+
+        function endLiveCall() {
+            document.getElementById('calling-screen').style.display = 'none';
+            if (localStream) localStream.getTracks().forEach(track => track.stop());
+            if (peerConnection) peerConnection.close();
+            socket.emit('call_signal', { room: currentChatTarget, type: 'hangup' });
+        }
+
+        function openStoryUploaderMenu() {
+            let choice = prompt("اختر نوع الحالة:\n1. اكتب حالة نصية\n2. رفع ميديا (موسيقى، فيديو تيك توك، صوت، صورة)");
+            if (choice === "1") {
+                let txt = prompt("اكتب حالتك النصية الآن:");
+                if (txt && txt.trim() !== "") {
+                    socket.emit('add_story', { sender: myName, phone: myPhone, text: txt.trim(), file_type: 'text' });
+                }
+            } else if (choice === "2") {
+                document.getElementById('story-file-input').click();
+            }
+        }
+
+        function uploadStoryMedia(element) {
+            let file = element.files[0]; if (!file) return;
+            let reader = new FileReader();
+            let fType = 'image';
+            if (file.type.startsWith('video/')) fType = 'video';
+            else if (file.type.startsWith('audio/')) fType = 'audio';
+
+            reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                socket.emit('add_story', { sender: myName, phone: myPhone, text: reader.result, file_type: fType });
+                alert("تم رفع حالتك الجديدة بنجاح لايف!");
+                element.value = "";
+            };
+        }
+
+        function viewStoryLive(sender, content, type) {
+            let modal = document.getElementById('story-view-modal');
+            let mediaBox = document.getElementById('story-media-content');
+            document.getElementById('story-view-sender').innerText = `حالة الطرف ${sender}`;
+            mediaBox.innerHTML = "";
+            
+            if (type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; height:60vh; border-radius:10px;"></video>`;
+            else if (type === 'audio') mediaBox.innerHTML = `<h3 style='margin-bottom:10px;'>🎵 استمع للموسيقى/الصوت:</h3><audio src="${content}" autoplay controls style="width:100%;"></audio>`;
+            else if (type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:65vh; border-radius:10px;">`;
+            else mediaBox.innerHTML = `<div style="font-size:22px; padding:30px; background:#222e35; border-radius:12px; text-align:center; color:#fff;">${content}</div>`;
+            
+            modal.style.display = "flex";
+        }
+
+        function createNewGroupClick() {
+            let gName = prompt("أدخل اسم المجموعة (الجروب) الجديد:");
+            if (gName && gName.trim() !== "") {
+                socket.emit('create_group', { name: gName.trim(), creator: myName });
+            }
         }
 
         function switchTab(tabId, element) {
@@ -305,42 +406,51 @@
             document.getElementById('screen-' + tabId).classList.add('active');
         }
 
+        function addNewPrivateChat() {
+            let pName = prompt("اسم الشخص:");
+            let pPhone = prompt("رقم الهاتف:");
+            if(pName && pPhone) {
+                let list = JSON.parse(localStorage.getItem('p_chats') || "[]");
+                list.push({name: pName, phone: pPhone});
+                localStorage.setItem('p_chats', JSON.stringify(list));
+                loadPrivateChatsList();
+            }
+        }
+
+        function loadPrivateChatsList() {
+            let container = document.getElementById('custom-private-chats-list');
+            container.innerHTML = "";
+            let list = JSON.parse(localStorage.getItem('p_chats') || "[]");
+            list.forEach(c => {
+                let roomId = [myPhone, c.phone].sort().join("_");
+                container.innerHTML += `
+                    <div class="list-item" onclick="openChatWindow('${roomId}', '${c.name} 👤', 'fa-user')">
+                        <div class="item-avatar"><i class="fas fa-user"></i></div>
+                        <div class="item-details">
+                            <div class="item-name">${c.name} 👤</div>
+                            <div class="item-msg">شات خاص آمن ومستقر.. ومتاح مكالمات صوت وفيديو.</div>
+                        </div>
+                    </div>`;
+            });
+        }
+
         function openChatWindow(roomId, roomName, iconClass) {
-            isGhostMode = false;
-            document.getElementById('chat-window').classList.remove('ghost-active');
             currentChatTarget = roomId;
             document.getElementById('chat-win-name').innerText = roomName;
             document.getElementById('chat-win-icon').className = "fas " + iconClass;
             document.getElementById('chat-messages-container').innerHTML = "";
             document.getElementById('chat-window').style.display = 'flex';
-            document.getElementById('chat-win-status').innerText = "متصل حالياً";
             if (socket) socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
-        }
-
-        function openGhostChat() {
-            openChatWindow('ghost_room', 'شات الأشباح السري المدمر 🔒', 'fa-user-secret');
-            document.getElementById('chat-window').classList.add('ghost-active');
-            isGhostMode = true;
-            document.getElementById('chat-win-status').innerText = "وضع التدمير الذاتي الفوري نشط (5 ثواني)";
         }
 
         function openSelfChat() { openChatWindow('self_' + myPhone, 'مكتبتي الشخصية 📑', 'fa-bookmark'); }
         function closeChatWindow() { document.getElementById('chat-window').style.display = 'none'; }
 
-        function handleInputEvent(input) {
-            let icon = document.getElementById('send-icon-toggle');
-            if(input.value.trim() !== "") { icon.className = "fas fa-paper-plane"; } 
-            else { icon.className = "fas fa-microphone"; }
-        }
-
         function initEmojiPanel() {
             let panel = document.getElementById('emoji-panel-box');
             emojis.forEach(emo => {
-                let span = document.createElement('span');
-                span.className = "emoji-item"; span.innerText = emo;
-                span.onclick = () => {
-                    let inp = document.getElementById('chat-input'); inp.value += emo; handleInputEvent(inp);
-                };
+                let span = document.createElement('span'); span.className = "emoji-item"; span.innerText = emo;
+                span.onclick = () => { document.getElementById('chat-input').value += emo; };
                 panel.appendChild(span);
             });
         }
@@ -350,150 +460,50 @@
             panel.style.display = (panel.style.display === 'grid') ? 'none' : 'grid';
         }
 
-        function toggleThemeMode() {
-            document.body.classList.toggle('light-theme');
-        }
-
-        function addNewStoryClick() {
-            let txt = prompt("اكتب عبارة حالتك اليومية (تختفي بعد 24 ساعة):");
-            if (txt && txt.trim() !== "") {
-                socket.emit('add_story', { sender: myName, phone: myPhone, text: txt.trim(), file_type: 'text' });
-            }
-        }
-
-        function uploadFileLive(element) {
-            let file = element.files[0]; if (!file) return;
-            document.getElementById('file-loading-box').style.display = "block";
-            let reader = new FileReader();
-            let fType = 'file';
-            if (file.type.startsWith('image/')) fType = 'image';
-            else if (file.type.startsWith('video/')) fType = 'video';
-
-            reader.readAsDataURL(file);
-            reader.onloadend = () => {
-                let base64 = reader.result;
-                let msgId = "file-" + Date.now();
-                appendMessageBubble(myName, base64, msgId, true, fType, file.name);
-                socket.emit('message', { id: msgId, room: currentChatTarget, sender: myName, phone: myPhone, text: base64, file_type: fType, file_name: file.name });
-                document.getElementById('file-loading-box').style.display = "none";
-                if (isGhostMode) triggerGhostDestruction(msgId);
-                element.value = "";
-            };
-        }
-
-        function sendMsgOrVoice() {
+        function sendMsg() {
             let inputField = document.getElementById('chat-input');
             let text = inputField.value.trim();
-
-            if (text === "") {
-                if (!mediaRecorder || mediaRecorder.state === "inactive") {
-                    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-                        mediaRecorder = new MediaRecorder(stream); audioChunks = [];
-                        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                        mediaRecorder.onstop = () => {
-                            let audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
-                            let reader = new FileReader(); reader.readAsDataURL(audioBlob);
-                            reader.onloadend = () => {
-                                let base64Audio = reader.result; let voiceId = "voice-" + Date.now();
-                                appendMessageBubble(myName, base64Audio, voiceId, true, 'voice');
-                                socket.emit('message', { id: voiceId, room: currentChatTarget, sender: myName, phone: myPhone, text: base64Audio, file_type: 'voice' });
-                                if (isGhostMode) triggerGhostDestruction(voiceId);
-                            };
-                        };
-                        mediaRecorder.start();
-                        document.getElementById('voice-rec-loading').style.display = "inline-block";
-                        document.getElementById('send-icon-toggle').className = "fas fa-stop";
-                    }).catch(() => alert("فشل فتح المايك."));
-                } else {
-                    mediaRecorder.stop();
-                    document.getElementById('voice-rec-loading').style.display = "none";
-                    document.getElementById('send-icon-toggle').className = "fas fa-microphone";
-                }
-                return;
-            }
+            if (text === "") return;
 
             let msgId = "msg-" + Date.now();
-            appendMessageBubble(myName, text, msgId, true, 'text');
-            socket.emit('message', { id: msgId, room: currentChatTarget, sender: myName, phone: myPhone, text: text, file_type: 'text' });
+            appendMessageBubble(myName, text, msgId, true);
+            socket.emit('message', { id: msgId, room: currentChatTarget, sender: myName, phone: myPhone, text: text });
             inputField.value = "";
-            document.getElementById('send-icon-toggle').className = "fas fa-microphone";
             document.getElementById('emoji-panel-box').style.display = 'none';
-            if (isGhostMode) triggerGhostDestruction(msgId);
         }
 
-        function triggerGhostDestruction(id) {
-            setTimeout(() => {
-                let el = document.getElementById(id); if (el) el.remove();
-                socket.emit('delete_message', { id: id, room: currentChatTarget });
-            }, 5000);
-        }
-
-        function deleteMsg(id) {
-            if (confirm("حذف الرسالة للجميع؟")) {
-                let el = document.getElementById(id); if (el) el.remove();
-                socket.emit('delete_message', { id: id, room: currentChatTarget });
-            }
-        }
-
-        function editMsg(id, oldText) {
-            let newText = prompt("تعديل الرسالة:", oldText);
-            if (newText && newText.trim() !== "") {
-                let el = document.getElementById(id);
-                if (el) el.querySelector('.msg-text-content').innerHTML = newText.trim() + " <small style='color:var(--wa-muted); font-size:10px;'>(معدلة)</small>";
-                socket.emit('edit_message', { id: id, room: currentChatTarget, text: newText.trim() });
-            }
-        }
-
-        function appendMessageBubble(sender, text, msgId, isMe, fileType = 'text', fileName = '') {
+        function appendMessageBubble(sender, text, msgId, isMe) {
             let container = document.getElementById('chat-messages-container');
+            if (document.getElementById(msgId)) return;
+            
             let bubble = document.createElement('div');
             bubble.className = "msg-bubble " + (isMe ? "sent" : "received");
             bubble.id = msgId;
             let senderHtml = !isMe ? `<span class="msg-sender">${sender}</span>` : '';
 
-            let actionsHtml = isMe && fileType === 'text' && !isGhostMode ? `
-                <div class="msg-actions">
-                    <button class="action-btn" onclick="editMsg('${msgId}', '${text}')"><i class="fas fa-edit"></i></button>
-                    <button class="action-btn" onclick="deleteMsg('${msgId}')"><i class="fas fa-trash"></i></button>
-                </div>
-            ` : (isMe && !isGhostMode ? `
-                <div class="msg-actions">
-                    <button class="action-btn" onclick="deleteMsg('${msgId}')"><i class="fas fa-trash"></i></button>
-                </div>
-            ` : '');
-
-            let contentHtml = `<div class="msg-text-content">`;
-            if (fileType === 'voice') contentHtml += `<audio src="${text}" controls style="max-width:100%; height:40px;"></audio>`;
-            else if (fileType === 'image') contentHtml += `<img src="${text}" style="max-width:100%; max-height:250px; border-radius:6px;">`;
-            else if (fileType === 'video') contentHtml += `<video src="${text}" controls style="max-width:100%; max-height:250px; border-radius:6px;"></video>`;
-            else if (fileType === 'file') contentHtml += `<a href="${text}" download="${fileName}" style="color:var(--wa-green); text-decoration:underline;"><i class="fas fa-file-download"></i> ${fileName}</a>`;
-            else contentHtml += `<div>${text}</div>`;
-            contentHtml += `</div>`;
-
             let timeStr = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-            bubble.innerHTML = `${actionsHtml}${senderHtml}${contentHtml}<div class="msg-meta"><span>${timeStr}</span> <span>${isMe ? '✓✓' : ''}</span></div>`;
+            bubble.innerHTML = `${senderHtml}<div class="msg-text-content">${text}</div><div class="msg-meta"><span>${timeStr}</span> <span>${isMe ? '✓✓' : ''}</span></div>`;
             container.appendChild(bubble);
             container.scrollTop = container.scrollHeight;
         }
 
-        // محرك لعبة الديناصور
         function initDinoEngine() {
             canvas = document.getElementById('canvas-dino'); ctx = canvas.getContext('2d');
             window.addEventListener('keydown', function(e) { if(e.code === 'Space') { isJumping = true; jumpSpeed = -10; } });
             canvas.addEventListener('touchstart', function() { isJumping = true; jumpSpeed = -10; });
         }
         function startDinoGame() {
-            if(gameInterval) clearInterval(gameInterval);
             dinoY = 110; isJumping = false; obstacleX = 320; score = 0;
+            if(gameInterval) clearInterval(gameInterval);
             gameInterval = setInterval(updateDinoGame, 30);
         }
         function updateDinoGame() {
             ctx.clearRect(0, 0, 320, 150);
             if (isJumping) { dinoY += jumpSpeed; jumpSpeed += 1; if (dinoY >= 110) { dinoY = 110; isJumping = false; } }
-            obstacleX -= 5; if (obstacleX < -10) { obstacleX = 320; score += 10; document.getElementById('dino-score').innerText = "النقاط: " + score; }
+            obstacleX -= 6; if (obstacleX < -10) { obstacleX = 320; score += 10; document.getElementById('dino-score').innerText = "النقاط: " + score; }
             ctx.fillStyle = "#00a884"; ctx.fillRect(20, dinoY, 20, 20);
             ctx.fillStyle = "#ff3b30"; ctx.fillRect(obstacleX, 115, 12, 15);
-            if (obstacleX > 20 && obstacleX < 40 && dinoY >= 95) { clearInterval(gameInterval); alert("انتهت اللعبة! مجموع نقاطك: " + score); }
+            if (obstacleX > 20 && obstacleX < 40 && dinoY >= 95) { clearInterval(gameInterval); alert("انتهت اللعبة! نقاطك: " + score); startDinoGame(); }
         }
     </script>
 </body>
