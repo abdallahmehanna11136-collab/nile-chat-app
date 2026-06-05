@@ -1,4 +1,4 @@
-from flask import Flask, render_template, make_response
+from flask import Flask, render_template, make_response, jsonify, request
 from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
@@ -46,6 +46,14 @@ def init_db():
             creator TEXT
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            phone TEXT PRIMARY KEY,
+            name TEXT,
+            last_seen REAL,
+            sid TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -57,6 +65,45 @@ def index():
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     response.headers['Pragma'] = 'no-cache'
     return response
+
+@app.route('/api/check_user/<phone>')
+def check_user(phone):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, last_seen FROM users WHERE phone = ?", (phone,))
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        is_online = (time.time() - row[1]) < 30
+        return jsonify({"exists": True, "name": row[0], "online": is_online})
+    return jsonify({"exists": False, "online": false})
+
+@socketio.on('connect')
+def handle_connect():
+    pass
+
+@socketio.on('register_user')
+def handle_register(data):
+    phone = data.get('phone')
+    name = data.get('name')
+    if phone and name:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("INSERT OR REPLACE INTO users (phone, name, last_seen, sid) VALUES (?, ?, ?, ?)",
+                       (phone, name, time.time(), request.sid))
+        conn.commit()
+        conn.close()
+        join_room(f"user_{phone}")
+
+@socketio.on('ping_status')
+def handle_ping(data):
+    phone = data.get('phone')
+    if phone:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET last_seen = ?, sid = ? WHERE phone = ?", (time.time(), request.sid, phone))
+        conn.commit()
+        conn.close()
 
 @socketio.on('join_room')
 def on_join_room(data):
@@ -189,8 +236,12 @@ def get_groups():
 
 @socketio.on('call_signal')
 def handle_call_signal(data):
+    target_phone = data.get('target_phone')
     room = data.get('room')
-    emit('call_signal', data, room=room, include_self=False)
+    if target_phone:
+        emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
+    else:
+        emit('call_signal', data, room=room, include_self=False)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
