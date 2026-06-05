@@ -1,16 +1,21 @@
-from flask import Flask, render_template, make_response
+import os
+from flask import Flask, render_template, make_response, request, jsonify, url_for
 from flask_socketio import SocketIO, emit, join_room
+from werkzeug.utils import secure_filename
 import sqlite3
 import time
 from groq import Groq
 
-# ربط وتفعيل عميل الذكاء الاصطناعي بنظام غروق فليكس المستقر
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nile_chat_ultra_premium_system_core'
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SECRET_KEY'] = 'nile_chat_stable_core_system'
+# إنشاء مجلد لحفظ ميديا الشات الحقيقية لمنع تهنيج السيرفر
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+socketio = SocketIO(app, cors_allowed_origins="*")
 DB_PATH = 'nile_chat_database.db'
 
 def init_db():
@@ -43,6 +48,29 @@ def index():
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
+# مسار خاص وذكي لرفع الملفات الخفيفة وحفظ جودتها
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    filename = secure_filename(f"{int(time.time())}_{file.filename}")
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    
+    # تحديد نوع الملف برمجياً
+    f_url = url_for('static', filename=f"uploads/{filename}", _external=True)
+    f_type = 'file'
+    mimetype = file.mimetype
+    if mimetype.startswith('image/'): f_type = 'image'
+    elif mimetype.startswith('video/'): f_type = 'video'
+    elif mimetype.startswith('audio/'): f_type = 'audio'
+    
+    return jsonify({'url': f_url, 'file_type': f_type})
+
 @socketio.on('register_user')
 def handle_register(data):
     phone = data.get('phone')
@@ -54,7 +82,6 @@ def on_join_room(data):
     room = data.get('room', 'public_room')
     join_room(room)
     
-    # جلب جميع الداتا القديمة لحفظ الشات من الضياع بعد التحديث
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, room, sender, text, file_type, file_name, reactions FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
@@ -74,7 +101,6 @@ def handle_message_event(data):
     file_type = data.get('file_type', 'text')
     file_name = data.get('file_name', '')
 
-    # حفظ الرسالة أو الميديا في السيكولايت بشكل دائم
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -84,17 +110,16 @@ def handle_message_event(data):
 
     emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name, 'reactions': ''}, room=room)
 
-    # معالجة الذكاء الاصطناعي الفورية والمضمونة بنسبة 100%
+    # تشغيل رد الذكاء الاصطناعي الفوري بشكل آمن ومستقل تماماً
     if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
         try:
             prompt_content = text.replace('@NileAI', '').strip()
-            # في حال أرسل ميديا للـ AI نحدد له رسالة افتراضية واضحة
             if file_type != 'text':
-                prompt_content = "لقد أرسلت لك ملفاً أو ميديا بصرية صالحة للشات."
-                
+                prompt_content = "لقد أرسلت لك ملفاً ميديا."
+
             chat_completion = groq_client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "أنت NileAI المساعد الذكي الخارق مدمج في تطبيق Nile Chat. رد بالعامية المصرية بذكاء وسرعة وعمق وبدون أي مقدمات أو اعتذارات مصطنعة."},
+                    {"role": "system", "content": "أنت NileAI المساعد الخارق. رد بالعامية المصرية بذكاء وسرعة رهيبة وبدون أي مقدمات أو اعتذارات."},
                     {"role": "user", "content": prompt_content if prompt_content else "أهلاً بك!"}
                 ],
                 model="llama3-8b-8192",
@@ -102,7 +127,6 @@ def handle_message_event(data):
             reply_text = chat_completion.choices[0].message.content
             bot_msg_id = f"msg-bot-{int(time.time() * 1000)}"
             
-            # حفظ رد الـ AI في قاعدة البيانات
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
             cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name) VALUES (?, ?, 'NileAI 🤖', 'bot-system', ?, ?, 'text', '')",
@@ -112,7 +136,7 @@ def handle_message_event(data):
             
             emit('message', {'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 'text': reply_text, 'file_type': 'text', 'file_name': '', 'reactions': ''}, room=room)
         except Exception as e:
-            print("NileAI System Error:", e)
+            print("AI Engine Error:", e)
 
 @socketio.on('add_reaction')
 def add_reaction(data):
