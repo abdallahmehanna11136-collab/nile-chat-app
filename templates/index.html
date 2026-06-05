@@ -88,7 +88,8 @@
         <h3 id="call-status-text" style="color:var(--wa-green);">جاري الاتصال لايف...</h3>
         <div class="video-box">
             <video id="localVideo" autoplay playsinline muted></video>
-            </div>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
         <button class="call-btn-hangup" onclick="endLiveCall()">إنهاء المكالمة 🚫</button>
     </div>
 
@@ -131,7 +132,7 @@
             </div>
             <input type="file" id="story-file-input" style="display:none;" onchange="uploadStoryMedia(this)">
 
-            <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', 'fa-users')">
+            <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', 'fa-users', '')">
                 <div class="item-avatar"><i class="fas fa-users"></i></div>
                 <div class="item-details">
                     <div class="item-name">مجموعة نايل العامة 💬</div>
@@ -152,7 +153,7 @@
         </div>
 
         <div id="screen-ai" class="main-content">
-            <div class="list-item" onclick="openChatWindow('NileAI_room', 'مساعد NileAI الشخصي 🤖', 'fa-robot')">
+            <div class="list-item" onclick="openChatWindow('NileAI_room', 'مساعد NileAI الشخصي 🤖', 'fa-robot', '')">
                 <div class="item-avatar"><i class="fas fa-robot"></i></div>
                 <div class="item-details">
                     <div class="item-name">مساعد NileAI الشخصي 🤖</div>
@@ -173,9 +174,9 @@
             <div class="item-avatar" style="width:38px; height:38px;"><i id="chat-win-icon" class="fas"></i></div>
             <div class="chat-user-info">
                 <div class="item-name" id="chat-win-name"></div>
-                <div style="font-size:12px; color:var(--wa-green);" id="chat-win-status">متصل حالياً</div>
+                <div style="font-size:12px; color:var(--wa-muted);" id="chat-win-status">جاري فحص الحالة...</div>
             </div>
-            <div style="display:flex; gap:15px; margin-left:10px; font-size:18px; color:var(--wa-green);">
+            <div id="call-actions-holder" style="display:none; gap:15px; margin-left:10px; font-size:18px; color:var(--wa-green);">
                 <i class="fas fa-phone" style="cursor:pointer;" onclick="startWebrtcCall('audio')"></i>
                 <i class="fas fa-video" style="cursor:pointer;" onclick="startWebrtcCall('video')"></i>
             </div>
@@ -192,7 +193,7 @@
     </div>
 
     <script>
-        let socket, myName = "", myPhone = "", currentChatTarget = "public_room";
+        let socket, myName = "", myPhone = "", currentChatTarget = "public_room", currentTargetPhone = "";
         const emojis = ["😀","😃","😄","😁","😆","😅","😂","😊","😍","🥰","👍","🔥","❤️","👏"];
 
         let localStream, peerConnection;
@@ -201,6 +202,9 @@
         let canvas, ctx, dinoY = 110, isJumping = false, jumpSpeed = 0, obstacleX = 320, score = 0, gameInterval = null;
 
         window.onload = function() {
+            if (Notification.permission !== "granted") {
+                Notification.requestPermission();
+            }
             initEmojiPanel();
             initDinoEngine();
             
@@ -220,6 +224,10 @@
                 bypassLogin();
             }
             loadPrivateChatsList();
+
+            setInterval(() => {
+                if(socket && myPhone) socket.emit('ping_status', { phone: myPhone });
+            }, 10000);
         };
 
         function submitLogin() {
@@ -241,6 +249,8 @@
 
         function initChatConnection() {
             socket = io(window.location.origin, { transports: ['websocket', 'polling'] });
+            
+            socket.emit('register_user', { phone: myPhone, name: myName });
             socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
             socket.emit('get_stories');
             socket.emit('get_groups');
@@ -258,6 +268,10 @@
             socket.on('message', function(data) {
                 if (data.room === currentChatTarget) {
                     appendMessageBubble(data.sender, data.text, data.id, data.sender === myName);
+                } else {
+                    if (Notification.permission === "granted" && data.sender !== myName) {
+                        new Notification(`رسالة جديدة من ${data.sender}`, { body: data.text });
+                    }
                 }
             });
 
@@ -277,7 +291,7 @@
                 container.innerHTML = "";
                 data.groups.forEach(g => {
                     container.innerHTML += `
-                        <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name} 👥', 'fa-users')">
+                        <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name} 👥', 'fa-users', '')">
                             <div class="item-avatar" style="background:#005c4b;"><i class="fas fa-users"></i></div>
                             <div class="item-details">
                                 <div class="item-name">${g.name} 👥</div>
@@ -292,7 +306,12 @@
 
             socket.on('call_signal', async function(data) {
                 if (data.type === 'offer') {
-                    if (confirm(`لديك مكالمة ${data.media} واردة من طرف آخر في الغرفة، هل تقبلها؟`)) {
+                    let audioRing = new Audio('https://assets.mixkit.co/active_storage/sfx/1353/1353-84.wav');
+                    audioRing.loop = true;
+                    audioRing.play().catch(()=>{});
+
+                    if (confirm(`لديك مكالمة ${data.media === 'video' ? 'فيديو' : 'صوت'} من ${data.caller_name}، هل ترغب في الرد؟`)) {
+                        audioRing.pause();
                         document.getElementById('calling-screen').style.display = 'flex';
                         localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
                         document.getElementById('localVideo').srcObject = localStream;
@@ -301,7 +320,7 @@
                         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
                         
                         peerConnection.onicecandidate = e => {
-                            if (e.candidate) socket.emit('call_signal', { room: currentChatTarget, type: 'candidate', candidate: e.candidate });
+                            if (e.candidate) socket.emit('call_signal', { target_phone: data.caller_phone, type: 'candidate', candidate: e.candidate });
                         };
                         peerConnection.ontrack = e => {
                             document.getElementById('remoteVideo').srcObject = e.streams[0];
@@ -310,21 +329,27 @@
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
                         let answer = await peerConnection.createAnswer();
                         await peerConnection.setLocalDescription(answer);
-                        socket.emit('call_signal', { room: currentChatTarget, type: 'answer', answer: answer });
+                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'answer', answer: answer });
+                    } else {
+                        audioRing.pause();
+                        socket.emit('call_signal', { target_phone: data.caller_phone, type: 'hangup' });
                     }
                 } else if (data.type === 'answer') {
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
                 } else if (data.type === 'candidate') {
-                    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                    if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(()=>{});
                 } else if (data.type === 'hangup') {
-                    endLiveCall();
+                    document.getElementById('calling-screen').style.display = 'none';
+                    if (localStream) localStream.getTracks().forEach(track => track.stop());
+                    if (peerConnection) peerConnection.close();
                 }
             });
         }
 
         async function startWebrtcCall(mediaType) {
+            if(!currentTargetPhone) return;
             document.getElementById('calling-screen').style.display = 'flex';
-            document.getElementById('call-status-text').innerText = `جاري رن مكالمة ${mediaType === 'video' ? 'فيديو' : 'صوت'}...`;
+            document.getElementById('call-status-text').innerText = `جاري الرن على الطرف الآخر...`;
             
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: mediaType === 'video' });
             document.getElementById('localVideo').srcObject = localStream;
@@ -333,7 +358,7 @@
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
             
             peerConnection.onicecandidate = e => {
-                if (e.candidate) socket.emit('call_signal', { room: currentChatTarget, type: 'candidate', candidate: e.candidate });
+                if (e.candidate) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'candidate', candidate: e.candidate });
             };
             peerConnection.ontrack = e => {
                 document.getElementById('remoteVideo').srcObject = e.streams[0];
@@ -341,18 +366,18 @@
             
             let offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
-            socket.emit('call_signal', { room: currentChatTarget, type: 'offer', offer: offer, media: mediaType });
+            socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: mediaType });
         }
 
         function endLiveCall() {
             document.getElementById('calling-screen').style.display = 'none';
             if (localStream) localStream.getTracks().forEach(track => track.stop());
             if (peerConnection) peerConnection.close();
-            socket.emit('call_signal', { room: currentChatTarget, type: 'hangup' });
+            if(currentTargetPhone) socket.emit('call_signal', { target_phone: currentTargetPhone, type: 'hangup' });
         }
 
         function openStoryUploaderMenu() {
-            let choice = prompt("اختر نوع الحالة:\n1. اكتب حالة نصية\n2. رفع ميديا (موسيقى، فيديو تيك توك، صوت، صورة)");
+            let choice = prompt("اختر نوع الحالة:\n1. اكتب حالة نصية\n2. رفع ميديا");
             if (choice === "1") {
                 let txt = prompt("اكتب حالتك النصية الآن:");
                 if (txt && txt.trim() !== "") {
@@ -385,7 +410,7 @@
             mediaBox.innerHTML = "";
             
             if (type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; height:60vh; border-radius:10px;"></video>`;
-            else if (type === 'audio') mediaBox.innerHTML = `<h3 style='margin-bottom:10px;'>🎵 استمع للموسيقى/الصوت:</h3><audio src="${content}" autoplay controls style="width:100%;"></audio>`;
+            else if (type === 'audio') mediaBox.innerHTML = `<audio src="${content}" autoplay controls style="width:100%;"></audio>`;
             else if (type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:65vh; border-radius:10px;">`;
             else mediaBox.innerHTML = `<div style="font-size:22px; padding:30px; background:#222e35; border-radius:12px; text-align:center; color:#fff;">${content}</div>`;
             
@@ -411,8 +436,10 @@
             let pPhone = prompt("رقم الهاتف:");
             if(pName && pPhone) {
                 let list = JSON.parse(localStorage.getItem('p_chats') || "[]");
-                list.push({name: pName, phone: pPhone});
-                localStorage.setItem('p_chats', JSON.stringify(list));
+                if(!list.some(x => x.phone === pPhone)) {
+                    list.push({name: pName, phone: pPhone});
+                    localStorage.setItem('p_chats', JSON.stringify(list));
+                }
                 loadPrivateChatsList();
             }
         }
@@ -424,26 +451,48 @@
             list.forEach(c => {
                 let roomId = [myPhone, c.phone].sort().join("_");
                 container.innerHTML += `
-                    <div class="list-item" onclick="openChatWindow('${roomId}', '${c.name} 👤', 'fa-user')">
+                    <div class="list-item" onclick="openChatWindow('${roomId}', '${c.name} 👤', 'fa-user', '${c.phone}')">
                         <div class="item-avatar"><i class="fas fa-user"></i></div>
                         <div class="item-details">
                             <div class="item-name">${c.name} 👤</div>
-                            <div class="item-msg">شات خاص آمن ومستقر.. ومتاح مكالمات صوت وفيديو.</div>
+                            <div class="item-msg">شات خاص آمن ومستقر ومحدث بالكامل.</div>
                         </div>
                     </div>`;
             });
         }
 
-        function openChatWindow(roomId, roomName, iconClass) {
+        function openChatWindow(roomId, roomName, iconClass, targetPhone) {
             currentChatTarget = roomId;
+            currentTargetPhone = targetPhone;
             document.getElementById('chat-win-name').innerText = roomName;
             document.getElementById('chat-win-icon').className = "fas " + iconClass;
             document.getElementById('chat-messages-container').innerHTML = "";
             document.getElementById('chat-window').style.display = 'flex';
+            
+            let statusLabel = document.getElementById('chat-win-status');
+            let callActions = document.getElementById('call-actions-holder');
+            
+            if(targetPhone) {
+                callActions.style.display = 'flex';
+                statusLabel.innerText = "جاري فحص حالة المستخدم الرقمية...";
+                fetch(`/api/check_user/${targetPhone}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        if(res.exists && res.online) {
+                            statusLabel.innerText = "متصل الآن 🟢";
+                        } else {
+                            statusLabel.innerText = "غير متصل حالياً 🔴";
+                        }
+                    }).catch(() => { statusLabel.innerText = "شات محمي"; });
+            } else {
+                callActions.style.display = 'none';
+                statusLabel.innerText = "غرفة عامة نشطة";
+            }
+
             if (socket) socket.emit('join_room', { room: currentChatTarget, phone: myPhone, sender: myName });
         }
 
-        function openSelfChat() { openChatWindow('self_' + myPhone, 'مكتبتي الشخصية 📑', 'fa-bookmark'); }
+        function openSelfChat() { openChatWindow('self_' + myPhone, 'مكتبتي الشخصية 📑', 'fa-bookmark', ''); }
         function closeChatWindow() { document.getElementById('chat-window').style.display = 'none'; }
 
         function initEmojiPanel() {
@@ -466,7 +515,6 @@
             if (text === "") return;
 
             let msgId = "msg-" + Date.now();
-            appendMessageBubble(myName, text, msgId, true);
             socket.emit('message', { id: msgId, room: currentChatTarget, sender: myName, phone: myPhone, text: text });
             inputField.value = "";
             document.getElementById('emoji-panel-box').style.display = 'none';
