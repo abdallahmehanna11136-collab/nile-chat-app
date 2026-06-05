@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nile Chat Premium</title>
+    <title>Nile Chat Ultra</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -80,23 +80,21 @@
             <div style="display:flex; flex-direction:column; align-items:center; gap:15px;">
                 <div style="width:90px; height:90px; border-radius:50%; background:#2a3942; overflow:hidden; cursor:pointer; position:relative; border:2px solid var(--wa-green);" onclick="document.getElementById('profile-pic-input').click()">
                     <img id="my-profile-img" src="" style="width:100%; height:100%; object-fit:cover; display:none;">
-                    <span id="profile-placeholder" style="line-height:90px; font-size:11px; color:var(--wa-muted); display:block; text-align:center;">اضغط لتغيير الصورة</span>
+                    <span id="profile-placeholder" style="line-height:90px; font-size:11px; color:var(--wa-muted); display:block;">اضغط لتغيير الصورة</span>
                 </div>
                 <input type="file" id="profile-pic-input" style="display:none;" accept="image/*" onchange="updateProfilePicture(this)">
                 
-                <h4 id="settings-user-name" style="margin-top:5px;"></h4>
+                <h4 id="settings-user-name"></h4>
                 <p id="settings-user-phone" style="color:var(--wa-muted); font-size:14px;"></p>
                 
-                <div style="color:var(--wa-green); font-size:13px; font-weight:bold;">الـ QR الخاص برقمك لشغل المشاركة:</div>
                 <div id="qrcode-area" style="background:#fff; padding:10px; border-radius:8px;"></div>
-                
-                <button class="login-btn" style="background:#ff3b30; color:#fff; width:100%; margin-top:10px;" onclick="document.getElementById('settings-modal').style.display='none'">إغلاق وحفظ</button>
+                <button class="login-btn" style="background:#ff3b30; color:#fff; width:100%;" onclick="document.getElementById('settings-modal').style.display='none'">إغلاق</button>
             </div>
         </div>
     </div>
 
     <div id="calling-screen">
-        <h3 style="color:var(--wa-green)" id="call-status-label">مكالمة جارية عبر الـ WebRTC...</h3>
+        <h3 style="color:var(--wa-green)" id="call-status-label">مكالمة جارية لايف...</h3>
         <div class="video-box">
             <video id="localVideo" autoplay playsinline muted></video>
             <video id="remoteVideo" autoplay playsinline></video>
@@ -107,9 +105,9 @@
     <div id="login-screen">
         <div class="login-box">
             <h2 style="color:var(--wa-green); margin-bottom:15px;">Nile Chat Pro 🟢</h2>
-            <input type="text" id="login-name" class="login-input" placeholder="اسم المستخدم أو النيك نيم...">
-            <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف الخاص بك...">
-            <button class="login-btn" onclick="submitLogin()">دخول آمن للتطبيق</button>
+            <input type="text" id="login-name" class="login-input" placeholder="اسم المستخدم...">
+            <input type="tel" id="login-phone" class="login-input" placeholder="رقم الهاتف...">
+            <button class="login-btn" onclick="submitLogin()">دخول</button>
         </div>
     </div>
 
@@ -119,7 +117,7 @@
             <div style="display:flex; gap:10px; align-items:center;">
                 <button class="login-btn" style="padding:6px 12px; font-size:12px; background:#202c33; color:var(--wa-green);" onclick="addNewPrivateContact()">+ إضافة جهة اتصال 👤</button>
                 <button class="login-btn" style="padding:6px 12px; font-size:12px;" onclick="createNewGroup()">+ جروب جديد</button>
-                <i class="fas fa-cog" style="font-size:22px; color:var(--wa-muted); cursor:pointer; margin-right:5px;" onclick="openSettingsModal()"></i>
+                <i class="fas fa-cog" style="font-size:22px; color:var(--wa-muted); cursor:pointer;" onclick="openSettingsModal()"></i>
             </div>
         </div>
 
@@ -130,10 +128,10 @@
             <input type="file" id="story-file-input" style="display:none;" onchange="uploadStoryMedia(this)">
 
             <div class="list-item" onclick="openChatWindow('public_room', 'مجموعة نايل العامة 💬', '')">
-                <div class="item-avatar"><i class="fas fa-users" style="font-size:20px;"></i></div>
+                <div class="item-avatar"><i class="fas fa-users"></i></div>
                 <div class="item-details">
                     <div class="item-name">مجموعة نايل العامة 💬</div>
-                    <div class="item-msg">اكتب @NileAI في رسالتك للرد من الذكاء الاصطناعي</div>
+                    <div class="item-msg">اكتب @NileAI للرد الفوري من الذكاء الاصطناعي</div>
                 </div>
             </div>
             <div id="groups-list-target"></div>
@@ -142,10 +140,10 @@
 
         <div id="screen-ai" class="main-content">
             <div class="list-item" onclick="openChatWindow('NileAI_room', 'مساعد NileAI الشخصي 🤖', '')">
-                <div class="item-avatar"><i class="fas fa-robot" style="font-size:20px;"></i></div>
+                <div class="item-avatar"><i class="fas fa-robot"></i></div>
                 <div class="item-details">
                     <div class="item-name">مساعد NileAI الشخصي 🤖</div>
-                    <div class="item-msg">دردش هنا مباشرة والذكاء الاصطناعي سيرد عليك فوراً</div>
+                    <div class="item-msg">الدردشة المباشرة والسريعة مع الـ AI هنا</div>
                 </div>
             </div>
         </div>
@@ -163,17 +161,17 @@
                 <h4 id="chat-win-name"></h4>
             </div>
             <div id="call-actions" style="display:none; gap:22px; color:var(--wa-green); font-size:20px;">
-                <i class="fas fa-phone" style="cursor:pointer;" onclick="startCallEngine('audio')" title="مكالمة صوتية"></i>
-                <i class="fas fa-video" style="cursor:pointer;" onclick="startCallEngine('video')" title="مكالمة فيديو"></i>
+                <i class="fas fa-phone" style="cursor:pointer;" onclick="startCallEngine('audio')"></i>
+                <i class="fas fa-video" style="cursor:pointer;" onclick="startCallEngine('video')"></i>
             </div>
         </div>
         <div class="chat-messages" id="chat-messages-container"></div>
         
         <div class="chat-input-bar">
-            <i class="fas fa-paperclip" style="font-size:22px; color:var(--wa-green); cursor:pointer;" onclick="document.getElementById('global-file-input').click()" title="إرسال صورة أو فيديو أو ملف"></i>
-            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') sendMsg()">
-            <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()" title="تسجيل رسالة صوتية"><i class="fas fa-microphone"></i></button>
-            <button class="send-btn" onclick="sendMsg()" title="زرار الإرسال الفوري"><i class="fas fa-paper-plane"></i></button>
+            <i class="fas fa-paperclip" style="font-size:22px; color:var(--wa-green); cursor:pointer;" onclick="document.getElementById('global-file-input').click()"></i>
+            <input type="text" id="chat-input" class="chat-input-field" placeholder="اكتب رسالتك هنا...">
+            <button class="voice-btn" id="voice-record-btn" onclick="toggleVoiceRecording()"><i class="fas fa-microphone"></i></button>
+            <button class="send-btn" onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -217,7 +215,7 @@
         function submitLogin() {
             myName = document.getElementById('login-name').value.trim();
             myPhone = document.getElementById('login-phone').value.trim();
-            if(!myName || !myPhone) return alert("الرجاء إدخال الاسم ورقم الهاتف بالكامل!");
+            if(!myName || !myPhone) return alert("الرجاء إدخال بياناتك كاملة!");
             
             localStorage.setItem('nile_user_name', myName);
             localStorage.setItem('nile_user_phone', myPhone);
@@ -275,7 +273,7 @@
                     target.innerHTML += `
                         <div class="list-item" onclick="openChatWindow('${g.id}', '${g.name}', '')">
                             <div class="item-avatar"><i class="fas fa-users"></i></div>
-                            <div class="item-details"><div class="item-name">${g.name}</div><div class="item-msg">جروب محادثة مشترك</div></div>
+                            <div class="item-details"><div class="item-name">${g.name}</div><div class="item-msg">جروب عام مشترك</div></div>
                         </div>`;
                 });
             });
@@ -283,7 +281,7 @@
             socket.on('call_signal', async (data) => {
                 try {
                     if (data.type === 'offer') {
-                        if (confirm(`مكالمة واردة من ${data.caller_name}. هل تود قبولها لايف؟`)) {
+                        if (confirm(`مكالمة واردة من ${data.caller_name}. هل تقبل؟`)) {
                             document.getElementById('calling-screen').style.display = 'flex';
                             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: data.media === 'video' });
                             document.getElementById('localVideo').srcObject = localStream;
@@ -307,13 +305,12 @@
                     } else if (data.type === 'hangup') {
                         endLiveCall(false);
                     }
-                } catch(err) { console.log("Call RTC Error:", err); }
+                } catch(err) { console.log(err); }
             });
         }
 
         function sendMsg() {
             let field = document.getElementById('chat-input');
-            if(!field) return;
             let txt = field.value.trim();
             if(!txt) return;
             
@@ -329,33 +326,33 @@
             field.value = "";
         }
 
+        // الطريقة الاحترافية والخفيفة لرفع الملفات بدون كسر الاتصال والسيرفر
         function handleGlobalFileSharing(element) {
             let file = element.files[0]; if(!file) return;
-            let reader = new FileReader();
-            
-            let fType = 'file';
-            if(file.type.startsWith('image/')) fType = 'image';
-            else if(file.type.startsWith('video/')) fType = 'video';
-            else if(file.type.startsWith('audio/')) fType = 'audio';
+            let formData = new FormData();
+            formData.append('file', file);
 
-            reader.readAsDataURL(file);
-            reader.onloadend = () => {
-                socket.emit('message', { 
-                    id: 'msg-'+Date.now(), 
-                    room: currentChatTarget, 
-                    sender: myName, 
-                    phone: myPhone, 
-                    text: reader.result, 
-                    file_type: fType,
-                    file_name: file.name
-                });
-                element.value = "";
-            };
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.url) {
+                    socket.emit('message', { 
+                        id: 'msg-'+Date.now(), 
+                        room: currentChatTarget, 
+                        sender: myName, 
+                        phone: myPhone, 
+                        text: data.url, 
+                        file_type: data.file_type,
+                        file_name: file.name
+                    });
+                }
+            }).catch(err => alert("حدث خطأ في رفع الملف"));
+            element.value = "";
         }
 
         function openSettingsModal() {
             document.getElementById('settings-user-name').innerText = myName;
-            document.getElementById('settings-user-phone').innerText = "رقمك المحفوظ: " + myPhone;
+            document.getElementById('settings-user-phone').innerText = "رقمك: " + myPhone;
             let area = document.getElementById('qrcode-area');
             area.innerHTML = "";
             new QRCode(area, { text: myPhone, width: 110, height: 110 });
@@ -377,7 +374,7 @@
         function addNewPrivateContact() {
             let name = prompt("اكتب اسم جهة الاتصال الجديدة:");
             let phone = prompt("اكتب رقم هاتف جهة الاتصال:");
-            if(!name || !phone) return alert("يجب إدخال البيانات كاملة!");
+            if(!name || !phone) return alert("برجاء إدخال البيانات كاملة!");
             
             let chats = JSON.parse(localStorage.getItem('p_chats') || "[]");
             if(!chats.some(c => c.phone === phone)) {
@@ -398,16 +395,16 @@
                         <div class="item-avatar"><i class="fas fa-user"></i></div>
                         <div class="item-details">
                             <div class="item-name">${c.name}</div>
-                            <div class="item-msg">رقم الهاتف: ${c.phone}</div>
+                            <div class="item-msg">محادثة خاصة آمنة</div>
                         </div>
                     </div>`;
             });
         }
 
         function openStoryUploaderMenu() {
-            let choice = prompt("اختر نوع الحالة:\n1. حالة نصية مكتوبة\n2. رفع ميديا (صورة/فيديو)");
+            let choice = prompt("اختر نوع الحالة:\n1. حالة نصية\n2. ميديا من الجهاز");
             if(choice === "1") {
-                let txt = prompt("اكتب الحالة النصية:");
+                let txt = prompt("اكتب الحالة:");
                 if(txt) socket.emit('add_story', { sender: myName, phone: myPhone, text: txt, file_type: 'text' });
             } else if(choice === "2") {
                 document.getElementById('story-file-input').click();
@@ -416,13 +413,17 @@
 
         function uploadStoryMedia(element) {
             let file = element.files[0]; if(!file) return;
-            let reader = new FileReader();
-            let fType = file.type.startsWith('video/') ? 'video' : 'image';
-            reader.readAsDataURL(file);
-            reader.onloadend = () => {
-                socket.emit('add_story', { sender: myName, phone: myPhone, text: reader.result, file_type: fType });
-                element.value = "";
-            };
+            let formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.url) {
+                    socket.emit('add_story', { sender: myName, phone: myPhone, text: data.url, file_type: data.file_type });
+                }
+            });
+            element.value = "";
         }
 
         function viewStoryLive(sender, content, type) {
@@ -432,7 +433,7 @@
             mediaBox.innerHTML = "";
             if(type === 'video') mediaBox.innerHTML = `<video src="${content}" autoplay controls style="max-width:100%; max-height:70vh;"></video>`;
             else if(type === 'image') mediaBox.innerHTML = `<img src="${content}" style="max-width:100%; max-height:70vh;">`;
-            else mediaBox.innerHTML = `<div style="font-size:20px; padding:30px; background:#222e35; color:#fff; border-radius:8px; text-align:center;">${content}</div>`;
+            else mediaBox.innerHTML = `<div style="font-size:20px; padding:30px; background:#222e35; color:#fff; border-radius:8px;">${content}</div>`;
         }
 
         async function toggleVoiceRecording() {
@@ -445,16 +446,21 @@
                     mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                     mediaRecorder.onstop = () => {
                         let blob = new Blob(audioChunks, { type: 'audio/ogg' });
-                        let r = new FileReader();
-                        r.readAsDataURL(blob);
-                        r.onloadend = () => {
-                            socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: r.result, file_type: 'audio', file_name: 'ريكورد صوتي.ogg' });
-                        };
+                        let formData = new FormData();
+                        formData.append('file', blob, 'recording.ogg');
+
+                        fetch('/upload', { method: 'POST', body: formData })
+                        .then(res => res.json())
+                        .then(data => {
+                            if(data.url) {
+                                socket.emit('message', { id: 'msg-'+Date.now(), room: currentChatTarget, sender: myName, phone: myPhone, text: data.url, file_type: 'audio', file_name: 'تسجيل صوتي.ogg' });
+                            }
+                        });
                     };
                     mediaRecorder.start();
                     isRecording = true;
                     btn.style.background = '#ff3b30'; btn.style.color = '#fff';
-                } catch(e) { alert("الرجاء السماح بصلاحية المايكروفون!"); }
+                } catch(e) { alert("يجب إعطاء صلاحية المايك!"); }
             } else {
                 if(mediaRecorder && isRecording) {
                     mediaRecorder.stop();
@@ -483,7 +489,7 @@
             if(type === 'image') content = `<img src="${text}" style="max-width:100%; border-radius:6px; display:block; margin-top:5px;">`;
             else if(type === 'video') content = `<video src="${text}" controls style="max-width:100%; border-radius:6px; display:block; margin-top:5px;"></video>`;
             else if(type === 'audio') content = `<audio src="${text}" controls style="max-width:100%; display:block; margin-top:5px;"></audio>`;
-            else if(type === 'file') content = `<div style="padding:10px; background:#111b21; border-radius:6px; margin-top:5px;"><i class="fas fa-file-download" style="color:var(--wa-green); margin-left:8px;"></i><a href="${text}" download="${fileName || 'ملف_محفوظ'}" style="color:#fff; text-decoration:underline; font-size:13px;">تحميل الملف: ${fileName || 'ملف مستلم'}</a></div>`;
+            else if(type === 'file') content = `<div style="padding:10px; background:#111b21; border-radius:6px; margin-top:5px;"><i class="fas fa-file-download" style="color:var(--wa-green); margin-left:8px;"></i><a href="${text}" download="${fileName || 'ملف'}" style="color:#fff; text-decoration:underline;">تحميل الملف: ${fileName || 'مستند'}</a></div>`;
 
             b.innerHTML = `<strong>${sender}:</strong><div>${content}</div><div class="reaction-badge" id="react-${msgId}" style="display:${reactions?'block':'none'}">${reactions||''}</div>`;
             box.appendChild(b);
@@ -518,7 +524,7 @@
                 let offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
                 socket.emit('call_signal', { target_phone: currentTargetPhone, caller_phone: myPhone, caller_name: myName, type: 'offer', offer: offer, media: type });
-            } catch(e) { alert("خطأ في تشغيل مكالمة الـ اللايف، تأكد من صلاحيات الكاميرا/المايك."); }
+            } catch(e) { alert("خطأ في تشغيل الكاميرا/المايك."); }
         }
 
         function endLiveCall(notifyPartner = true) {
