@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, make_response
 from flask_socketio import SocketIO, emit, join_room
 import os
 import sqlite3
@@ -8,11 +8,11 @@ from groq import Groq
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nile_chat_full_system'
-app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024
-socketio = SocketIO(app, cors_allowed_origins="*", max_decode_size=100 * 1024 * 1024)
+app.config['SECRET_KEY'] = 'nile_chat_ultra_max_system'
+app.config['MAX_CONTENT_LENGTH'] = 150 * 1024 * 1024
+socketio = SocketIO(app, cors_allowed_origins="*", max_decode_size=150 * 1024 * 1024)
 
-DB_PATH = os.path.join('/tmp', 'nile_final.db') if os.path.exists('/tmp') else 'nile_final.db'
+DB_PATH = 'nile_chat_database.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -39,6 +39,13 @@ def init_db():
             timestamp REAL
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS groups (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            creator TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -62,9 +69,7 @@ def on_join_room(data):
     rows = cursor.fetchall()
     conn.close()
     
-    history = []
-    for r in rows:
-        history.append({"id": r[0], "room": r[1], "sender": r[2], "text": r[3], "file_type": r[4], "file_name": r[5]})
+    history = [{"id": r[0], "room": r[1], "sender": r[2], "text": r[3], "file_type": r[4], "file_name": r[5]} for r in rows]
     emit('chat_history', {'messages': history})
 
 @socketio.on('message')
@@ -84,10 +89,9 @@ def handle_message_event(data):
     conn.commit()
     conn.close()
 
-    emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name}, room=room, include_self=False)
+    emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name}, room=room)
 
     if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
-        emit('bot_status', {'status': 'جاري التفكير والرد...'}, room=room)
         try:
             prompt_content = text.replace('@NileAI', '').strip()
             chat_completion = groq_client.chat.completions.create(
@@ -107,10 +111,9 @@ def handle_message_event(data):
             conn.commit()
             conn.close()
             
-            emit('bot_status', {'status': 'متصل حالياً'}, room=room)
             emit('message', {'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 'text': reply_text, 'file_type': 'text'}, room=room)
         except Exception:
-            emit('bot_status', {'status': 'متصل حالياً'}, room=room)
+            pass
 
 @socketio.on('delete_message')
 def handle_delete(data):
@@ -149,19 +152,45 @@ def handle_story(data):
                    (story_id, sender, phone, text, file_type, time.time()))
     conn.commit()
     conn.close()
-    emit('new_story_alert', {'id': story_id, 'sender': sender, 'text': text, 'file_type': file_type}, broadcast=True)
+    emit('new_story_alert', broadcast=True)
 
 @socketio.on('get_stories')
 def get_stories():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # جلب الحالات في آخر 24 ساعة فقط
     day_ago = time.time() - 86400
     cursor.execute("SELECT id, sender, text, file_type FROM stories WHERE timestamp > ? ORDER BY timestamp DESC", (day_ago,))
     rows = cursor.fetchall()
     conn.close()
     stories = [{"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3]} for r in rows]
     emit('stories_list', {'stories': stories})
+
+@socketio.on('create_group')
+def create_group(data):
+    g_id = f"group_{int(time.time() * 1000)}"
+    g_name = data.get('name')
+    creator = data.get('creator')
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO groups (id, name, creator) VALUES (?, ?, ?)", (g_id, g_name, creator))
+    conn.commit()
+    conn.close()
+    emit('group_created_alert', {'id': g_id, 'name': g_name}, broadcast=True)
+
+@socketio.on('get_groups')
+def get_groups():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name FROM groups")
+    rows = cursor.fetchall()
+    conn.close()
+    groups = [{"id": r[0], "name": r[1]} for r in rows]
+    emit('groups_list', {'groups': groups})
+
+@socketio.on('call_signal')
+def handle_call_signal(data):
+    room = data.get('room')
+    emit('call_signal', data, room=room, include_self=False)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
