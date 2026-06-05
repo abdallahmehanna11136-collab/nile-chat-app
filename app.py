@@ -8,7 +8,7 @@ groq_client = Groq(api_key='gsk_XPHLAM7goRxXyCqzIinQWGdyb3FY5zsUDy8KKPQy5unwF2gF
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_ultra_max_system'
-socketio = SocketIO(app, cors_allowed_origins="*", max_decode_size=200 * 1024 * 1024)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 DB_PATH = 'nile_chat_database.db'
 
@@ -31,11 +31,6 @@ def init_db():
             id TEXT PRIMARY KEY, name TEXT, creator TEXT
         )
     ''')
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            phone TEXT PRIMARY KEY, name TEXT, last_seen REAL, sid TEXT
-        )
-    ''')
     conn.commit()
     conn.close()
 
@@ -50,15 +45,7 @@ def index():
 @socketio.on('register_user')
 def handle_register(data):
     phone = data.get('phone')
-    name = data.get('name')
-    if phone and name:
-        conn = sqlite3.connect(DB_PATH)
-        cursor = conn.cursor()
-        cursor.execute("INSERT OR REPLACE INTO users (phone, name, last_seen, sid) VALUES (?, ?, ?, ?)",
-                       (phone, name, time.time(), request.sid))
-        conn.commit()
-        conn.close()
-        join_room(f"user_{phone}")
+    join_room(f"user_{phone}")
 
 @socketio.on('join_room')
 def on_join_room(data):
@@ -90,7 +77,6 @@ def handle_message_event(data):
 
     emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'reactions': ''}, room=room)
 
-    # تشغيل رد الذكاء الاصطناعي السريع
     if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
         try:
             prompt_content = text.replace('@NileAI', '').strip()
@@ -115,7 +101,6 @@ def handle_message_event(data):
         except Exception as e:
             print("AI Error:", e)
 
-# دالة التفاعل بالإيموجي المصلحة تماماً لمنع الرموز الغريبة
 @socketio.on('add_reaction')
 def add_reaction(data):
     msg_id = data.get('id')
@@ -178,11 +163,5 @@ def get_groups():
     groups = [{"id": r[0], "name": r[1]} for r in rows]
     emit('groups_list', {'groups': groups})
 
-@socketio.on('call_signal')
-def handle_call_signal(data):
-    target_phone = data.get('target_phone')
-    if target_phone:
-        emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
-
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
