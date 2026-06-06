@@ -1,32 +1,22 @@
-from flask import Flask, render_template, make_response, request, jsonify, url_for, send_from_directory
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask import Flask, render_template, make_response, request, jsonify, url_for
+from flask_socketio import SocketIO, emit, join_room
 from werkzeug.utils import secure_filename
 import sqlite3
 import time
 import os
 import requests
 import json
-
 from gevent import monkey
 monkey.patch_all()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
-
-# إعداد المجلدات المخصصة للملفات والأيقونات للبرنامج
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-socketio = SocketIO(
-    app, 
-    cors_allowed_origins="*", 
-    async_mode='gevent',
-    engineio_logger=False, 
-    logger=False
-)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
 DB_PATH = 'nile_chat_database.db'
-
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_XbW76VymhF0yJp9uS7NnWGdyb3FYM3Yp5vR9kL8mJq2bN4oP3qR")
 
 def init_db():
@@ -34,93 +24,50 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY, 
-            room TEXT, 
-            sender TEXT, 
-            phone TEXT, 
-            text TEXT, 
-            timestamp REAL, 
-            file_type TEXT DEFAULT 'text', 
-            file_name TEXT DEFAULT '', 
-            reactions TEXT DEFAULT '', 
-            status_ticks TEXT DEFAULT 'sent', 
-            reply_to TEXT DEFAULT '',
-            is_edited INTEGER DEFAULT 0,
-            star_status INTEGER DEFAULT 0
+            id TEXT PRIMARY KEY, room TEXT, sender TEXT, phone TEXT, text TEXT, 
+            timestamp REAL, file_type TEXT DEFAULT 'text', file_name TEXT DEFAULT '', 
+            reactions TEXT DEFAULT '', status_ticks TEXT DEFAULT 'sent', reply_to TEXT DEFAULT '',
+            is_edited INTEGER DEFAULT 0, star_status INTEGER DEFAULT 0
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stories (
-            id TEXT PRIMARY KEY, 
-            sender TEXT, 
-            phone TEXT, 
-            text TEXT, 
-            file_type TEXT, 
-            timestamp REAL, 
-            views_list TEXT DEFAULT '[]',
-            caption TEXT DEFAULT ''
+            id TEXT PRIMARY KEY, sender TEXT, phone TEXT, text TEXT, file_type TEXT, 
+            timestamp REAL, views_list TEXT DEFAULT '[]', caption TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS profiles (
-            phone TEXT PRIMARY KEY, 
-            name TEXT, 
-            avatar TEXT, 
-            email TEXT DEFAULT '', 
-            status_text TEXT DEFAULT 'Available', 
-            archived_chats TEXT DEFAULT '[]', 
-            custom_ringtone TEXT DEFAULT 'default.mp3', 
-            privacy_mode TEXT DEFAULT 'public', 
-            wallpaper TEXT DEFAULT '', 
-            voice_setting TEXT DEFAULT 'normal',
-            blocked_numbers TEXT DEFAULT '[]',
-            pinned_rooms TEXT DEFAULT '[]',
-            theme_mode TEXT DEFAULT 'light',
-            saved_login_token TEXT DEFAULT ''
+            phone TEXT PRIMARY KEY, name TEXT, avatar TEXT, email TEXT DEFAULT '', 
+            status_text TEXT DEFAULT 'Available', archived_chats TEXT DEFAULT '[]', 
+            custom_ringtone TEXT DEFAULT 'default.mp3', privacy_mode TEXT DEFAULT 'public', 
+            wallpaper TEXT DEFAULT '', voice_setting TEXT DEFAULT 'normal',
+            blocked_numbers TEXT DEFAULT '[]', pinned_rooms TEXT DEFAULT '[]',
+            theme_mode TEXT DEFAULT 'light', saved_login_token TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS units (
-            id TEXT PRIMARY KEY, 
-            name TEXT, 
-            type TEXT, 
-            creator TEXT, 
-            admins TEXT DEFAULT '[]',
-            subscribers TEXT DEFAULT '[]',
-            description TEXT DEFAULT ''
+            id TEXT PRIMARY KEY, name TEXT, type TEXT, creator TEXT, 
+            admins TEXT DEFAULT '[]', subscribers TEXT DEFAULT '[]', description TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS feed_posts (
-            id TEXT PRIMARY KEY, 
-            sender TEXT, 
-            phone TEXT, 
-            avatar TEXT, 
-            text TEXT, 
-            media_url TEXT DEFAULT '', 
-            file_type TEXT DEFAULT 'text', 
-            timestamp REAL, 
-            likes_count INTEGER DEFAULT 0,
-            likes_json TEXT DEFAULT '[]',
-            comments_json TEXT DEFAULT '[]'
+            id TEXT PRIMARY KEY, sender TEXT, phone TEXT, avatar TEXT, text TEXT, 
+            media_url TEXT DEFAULT '', file_type TEXT DEFAULT 'text', timestamp REAL, 
+            likes_count INTEGER DEFAULT 0, likes_json TEXT DEFAULT '[]', comments_json TEXT DEFAULT '[]'
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS contacts (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_phone TEXT,
-            contact_phone TEXT,
-            contact_name TEXT,
-            timestamp REAL
+            id INTEGER PRIMARY KEY AUTOINCREMENT, user_phone TEXT, contact_phone TEXT, 
+            contact_name TEXT, timestamp REAL
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS private_groups (
-            id TEXT PRIMARY KEY,
-            name TEXT,
-            creator TEXT,
-            members TEXT DEFAULT '[]',
-            timestamp REAL
+            id TEXT PRIMARY KEY, name TEXT, creator TEXT, members TEXT DEFAULT '[]', timestamp REAL
         )
     ''')
     conn.commit()
@@ -131,18 +78,14 @@ init_db()
 def get_groq_ai_response(user_message):
     try:
         url = "https://api.groq.com/openai/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {GROQ_API_KEY}",
-            "Content-Type": "application/json"
-        }
+        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         payload = {
             "model": "llama3-8b-8192",
             "messages": [
                 {"role": "system", "content": "أنت الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
                 {"role": "user", "content": user_message}
             ],
-            "temperature": 0.7,
-            "max_tokens": 400
+            "temperature": 0.7, "max_tokens": 400
         }
         response = requests.post(url, json=payload, headers=headers, timeout=12)
         if response.status_code == 200:
@@ -157,25 +100,13 @@ def index():
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
-# مسار خاص لخدمة أيقونة وملفات الـ PWA لضمان ظهور أيقونة التطبيق والـ Manifest بشكل سليم
 @app.route('/static/manifest.json')
 def serve_manifest():
     manifest_data = {
-        "short_name": "NileChat",
-        "name": "Nile Chat Pro 2026",
-        "icons": [
-            {
-                "src": "/static/icon.png",
-                "type": "image/png",
-                "sizes": "512x512",
-                "purpose": "any maskable"
-            }
-        ],
-        "start_url": "/",
-        "background_color": "#0b141a",
-        "theme_color": "#00a884",
-        "display": "standalone",
-        "orientation": "portrait"
+        "short_name": "NileChat", "name": "Nile Chat Pro 2026",
+        "icons": [{"src": "/static/icon.png", "type": "image/png", "sizes": "512x512", "purpose": "any maskable"}],
+        "start_url": "/", "background_color": "#0b141a", "theme_color": "#00a884",
+        "display": "standalone", "orientation": "portrait"
     }
     return jsonify(manifest_data)
 
@@ -191,12 +122,9 @@ def upload_file():
     file.save(file_path)
     ext = filename.split('.')[-1].lower()
     f_type = 'text'
-    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']: 
-        f_type = 'image'
-    elif ext in ['mp4', 'webm', 'ogg', 'mov']: 
-        f_type = 'video'
-    elif ext in ['mp3', 'wav', 'aac', 'm4a']: 
-        f_type = 'audio'
+    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']: f_type = 'image'
+    elif ext in ['mp4', 'webm', 'ogg', 'mov']: f_type = 'video'
+    elif ext in ['mp3', 'wav', 'aac', 'm4a']: f_type = 'audio'
     f_url = url_for('static', filename=f"uploads/{filename}", _external=True)
     return jsonify({'url': f_url, 'file_type': f_type, 'name': file.filename})
 
@@ -221,7 +149,7 @@ def handle_register(data):
             theme = row[1]
         conn.commit()
         conn.close()
-        emit('login_persist_status', {'status': 'verified', 'phone': phone, 'theme_mode': theme})
+        emit('login_persist_status', {'status': 'verified', 'phone': phone, 'theme_mode': theme, 'name': name, 'avatar': avatar})
 
 @socketio.on('verify_saved_login')
 def verify_saved_login(data):
@@ -327,7 +255,6 @@ def create_private_group(data):
                        (group_id, name, creator, json.dumps(members), time.time()))
         conn.commit()
         conn.close()
-        
         for member in members:
             emit('new_private_group_alert', {'group_id': group_id, 'name': name}, room=f"user_{member}")
 
@@ -339,7 +266,6 @@ def get_my_private_groups(data):
     cursor.execute("SELECT id, name, creator, members FROM private_groups")
     rows = cursor.fetchall()
     conn.close()
-    
     my_groups = []
     for r in rows:
         members_list = json.loads(r[3])
@@ -406,7 +332,6 @@ def handle_message_event(data):
         """, (ai_msg_id, 'AI_bot', 'جروق الذكي', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
         conn.commit()
         emit('message', ai_data, room='AI_bot')
-        
     conn.close()
 
 @socketio.on('edit_message')
@@ -520,10 +445,8 @@ def like_feed_post(data):
     row = cursor.fetchone()
     if row:
         likes = json.loads(row[0])
-        if phone in likes:
-            likes.remove(phone)
-        else:
-            likes.append(phone)
+        if phone in likes: likes.remove(phone)
+        else: likes.append(phone)
         cursor.execute("UPDATE feed_posts SET likes_count=?, likes_json=? WHERE id=?", (len(likes), json.dumps(likes), post_id))
         conn.commit()
     conn.close()
