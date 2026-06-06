@@ -362,9 +362,9 @@
         }
 
         function switchSidebarTab(panelId, btnEl) {
-            document.querySelectorAll('.list-container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.list-container').forEach(el => el.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(panelId).classList.add('active');
+            document.getElementById(panelId).style.display = 'block';
             btnEl.classList.add('active');
         }
 
