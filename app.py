@@ -5,24 +5,37 @@ import time
 import os
 from werkzeug.utils import secure_filename
 from groq import Groq
+import firebase_admin
+from firebase_admin import credentials, messaging
 
-# 1. إعداد عميل الذكاء الاصطناعي بقراءة المفتاح من البيئة المحيطة لتجنب الحظر
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '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')
-groq_client = Groq(api_key=GROQ_API_KEY)
+# 1. تشغيل عميل الذكاء الاصطناعي بالمفتاح الجديد المباشر
+groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_stable_core_system'
 
-# مجلد حفظ الملفات والصور والميديا
+# إعداد مجلد الميديا (للحالات، الصور، والمكالمات)
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# إعداد السوكيت ليدعم الاتصال الآمن wss والاتصال العادي أوتوماتيكياً على Render
+# تشغيل السوكيت بأعلى كفاءة وسرعة (ثبات لايف)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=60, ping_interval=25)
 DB_PATH = 'nile_chat_database.db'
 
-# 2. تهيئة الجداول في قاعدة البيانات
+# 2. تشغيل Firebase للمكالمات التنبيهية في الخلفية بدون مشاكل
+USER_TOKENS = {}
+try:
+    if os.path.exists("firebase_credentials.json"):
+        cred = credentials.Certificate("firebase_credentials.json")
+        firebase_admin.initialize_app(cred)
+        print("Firebase FCM Initialized Successfully!")
+    else:
+        print("Warning: firebase_credentials.json not found yet.")
+except Exception as e:
+    print("Firebase Init Error:", e)
+
+# إنشاء وتحديث قاعدة البيانات لكل الميزات
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -53,7 +66,7 @@ def index():
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
-# 3. مسار رفع الميديا (الصور، الفيديو، الحالات) - تم تعديله ليدعم الرفع الآمن
+# ميزة رفع ملفات الشات والحالات والميديا
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -66,7 +79,6 @@ def upload_file():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
     
-    # تحويل الرابط ليكون متوافق مع https الخاص بـ Render
     f_url = url_for('static', filename=f"uploads/{filename}", _external=True)
     if request.headers.get('X-Forwarded-Proto') == 'https':
         f_url = f_url.replace('http://', 'https://')
@@ -79,12 +91,15 @@ def upload_file():
     
     return jsonify({'url': f_url, 'file_type': f_type})
 
-# 4. أحداث السوكيت
+# 3. كل أحداث الـ Sockets (الشات، الحالات، المكالمات، الـ QR)
 @socketio.on('register_user')
 def handle_register(data):
     phone = data.get('phone')
+    token = data.get('fcm_token')
     if phone:
         join_room(f"user_{phone}")
+        if token:
+            USER_TOKENS[str(phone)] = token
 
 @socketio.on('join_room')
 def on_join_room(data):
@@ -117,19 +132,20 @@ def handle_message_event(data):
     conn.commit()
     conn.close()
 
+    # إرسال الرسالة فوراً لجميع الأطراف
     emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name, 'reactions': ''}, room=room)
 
-    # رد الذكاء الاصطناعي السريع (NileAI)
-    if room == 'NileAI_room' or (room == 'public_room' and '@NileAI' in text):
+    # تشغيل محرك رد الذكاء الاصطناعي الفوري بالعامية المصرية
+    if room == 'NileAI_room' or 'NileAI' in room or '@NileAI' in text:
         try:
             prompt_content = text.replace('@NileAI', '').strip()
-            if file_type != 'text':
-                prompt_content = "لقد أرسلت لك ملفاً ميديا."
+            if not prompt_content:
+                prompt_content = "أهلاً بك"
 
             chat_completion = groq_client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": "أنت NileAI المساعد الخارق. رد بالعامية المصرية بذكاء وسرعة رهيبة وبدون أي مقدمات أو اعتذارات."},
-                    {"role": "user", "content": prompt_content if prompt_content else "أهلاً بك!"}
+                    {"role": "system", "content": "أنت NileAI المساعد الذكي الخارق لتطبيق شات NileChat. رد دائماً بالعامية المصرية السلسة وبسرعة فائقة وبدون أي مقدمات طويلة."},
+                    {"role": "user", "content": prompt_content}
                 ],
                 model="llama3-8b-8192",
             )
@@ -145,9 +161,8 @@ def handle_message_event(data):
             
             emit('message', {'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 'text': reply_text, 'file_type': 'text', 'file_name': '', 'reactions': ''}, room=room)
         except Exception as e:
-            print("AI Engine Error:", e)
+            print("AI Engine Response Error:", e)
 
-# 5. ميزة التفاعلات
 @socketio.on('add_reaction')
 def add_reaction(data):
     msg_id = data.get('id')
@@ -161,7 +176,7 @@ def add_reaction(data):
         conn.close()
         emit('reaction_updated', {'id': msg_id, 'reactions': reaction}, room=room)
 
-# 6. ميزة الحالات (Stories)
+# ميزة إضافة ورؤية الحالات (الستوري)
 @socketio.on('add_story')
 def handle_story(data):
     story_id = f"story-{int(time.time() * 1000)}"
@@ -177,8 +192,6 @@ def handle_story(data):
                    (story_id, sender, phone, text, file_type, time.time()))
     conn.commit()
     conn.close()
-    
-    # إرسال بث مباشر لكل الناس إن فيه ستوري جديدة تظهر فوراً في الـ HTML
     emit('new_story_alert', broadcast=True)
 
 @socketio.on('get_stories')
@@ -192,7 +205,7 @@ def get_stories():
     stories = [{"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3]} for r in rows]
     emit('stories_list', {'stories': stories})
 
-# 7. ميزة المجموعات
+# ميزة المجموعات والـ QR Code
 @socketio.on('create_group')
 def create_group(data):
     g_id = f"group_{int(time.time() * 1000)}"
@@ -214,13 +227,32 @@ def get_groups():
     groups = [{"id": r[0], "name": r[1]} for r in rows]
     emit('groups_list', {'groups': groups})
 
-# 8. نظام إشارات المكالمات اللايف (WebRTC Signaling) لربط المايك والكاميرا أونلاين
+# 4. إشارات الـ WebRTC الفورية للمكالمات الصوتية والفيديو (إصلاح كامل للاتصال بالطرف الآخر)
 @socketio.on('call_signal')
 def handle_call_signal(data):
-    target_phone = data.get('target_phone')
+    target_phone = str(data.get('target_phone'))
+    sender_name = data.get('sender_name', 'شخص ما')
+    room_id = data.get('room', 'public_room')
+    
     if target_phone:
-        # تمرير الـ Offer أو الـ Answer أو الـ Candidates للطرف الثاني فوراً عبر السيرفر الآمن
+        # إرسال إشارة الاتصال المباشرة فوراً للطرف الآخر عبر غرفته الخاصة
         emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
+        
+        # دعم الإيقاظ عبر FCM لو الموبايل مقفول تماماً
+        target_token = USER_TOKENS.get(target_phone)
+        if target_token:
+            try:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=f"📞 مكالمة من {sender_name}",
+                        body="افتح التطبيق للرد على المكالمة فوراً.",
+                    ),
+                    data={'room': str(room_id), 'caller': str(sender_name), 'type': 'incoming_call'},
+                    token=target_token,
+                )
+                messaging.send(message)
+            except Exception as e:
+                print("FCM Multi-Call Signal Error:", e)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
