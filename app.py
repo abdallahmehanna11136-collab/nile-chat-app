@@ -1,16 +1,14 @@
-import os
-import sqlite3
-import time
-import requests
-import json
-
-# إصلاح توافقية gevent على خوادم الدبلومنت قبل استدعاء فلاسك
-from gevent import monkey
-monkey.patch_all()
-
 from flask import Flask, render_template, make_response, request, jsonify, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
+import sqlite3
+import time
+import os
+import requests
+import json
+
+from gevent import monkey
+monkey.patch_all()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
@@ -23,8 +21,8 @@ socketio = SocketIO(
     app, 
     cors_allowed_origins="*", 
     async_mode='gevent',
-    engineio_logger=True, 
-    logger=True
+    engineio_logger=False, 
+    logger=False
 )
 DB_PATH = 'nile_chat_database.db'
 
@@ -128,9 +126,9 @@ def get_groq_ai_response(user_message):
         response = requests.post(url, json=payload, headers=headers, timeout=12)
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content'].strip()
-        return f"خطأ في معالجة الطلب من الخادم الرئيسي: {response.status_code}"
+        return f"Error: {response.status_code}"
     except Exception as e:
-        return f"فشل الاتصال بمحرك جروق الذكي: {str(e)}"
+        return f"Error: {str(e)}"
 
 @app.route('/')
 def index():
@@ -414,6 +412,5 @@ def handle_offer_answer(data):
     emit('webrtc_offer_answer', data, room=f"user_{target}")
 
 if __name__ == '__main__':
-    # التشغيل المباشر المتوافق مع خوادم النشر واللوكال
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
