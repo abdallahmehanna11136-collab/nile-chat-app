@@ -73,8 +73,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-init_db()
-
 def get_groq_ai_response(user_message):
     try:
         url = "https://api.groq.com/openai/v1/chat/completions"
@@ -488,5 +486,6 @@ def generate_qr_info(data):
         emit('qr_code_generated', {'qr_string': qr_string, 'room': room}, room=f"user_{user}")
 
 if __name__ == '__main__':
+    init_db()
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
