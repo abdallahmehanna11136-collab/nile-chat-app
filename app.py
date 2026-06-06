@@ -9,14 +9,14 @@ from groq import Groq
 groq_client = Groq(api_key='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')
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nile_chat_premium_full_core_2026'
+app.config['SECRET_KEY'] = 'nile_chat_key_2026'
 
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=60, ping_interval=25)
-DB_PATH = 'nile_chat_complete_database.db'
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+DB_PATH = 'nile_chat_database.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -88,7 +88,7 @@ def upload_file():
 @socketio.on('register_user')
 def handle_register(data):
     phone = str(data.get('phone')).strip()
-    name = data.get('name', 'Nile User')
+    name = data.get('name', 'User')
     avatar = data.get('avatar', '')
     email = data.get('email', '')
     if phone:
@@ -103,7 +103,6 @@ def handle_register(data):
             cursor.execute("UPDATE profiles SET name=?, email=? WHERE phone=?", (name, email, phone))
         conn.commit()
         conn.close()
-        emit('global_user_update', {'phone': phone, 'name': name, 'avatar': avatar}, broadcast=True)
 
 @socketio.on('update_profile_live')
 def handle_profile_update(data):
@@ -120,7 +119,6 @@ def handle_profile_update(data):
                    (name, avatar, status_text, custom_ringtone, wallpaper, phone))
     conn.commit()
     conn.close()
-    emit('global_user_update', {'phone': phone, 'name': name, 'avatar': avatar, 'status_text': status_text, 'wallpaper': wallpaper}, broadcast=True)
 
 @socketio.on('find_user_by_phone')
 def find_user_by_phone(data):
@@ -178,18 +176,12 @@ def handle_message_event(data):
     }
     emit('message', payload, room=room)
 
-    if room == f"AI_{phone}" or room == 'NileAI_room' or '@NileAI' in text:
+    if room == f"AI_{phone}":
         try:
-            prompt_content = text.replace('@NileAI', '').strip()
-            if not prompt_content: prompt_content = "أهلاً بك، كيف يمكنني مساعدتك اليوم؟"
-
-            system_instruction = "أنت مساعد NileAI الذكي والدعم الفني لتطبيق Nile Chat البريميوم. رد بالعامية المصرية وبذكاء خارق ومباشر دون تكرار أو مقدمات طويلة."
-            if "مشكلة" in text or "عطل" in text or "الدعم الفني" in text:
-                system_instruction += " قدم حلولاً تقنية سريعة للمستخدم بخصوص إعدادات الشات والاتصال والخصوصية."
-
+            prompt_content = text.strip()
             chat_completion = groq_client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": system_instruction},
+                    {"role": "system", "content": "أنت مساعد ذكي لتطبيق نايل شات. رد بالعامية المصرية باختصار."},
                     {"role": "user", "content": prompt_content}
                 ],
                 model="llama3-8b-8192",
@@ -199,17 +191,17 @@ def handle_message_event(data):
             
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reactions, status_ticks, reply_to) VALUES (?, ?, 'NileAI 🤖', 'bot-system', ?, ?, 'text', '', '', 'read', '')",
+            cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reactions, status_ticks, reply_to) VALUES (?, ?, 'نايل شات 🤖', 'bot-system', ?, ?, 'text', '', '', 'read', '')",
                            (bot_msg_id, room, reply_text, time.time()))
             conn.commit()
             conn.close()
             
             emit('message', {
-                'id': bot_msg_id, 'room': room, 'sender': "NileAI 🤖", 'phone': "bot-system", 
+                'id': bot_msg_id, 'room': room, 'sender': "نايل شات 🤖", 'phone': "bot-system", 
                 'text': reply_text, 'file_type': 'text', 'file_name': '', 'reactions': '', 'status_ticks': 'read', 'reply_to': ''
             }, room=room)
         except Exception as e:
-            print("Advanced AI Subsystem Error:", e)
+            pass
 
 @socketio.on('edit_message')
 def handle_edit(data):
@@ -272,22 +264,6 @@ def get_stories():
     conn.close()
     stories = [{"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3], "avatar": r[4] if r[4] else '', "phone": r[5]} for r in rows]
     emit('stories_list', {'stories': stories})
-
-@socketio.on('repost_story')
-def handle_repost_story(data):
-    sender = data.get('sender')
-    phone = str(data.get('phone')).strip()
-    text = data.get('text')
-    file_type = data.get('file_type')
-    story_id = f"story-repost-{int(time.time() * 1000)}"
-    
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO stories (id, sender, phone, text, file_type, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
-                   (story_id, f"{sender} (إعادة نشر)", phone, text, file_type, time.time()))
-    conn.commit()
-    conn.close()
-    emit('new_story_alert', broadcast=True)
 
 @socketio.on('create_unit')
 def create_unit(data):
