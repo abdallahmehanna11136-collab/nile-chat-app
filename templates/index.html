@@ -64,14 +64,12 @@
             transition: background 0.3s, color 0.3s;
         }
 
-        /* App Container Layout */
         .app-container {
             display: flex;
             width: 100%;
             height: 100%;
         }
 
-        /* Sidebar Styling */
         .sidebar {
             width: 350px;
             background-color: var(--bg-side);
@@ -121,7 +119,6 @@
             color: var(--primary-color);
         }
 
-        /* Tabs Navigation */
         .tabs-nav {
             display: flex;
             background-color: var(--bg-side);
@@ -157,7 +154,6 @@
             display: block;
         }
 
-        /* Search Section */
         .search-box-container {
             padding: 8px 14px;
             background-color: var(--bg-side);
@@ -190,18 +186,6 @@
             outline: none;
         }
 
-        .action-mini-btn {
-            background-color: var(--primary-color);
-            color: #white;
-            border: none;
-            border-radius: 8px;
-            padding: 0 12px;
-            cursor: pointer;
-            font-size: 14px;
-            color: white;
-        }
-
-        /* Items Lists (Rooms, Contacts, Feed) */
         .list-item {
             display: flex;
             align-items: center;
@@ -246,7 +230,6 @@
             margin-top: 2px;
         }
 
-        /* Chat View Window */
         .chat-window {
             flex: 1;
             display: flex;
@@ -287,7 +270,6 @@
             color: var(--primary-color);
         }
 
-        /* Messages Container */
         .messages-container {
             flex: 1;
             padding: 20px 5%;
@@ -337,7 +319,6 @@
             margin-bottom: 3px;
         }
 
-        /* Audio Player Message Styling */
         .voice-message-player {
             display: flex;
             align-items: center;
@@ -359,7 +340,6 @@
             justify-content: center;
         }
 
-        /* Chat Input Footer Panel */
         .chat-footer {
             padding: 10px 16px;
             background-color: var(--header-bg);
@@ -395,7 +375,6 @@
             outline: none;
         }
 
-        /* CRITICAL FIX: Enhanced Control Send & Record States */
         .send-action-container {
             display: flex;
             align-items: center;
@@ -438,7 +417,6 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
         }
 
-        /* Modals Windows Overlay */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -524,7 +502,6 @@
             color: var(--text-muted);
         }
 
-        /* QR Modal Frame Block */
         #qr-container-box {
             display: flex;
             flex-direction: column;
@@ -536,7 +513,6 @@
             border-radius: 8px;
         }
 
-        /* Feed Post Layout Card */
         .feed-card {
             background: var(--bg-side);
             margin: 12px;
@@ -568,7 +544,6 @@
             cursor: pointer;
         }
 
-        /* WebRTC Streaming Frame Video Call Window Overlay */
         .webrtc-call-overlay {
             position: fixed;
             top: 0;
@@ -630,7 +605,6 @@
         .btn-call-action.hangup { background-color: #ea4335; }
         .btn-call-action.accept { background-color: #00a884; }
 
-        /* Welcome placeholder text style */
         .welcome-screen {
             flex: 1;
             display: flex;
@@ -776,8 +750,10 @@
                 <input type="text" id="auth-input-name" class="form-control" placeholder="اكتب اسمك المفضل">
             </div>
             <div class="form-group">
-                <label>رابط الصورة الشخصية (Avatar URL):</label>
-                <input type="text" id="auth-input-avatar" class="form-control" placeholder="يمكنك تركها فارغة أو وضع رابط صورة">
+                <label>اختر صورتك الشخصية من المعرض:</label>
+                <input type="file" id="auth-gallery-avatar" class="form-control" accept="image/*" onchange="uploadAvatarFromGallery(this, 'auth-input-avatar', 'auth-upload-status')">
+                <input type="hidden" id="auth-input-avatar" value="">
+                <small id="auth-upload-status" style="color: var(--primary-color); display: none; margin-top: 5px; font-weight: bold;"></small>
             </div>
             <div class="modal-actions">
                 <button class="btn-custom primary" onclick="commitUserRegistrationAuthLive()">دخول وحفظ الجلسة</button>
@@ -862,8 +838,10 @@
                 <input type="text" id="profile-edit-name" class="form-control">
             </div>
             <div class="form-group">
-                <label>رابط الصورة الشخصية Avatar URL:</label>
-                <input type="text" id="profile-edit-avatar" class="form-control">
+                <label>تغيير الصورة الشخصية من المعرض:</label>
+                <input type="file" id="profile-gallery-avatar" class="form-control" accept="image/*" onchange="uploadAvatarFromGallery(this, 'profile-edit-avatar', 'profile-upload-status')">
+                <input type="hidden" id="profile-edit-avatar">
+                <small id="profile-upload-status" style="color: var(--primary-color); display: none; margin-top: 5px; font-weight: bold;"></small>
             </div>
             <div class="form-group">
                 <label>رابط خلفية الشات المستهدفة:</label>
@@ -911,9 +889,7 @@
         </div>
     </div>
 
-
     <script>
-        // Core Reactive Variables & Storage Structure setup
         let socket = io();
         let myProfile = { phone: '', name: '', avatar: '', theme_mode: 'light', wallpaper: '', voice_setting: 'normal', status_text: 'Available' };
         let activeRoomId = '';
@@ -927,10 +903,40 @@
 
         const iceConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-        // INITIALIZATION PERSISTENCE CHECKS RUNTIME
         window.addEventListener('DOMContentLoaded', () => {
             checkAndRestoreSavedUserSession();
         });
+
+        // ميزة الرفع التلقائي للصور المباشرة من الاستوديو أو المعرض بدون إدخال روابط يدوية
+        function uploadAvatarFromGallery(fileInput, hiddenInputId, statusId) {
+            if (fileInput.files.length === 0) return;
+            
+            const statusLabel = document.getElementById(statusId);
+            statusLabel.style.display = 'block';
+            statusLabel.innerText = '⏳ جاري رفع صورتك ومعالجتها...';
+            statusLabel.style.color = 'var(--primary-color)';
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.url) {
+                    document.getElementById(hiddenInputId).value = data.url;
+                    statusLabel.innerText = '✅ تم رفع الصورة بنجاح وتعيينها كأفاتار!';
+                    statusLabel.style.color = '#00a884';
+                } else {
+                    statusLabel.innerText = '❌ فشل الرفع، حاول مرة أخرى.';
+                    statusLabel.style.color = '#ea4335';
+                }
+            }).catch(err => {
+                console.error(err);
+                statusLabel.innerText = '❌ خطأ في الاتصال بالسيرفر.';
+                statusLabel.style.color = '#ea4335';
+            });
+        }
 
         function checkAndRestoreSavedUserSession() {
             const savedPhone = localStorage.getItem('nile_chat_phone_2026');
@@ -965,7 +971,6 @@
             }
         });
 
-        // TABS SWITCHING LOGIC MECHANISM
         function switchSidebarTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -974,7 +979,6 @@
             event.currentTarget.classList.add('active');
         }
 
-        // ROOM JOIN LOGIC HANDLERS
         function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
             activeRoomId = roomId;
             document.getElementById('chat-welcome-placeholder').style.display = 'none';
@@ -1007,7 +1011,6 @@
             }
         });
 
-        // RENDER MESSAGE BUBBLE CONDITIONAL FORMATS ENGINE
         function renderMessageBubble(msg) {
             const container = document.getElementById('chat-messages-stream-anchor');
             const isMe = String(msg.phone) === String(myProfile.phone);
@@ -1067,7 +1070,6 @@
             }
         }
 
-        // CRITICAL FIX: Enhanced dynamic action control inputs & evaluation states
         function evalInputChangeState(inputField) {
             const btn = document.getElementById('dynamic-action-control-btn');
             const icon = document.getElementById('dynamic-action-icon');
@@ -1085,7 +1087,6 @@
             const textValue = inputField.value.trim();
 
             if(textValue.length > 0) {
-                // TRANSMIT TEXT STATE ACTION
                 const msgPayload = {
                     id: 'msg-' + Date.now(),
                     room: activeRoomId,
@@ -1098,7 +1099,6 @@
                 inputField.value = '';
                 evalInputChangeState(inputField);
             } else {
-                // INITIATE / COMPILE VOICE RECORDING STATE
                 toggleVoiceRecordingSessionLive();
             }
         }
@@ -1113,7 +1113,6 @@
             }
 
             if(!isRecordingMode) {
-                // Trigger Permission & Begin recording tracks
                 navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
                     mediaRecorder = new MediaRecorder(stream);
                     audioChunks = [];
@@ -1127,7 +1126,6 @@
                         const formData = new FormData();
                         formData.append('file', audioBlob, 'voice_note.mp3');
 
-                        // Forward audio blob track package to background upload endpoint routing
                         fetch('/upload', { method: 'POST', body: formData })
                         .then(res => res.json())
                         .then(uploadedJson => {
@@ -1142,9 +1140,8 @@
                                 };
                                 socket.emit('message', voiceMsgPayload);
                             }
-                        }).catch(err => console.error('Voice note upload payload tracking error: ', err));
+                        }).catch(err => console.error(err));
 
-                        // Release mic hardware hooks cleanly
                         stream.getTracks().forEach(track => track.stop());
                     };
 
@@ -1153,11 +1150,10 @@
                     btn.classList.add('recording');
                     icon.className = 'bi bi-stop-fill';
                 }).catch(err => {
-                    console.error('Mic initialization failure: ', err);
+                    console.error(err);
                     alert('فشل الوصول إلى الميكروفون الحصري، يرجى تفعيل الصلاحيات.');
                 });
             } else {
-                // Halt capture flow compiling outputs triggered automatically
                 if(mediaRecorder && mediaRecorder.state !== 'inactive') {
                     mediaRecorder.stop();
                 }
@@ -1167,7 +1163,6 @@
             }
         }
 
-        // ATTACHMENT MEDIA FILE SELECTION HANDLERS
         function triggerFileUploadAction() {
             document.getElementById('hidden-file-input-field').click();
         }
@@ -1197,7 +1192,6 @@
             inputNode.value = '';
         }
 
-        // VERIFY AND BUILD CORE CONTACT LISTS VIEW ENGINE
         function loadMyContacts() {
             socket.emit('get_my_contacts', { user_phone: myProfile.phone });
         }
@@ -1213,7 +1207,6 @@
                 const item = document.createElement('div');
                 item.className = 'list-item';
                 item.onclick = () => {
-                    // Create symmetric direct room identifier hash tag sequence
                     const targetRoom = [myProfile.phone, c.phone].sort().join('_vs_');
                     joinChatRoomHook(targetRoom, c.name, c.avatar);
                 };
@@ -1248,7 +1241,6 @@
             }
         });
 
-        // PRIVATE GROUPS COMPILING ENGINE SUBMISSIONS
         function submitCreateGroupFormRequest() {
             const gName = document.getElementById('group-name-input-field').value.trim();
             if(!gName) return;
@@ -1286,7 +1278,6 @@
             });
         });
 
-        // REALTIME STORIES (STATUSES) RENDER LOGIC
         function requestAllStoriesLive() {
             socket.emit('get_stories');
         }
@@ -1332,7 +1323,6 @@
 
         socket.on('new_story_alert', () => { if(document.getElementById('stories-tab').classList.contains('active')) requestAllStoriesLive(); });
 
-        // PUBLIC FORUM FEED SYSTEM ENGINE
         function requestAllFeedPosts() {
             socket.emit('get_feed_posts');
         }
@@ -1388,7 +1378,6 @@
 
         socket.on('new_feed_post_alert', () => { if(document.getElementById('feed-tab').classList.contains('active')) requestAllFeedPosts(); });
 
-        // QR BARCODE PROFILE INVITATION RENDERS SETUP
         function triggerRoomQRCodeGeneration() {
             if(!activeRoomId) return;
             document.getElementById('qr-container-box').innerHTML = '';
@@ -1409,9 +1398,7 @@
             }
         });
 
-        // WEBRTC REALTIME VOIP/VIDEO STREAMING SIGNALING ENGINE
         function initiateWebRTCCall(mode) {
-            // Extrapolate target partner digits chain pattern sequence out from composite keys identifier sequence
             if(!activeRoomId || activeRoomId.indexOf('_vs_') === -1) {
                 alert('المكالمات المباشرة مدعومة فقط داخل غرف المحادثة الثنائية الفردية الخاصة حالياً.');
                 return;
@@ -1448,14 +1435,13 @@
                 });
 
             }).catch(err => {
-                console.error('Call stream acquisition fault: ', err);
+                console.error(err);
                 terminateActiveCallSession();
             });
         }
 
         socket.on('webrtc_offer_answer', (data) => {
             if(data.offer) {
-                // Incoming calling offer incoming transaction package context tracking
                 currentIncomingCallOffer = data.offer;
                 callTargetPhone = data.sender_phone;
                 
@@ -1499,7 +1485,7 @@
             .then(() => {
                 socket.emit('webrtc_offer_answer', { target_phone: callTargetPhone, answer: activePeerConnection.localDescription, sender_phone: myProfile.phone });
             }).catch(err => {
-                console.error('Failure inside response chain mapping execution flow: ', err);
+                console.error(err);
                 terminateActiveCallSession();
             });
         }
@@ -1523,21 +1509,18 @@
             currentIncomingCallOffer = null;
         }
 
-        // TOGGLE LIVE SYSTEM INTERACTION THEME (DARK / LIGHT)
         function toggleThemeModeLive() {
             const nextTheme = (myProfile.theme_mode === 'dark') ? 'light' : 'dark';
             myProfile.theme_mode = nextTheme;
             document.body.setAttribute('data-theme', nextTheme);
-            
-            // Push preferences choice mapping records directly downwards backend sync stack
             socket.emit('update_profile_live', myProfile);
         }
 
-        // PROFILE MODAL PRE-POPULATION FILL LOGIC
         function openProfileSettingsModal() {
             document.getElementById('profile-edit-name').value = myProfile.name;
             document.getElementById('profile-edit-avatar').value = myProfile.avatar;
             document.getElementById('profile-edit-status-text').value = myProfile.status_text;
+            document.getElementById('profile-upload-status').style.display = 'none';
             openModalOverlay('modal-profile-settings-view');
         }
 
@@ -1554,7 +1537,6 @@
             closeModalOverlay('modal-profile-settings-view');
         }
 
-        // SYSTEM PROFILE REGISTRATION DEPLOYMENT INTERACTION CONTROL
         function commitUserRegistrationAuthLive() {
             const ph = document.getElementById('auth-input-phone').value.trim();
             const nm = document.getElementById('auth-input-name').value.trim();
@@ -1568,7 +1550,11 @@
             socket.emit('register_user', { phone: ph, name: nm, avatar: av });
         }
 
-        // AUXILIARY UTILITY VIEW MANIPULATION CONTEXT WRAPPERS
+        function openAddContactModal() { openModalOverlay('modal-add-contact-view'); }
+        function openCreateGroupModal() { openModalOverlay('modal-create-group-view'); }
+        function openCreateStoryModal() { openModalOverlay('modal-create-story-view'); }
+        function openCreatePostModal() { openModalOverlay('modal-create-post-view'); }
+
         function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
         function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
         function scrollMessagesToBottomContainer() {
