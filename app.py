@@ -1,4 +1,4 @@
-from flask import Flask, render_template, make_response, request, jsonify, url_for
+from flask import Flask, render_template, make_response, request, jsonify, url_for, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 import sqlite3
@@ -13,6 +13,7 @@ monkey.patch_all()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
 
+# إعداد المجلدات المخصصة للملفات والأيقونات للبرنامج
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -155,6 +156,28 @@ def index():
     response = make_response(render_template('index.html'))
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
+
+# مسار خاص لخدمة أيقونة وملفات الـ PWA لضمان ظهور أيقونة التطبيق والـ Manifest بشكل سليم
+@app.route('/static/manifest.json')
+def serve_manifest():
+    manifest_data = {
+        "short_name": "NileChat",
+        "name": "Nile Chat Pro 2026",
+        "icons": [
+            {
+                "src": "/static/icon.png",
+                "type": "image/png",
+                "sizes": "512x512",
+                "purpose": "any maskable"
+            }
+        ],
+        "start_url": "/",
+        "background_color": "#0b141a",
+        "theme_color": "#00a884",
+        "display": "standalone",
+        "orientation": "portrait"
+    }
+    return jsonify(manifest_data)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
