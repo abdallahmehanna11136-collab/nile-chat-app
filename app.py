@@ -22,7 +22,7 @@ socketio = SocketIO(
 )
 DB_PATH = 'nile_chat_database.db'
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_XbW76VymhF0yJp9uS7NnWGdyb3FYM3Yp5vR9kL8mJq2bN4oP3qR")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", 'gsk_XbW76VymhF0yJp9uS7NnWGdyb3FYM3Yp5vR9kL8mJq2bN4oP3qR')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
