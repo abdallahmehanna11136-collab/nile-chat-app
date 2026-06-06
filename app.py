@@ -14,16 +14,16 @@ groq_client = Groq(api_key='gsk_6PzaXeQBVHb0EBGntz2xWGdyb3FYCpFtfQRLdWcjMtp8ptzd
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_stable_core_system'
 
-# إعداد مجلد الميديا (للحالات، الصور، والمكالمات)
+# إعداد مجلد الميديا
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# تشغيل السوكيت بأعلى كفاءة وسرعة (ثبات لايف)
+# تشغيل السوكيت بثبات لايف
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=60, ping_interval=25)
 DB_PATH = 'nile_chat_database.db'
 
-# 2. تشغيل Firebase للمكالمات التنبيهية في الخلفية بدون مشاكل
+# 2. تشغيل Firebase للمكالمات التنبيهية
 USER_TOKENS = {}
 try:
     if os.path.exists("firebase_credentials.json"):
@@ -35,7 +35,7 @@ try:
 except Exception as e:
     print("Firebase Init Error:", e)
 
-# إنشاء وتحديث قاعدة البيانات لكل الميزات
+# إنشاء وتحديث قاعدة البيانات
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -91,7 +91,7 @@ def upload_file():
     
     return jsonify({'url': f_url, 'file_type': f_type})
 
-# 3. كل أحداث الـ Sockets (الشات، الحالات، المكالمات، الـ QR)
+# 3. أحداث الـ Sockets
 @socketio.on('register_user')
 def handle_register(data):
     phone = data.get('phone')
@@ -132,7 +132,6 @@ def handle_message_event(data):
     conn.commit()
     conn.close()
 
-    # إرسال الرسالة فوراً لجميع الأطراف
     emit('message', {'id': msg_id, 'room': room, 'sender': sender, 'phone': phone, 'text': text, 'file_type': file_type, 'file_name': file_name, 'reactions': ''}, room=room)
 
     # تشغيل محرك رد الذكاء الاصطناعي الفوري بالعامية المصرية
@@ -176,7 +175,6 @@ def add_reaction(data):
         conn.close()
         emit('reaction_updated', {'id': msg_id, 'reactions': reaction}, room=room)
 
-# ميزة إضافة ورؤية الحالات (الستوري)
 @socketio.on('add_story')
 def handle_story(data):
     story_id = f"story-{int(time.time() * 1000)}"
@@ -205,7 +203,6 @@ def get_stories():
     stories = [{"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3]} for r in rows]
     emit('stories_list', {'stories': stories})
 
-# ميزة المجموعات والـ QR Code
 @socketio.on('create_group')
 def create_group(data):
     g_id = f"group_{int(time.time() * 1000)}"
@@ -227,7 +224,7 @@ def get_groups():
     groups = [{"id": r[0], "name": r[1]} for r in rows]
     emit('groups_list', {'groups': groups})
 
-# 4. إشارات الـ WebRTC الفورية للمكالمات الصوتية والفيديو (إصلاح كامل للاتصال بالطرف الآخر)
+# 4. إصلاح كامل لإرسال إشارة المكالمة الحية للغرفة الصحيحة
 @socketio.on('call_signal')
 def handle_call_signal(data):
     target_phone = str(data.get('target_phone'))
@@ -235,10 +232,9 @@ def handle_call_signal(data):
     room_id = data.get('room', 'public_room')
     
     if target_phone:
-        # إرسال إشارة الاتصال المباشرة فوراً للطرف الآخر عبر غرفته الخاصة
+        # إرسال علطول للغرفة الصحيحة المستهدفة للطرف الآخر
         emit('call_signal', data, room=f"user_{target_phone}", include_self=False)
         
-        # دعم الإيقاظ عبر FCM لو الموبايل مقفول تماماً
         target_token = USER_TOKENS.get(target_phone)
         if target_token:
             try:
