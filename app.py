@@ -3,6 +3,11 @@ import sqlite3
 import time
 import requests
 import json
+
+# إصلاح توافقية gevent على خوادم الدبلومنت قبل استدعاء فلاسك
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, render_template, make_response, request, jsonify, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
@@ -409,4 +414,6 @@ def handle_offer_answer(data):
     emit('webrtc_offer_answer', data, room=f"user_{target}")
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # التشغيل المباشر المتوافق مع خوادم النشر واللوكال
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, host='0.0.0.0', port=port, debug=False)
