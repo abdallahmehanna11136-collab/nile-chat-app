@@ -82,7 +82,7 @@ def get_groq_ai_response(user_message):
         payload = {
             "model": "llama3-8b-8192",
             "messages": [
-                {"role": "system", "content": "أنت الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
+                {"role": "system", "content": "أنت Nile AI الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7, "max_tokens": 400
@@ -322,14 +322,14 @@ def handle_message_event(data):
         ai_reply = get_groq_ai_response(text)
         ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
         ai_data = {
-            'id': ai_msg_id, 'room': 'AI_bot', 'sender': 'جروق الذكي', 
+            'id': ai_msg_id, 'room': 'AI_bot', 'sender': 'Nile AI', 
             'phone': 'AI_SYSTEM', 'text': ai_reply, 'file_type': 'text', 
             'file_name': '', 'reply_to': msg_id, 'is_edited': 0, 'star_status': 0
         }
         cursor.execute("""
             INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reply_to) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (ai_msg_id, 'AI_bot', 'جروق الذكي', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
+        """, (ai_msg_id, 'AI_bot', 'Nile AI', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
         conn.commit()
         emit('message', ai_data, room='AI_bot')
     conn.close()
