@@ -8,19 +8,22 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_key_2026'
 
-# إعداد مجلد الميديا المرفوعة
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(
+    app, 
+    cors_allowed_origins="*", 
+    async_mode='gevent',
+    engineio_logger=True, 
+    logger=True
+)
 DB_PATH = 'nile_chat_database.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
-    # جدول الرسائل مطور لدعم الردود والتفاعلات والتعديل
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
             id TEXT PRIMARY KEY, 
@@ -36,8 +39,6 @@ def init_db():
             reply_to TEXT DEFAULT ''
         )
     ''')
-    
-    # جدول الحالات يدعم النصوص والميديا
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stories (
             id TEXT PRIMARY KEY, 
@@ -49,8 +50,6 @@ def init_db():
             reposts_count INTEGER DEFAULT 0
         )
     ''')
-    
-    # جدول الحسابات الشخصية والخلفيات والحالات المخصصة
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS profiles (
             phone TEXT PRIMARY KEY, 
@@ -64,8 +63,6 @@ def init_db():
             wallpaper TEXT DEFAULT ''
         )
     ''')
-    
-    # جدول المجموعات والقنوات
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS units (
             id TEXT PRIMARY KEY, 
@@ -75,8 +72,6 @@ def init_db():
             admins TEXT
         )
     ''')
-    
-    # جدول اليوميات والمنشورات
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS feed_posts (
             id TEXT PRIMARY KEY, 
@@ -101,7 +96,6 @@ def index():
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
-# هندسة رفع الملفات الذكية (صور، فيديو، صوت) وتحديد نوعها تلقائياً للمتصفح
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files: 
@@ -114,7 +108,6 @@ def upload_file():
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
     
-    # تحديد نوع الملف المرفوع ليتطابق مع شروط عرض الـ HTML
     ext = filename.split('.')[-1].lower()
     f_type = 'text'
     if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
@@ -182,7 +175,6 @@ def on_join_room(data):
     join_room(room)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # جلب جميع حقول الرسائل بما فيها التفاعلات والردود لترتيب الشات
     cursor.execute("""
         SELECT id, room, sender, text, file_type, file_name, reactions, reply_to, phone 
         FROM messages WHERE room = ? ORDER BY timestamp ASC
@@ -218,7 +210,6 @@ def handle_message_event(data):
     conn.close()
     emit('message', data, room=room)
 
-# أحداث تعديل وحذف وتفاعلات الرسائل المتطابقة مع أزرار لوحة الـ HTML
 @socketio.on('edit_message')
 def handle_edit_message(data):
     msg_id = data.get('id')
@@ -254,7 +245,6 @@ def handle_reaction(data):
     conn.close()
     emit('reaction_updated', data, room=room)
 
-# هندسة وإدارة ربط الحالات (Stories) مع جلب الآفاتار الخاص بصاحبها تلقائياً
 @socketio.on('add_story')
 def handle_story(data):
     story_id = f"story-{int(time.time() * 1000)}"
@@ -270,7 +260,6 @@ def handle_story(data):
 def get_stories():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    # جلب الحالات مع دمج صورة صاحب الحساب لتظهر الأيقونات والدوائر بشكل كامل في الفرونت
     cursor.execute("""
         SELECT s.id, s.sender, s.text, s.file_type, p.avatar 
         FROM stories s LEFT JOIN profiles p ON s.phone = p.phone 
@@ -282,7 +271,6 @@ def get_stories():
         {"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3], "avatar": r[4]} for r in rows
     ]})
 
-# هندسة وإدارة المجموعات والقنوات
 @socketio.on('create_unit')
 def create_unit(data):
     u_id = f"unit_{int(time.time() * 1000)}"
@@ -303,7 +291,6 @@ def get_units():
     conn.close()
     emit('units_list', {'units': [{"id": r[0], "name": r[1], "type": r[2]} for r in rows]})
 
-# هندسة وإدارة منشورات اليوميات المتوافقة بالكامل مع الفرونت إند الـ 700 سطر
 @socketio.on('add_feed_post')
 def add_feed_post(data):
     post_id = f"post-{int(time.time() * 1000)}"
@@ -328,11 +315,9 @@ def get_feed_posts():
         {"id": r[0], "sender": r[1], "text": r[2], "media_url": r[3], "avatar": r[4], "file_type": r[5]} for r in rows
     ]})
 
-# تمرير إشارات اتصال WebRTC بين الهواتف والمتصفحات لضمان فتح شاشات المكالمات
 @socketio.on('call_signal')
 def handle_call_signal(data):
     target = data.get('target_phone')
-    # بث إشارة الاتصال إلى الروم الخاص بالمستخدم المستهدف مباشرة
     emit('call_signal', data, room=f"user_{target}")
 
 if __name__ == '__main__':
