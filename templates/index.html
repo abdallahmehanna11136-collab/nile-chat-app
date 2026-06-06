@@ -2,10 +2,10 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Nile Chat - نايل شات البريميوم</title>
+    <title>نايل شات</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Nile Chat">
+    <meta name="apple-mobile-web-app-title" content="نايل شات">
     
     <style>
         :root {
@@ -38,8 +38,8 @@
         #login-overlay { position: fixed; inset: 0; background: var(--dark-bg); z-index: 10000; display: flex; justify-content: center; align-items: center; padding: 20px; }
         .login-box { background: var(--panel-bg); padding: 30px; border-radius: 16px; border: 2px solid var(--neon-green); width: 100%; max-width: 420px; box-shadow: 0 0 25px rgba(0,255,204,0.2); text-align: center; }
         .login-box h2 { color: var(--neon-green); margin-bottom: 20px; }
-        .login-box input, .login-box select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-color); font-size: 16px; outline: none; text-align: center; }
-        .login-box button { width: 100%; padding: 14px; border: none; background: var(--neon-green); color: #000; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,255,204,0.3); }
+        .login-box input, .login-box select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-color); font-size: 16px; outline: none; text-align: center; position: relative; z-index: 10002; }
+        .login-box button { width: 100%; padding: 14px; border: none; background: var(--neon-green); color: #000; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,255,204,0.3); position: relative; z-index: 10002; }
 
         #app-container { display: flex; width: 100%; height: 100vh; position: relative; }
         
@@ -48,14 +48,14 @@
         .sidebar-header img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--neon-green); cursor: pointer; }
         
         .nav-tabs { display: flex; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); }
-        .tab-btn { flex: 1; padding: 14px 5px; text-align: center; background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: bold; cursor: pointer; position: relative; transition: 0.2s; }
+        .tab-btn { flex: 1; padding: 14px 5px; text-align: center; background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: bold; cursor: pointer; position: relative; transition: 0.2s; z-index: 12; }
         .tab-btn.active { color: var(--neon-green); }
         .tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
 
         .list-container { flex: 1; overflow-y: auto; padding: 10px; display: none; }
         .list-container.active { display: block; }
         
-        .chat-item { display: flex; align-items: center; padding: 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .chat-item { display: flex; align-items: center; padding: 12px; border-radius: 10px; margin-bottom: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; position: relative; z-index: 15; }
         .chat-item:hover, .chat-item.active { background: rgba(255,255,255,0.05); border-color: var(--border-color); }
         .chat-item img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; margin-left: 12px; border: 1px solid var(--border-color); }
         .chat-item .info { flex: 1; overflow: hidden; }
@@ -68,7 +68,7 @@
         .feed-body p { font-size: 14px; line-height: 1.5; margin-bottom: 10px; }
         .feed-body img, .feed-body video { width: 100%; max-height: 250px; border-radius: 8px; object-fit: cover; margin-bottom: 10px; border: 1px solid var(--border-color); }
 
-        .main-window { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); position: relative; }
+        .main-window { flex: 1; display: flex; flex-direction: column; background: var(--dark-bg); position: relative; z-index: 1; }
         
         .chat-messages-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background-size: cover; background-position: center; }
         
@@ -87,7 +87,7 @@
         
         .reply-preview-box { background: rgba(0,0,0,0.2); border-right: 3px solid var(--neon-green); padding: 5px; border-radius: 4px; font-size: 12px; margin-bottom: 5px; color: var(--text-muted); text-align: right; }
 
-        .chat-footer { padding: 12px 15px; background: var(--panel-bg); border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
+        .chat-footer { padding: 12px 15px; background: var(--panel-bg); border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; position: relative; z-index: 20; }
         .chat-footer input { flex: 1; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border-color); background: var(--dark-bg); color: var(--text-color); font-size: 15px; outline: none; }
         .chat-footer button, .chat-footer label { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
         .chat-footer button:hover, .chat-footer label:hover { color: var(--neon-green); }
@@ -116,57 +116,56 @@
 
     <div id="login-overlay">
         <div class="login-box">
-            <h2>نايل شات البريميوم 🚀</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">أدخل رقم الهاتف والبريد لتجربة حية بكافة الـ 41 ميزه</p>
-            <input type="text" id="login-phone" placeholder="رقم الهاتف (مثال: 01012345678)" required>
-            <input type="text" id="login-name" placeholder="الاسم الشخصي المستعار" required>
+            <h2>نايل شات</h2>
+            <input type="text" id="login-phone" placeholder="رقم الهاتف" required>
+            <input type="text" id="login-name" placeholder="الاسم" required>
             <input type="email" id="login-email" placeholder="البريد الإلكتروني (اختياري)">
-            <button id="btn-submit-login" onclick="initiateNileSession()">دخول آمن للتطبيق</button>
+            <button id="btn-submit-login" onclick="initiateNileSession()">دخول</button>
         </div>
     </div>
 
     <div id="app-container">
         <div class="sidebar">
             <div class="sidebar-header">
-                <img id="user-avatar-current" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" onclick="triggerSettingsDashboard()" title="الملف الشخصي والإعدادات">
+                <img id="user-avatar-current" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" onclick="triggerSettingsDashboard()">
                 <h3 style="font-size: 16px; color: var(--neon-green);" id="display-profile-name">نايل شات</h3>
                 <div style="display: flex; gap: 10px;">
-                    <span style="cursor: pointer; font-size: 18px;" onclick="triggerVoiceNavigator()" title="التنقل الصوتي الذكي">🎙️</span>
-                    <span style="cursor: pointer; font-size: 18px;" onclick="openCreatorDialog()" title="مجموعة وقنوات جديدة">➕</span>
+                    <span style="cursor: pointer; font-size: 18px; z-index: 20;" onclick="triggerVoiceNavigator()">🎙️</span>
+                    <span style="cursor: pointer; font-size: 18px; z-index: 20;" onclick="openCreatorDialog()">➕</span>
                 </div>
             </div>
 
             <div class="nav-tabs">
                 <div class="tab-btn active" onclick="switchSidebarTab('chats-tab-panel', this)">شات</div>
                 <div class="tab-btn" onclick="switchSidebarTab('groups-tab-panel', this)">مجموعات</div>
-                <div class="tab-btn" onclick="switchSidebarTab('stories-tab-panel', this)">الحالات / ريلز</div>
+                <div class="tab-btn" onclick="switchSidebarTab('stories-tab-panel', this)">الحالات</div>
                 <div class="tab-btn" onclick="switchSidebarTab('feed-tab-panel', this)">اليوميات</div>
             </div>
 
             <div id="chats-tab-panel" class="list-container active">
-                <div class="chat-item" onclick="activateDirectChat('public_room', 'غرفة النيل العامة 🌍', 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150')">
+                <div class="chat-item" onclick="activateDirectChat('public_room', 'نايل شات', 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150')">
                     <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150">
                     <div class="info">
-                        <h4>غرفة النيل العامة 🌍</h4>
-                        <p>تفاعل مباشر مع كافة المستخدمين لايف...</p>
+                        <h4>نايل شات</h4>
+                        <p>المحادثة العامة...</p>
                     </div>
                 </div>
                 <div class="chat-item" id="ai-chat-item-trigger">
                     <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150">
                     <div class="info">
-                        <h4>مساعد NileAI الشخصي 🤖</h4>
-                        <p>شات ذكاء اصطناعي خاص بك ودعم فني فوري...</p>
+                        <h4>الذكاء الاصطناعي</h4>
+                        <p>مساعد الشات الذكي...</p>
                     </div>
                 </div>
                 <div class="chat-item" id="self-chat-item-trigger">
                     <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150">
                     <div class="info">
-                        <h4>مراسلة نفسك (الحافظة) 💾</h4>
-                        <p>احفظ رسائلك الهامة، ملفاتك، وملاحظاتك هنا...</p>
+                        <h4>الرسائل المحفوظة</h4>
+                        <p>احفظ ملاحظاتك هنا...</p>
                     </div>
                 </div>
-                <div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                    <input type="text" id="phone-search-input" placeholder="🔍 ابحث عن شخص بالرقم مباشرة..." oninput="searchUserByPhoneNumber()" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); background:var(--dark-bg); color:#fff; text-align:center;">
+                <div style="padding: 10px; border-bottom: 1px solid var(--border-color); position: relative; z-index: 30;">
+                    <input type="text" id="phone-search-input" placeholder="ابحث برقم الهاتف..." oninput="searchUserByPhoneNumber()" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border-color); background:var(--dark-bg); color:#fff; text-align:center;">
                 </div>
                 <div id="dynamic-search-results-holder"></div>
                 <div id="active-contacts-list"></div>
@@ -177,47 +176,47 @@
             </div>
 
             <div id="stories-tab-panel" class="list-container">
-                <button onclick="triggerNewStoryCreation()" style="width:100%; padding:10px; background:var(--neon-blue); border:none; border-radius:6px; color:#fff; font-weight:bold; margin-bottom:12px; cursor:pointer;">➕ إضافة حالة جديدة (فيديو/نص/ميديا)</button>
+                <button onclick="triggerNewStoryCreation()" style="width:100%; padding:10px; background:var(--neon-blue); border:none; border-radius:6px; color:#fff; font-weight:bold; margin-bottom:12px; cursor:pointer; position: relative; z-index: 25;">إضافة حالة</button>
                 <div id="stories-list-wrapper"></div>
             </div>
 
             <div id="feed-tab-panel" class="list-container">
-                <button onclick="openNewPostDialog()" style="width:100%; padding:10px; background:var(--neon-green); color:#000; border:none; border-radius:6px; font-weight:bold; margin-bottom:12px; cursor:pointer;">📝 اكتب منشور جديد لليوميات</button>
+                <button onclick="openNewPostDialog()" style="width:100%; padding:10px; background:var(--neon-green); color:#000; border:none; border-radius:6px; font-weight:bold; margin-bottom:12px; cursor:pointer; position: relative; z-index: 25;">كتابة منشور</button>
                 <div id="feed-posts-wrapper"></div>
             </div>
         </div>
 
         <div class="main-window">
-            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); background: var(--panel-bg);">
+            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); background: var(--panel-bg); position: relative; z-index: 20;">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <img id="active-chat-avatar" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150" style="width:40px; height:40px;">
                     <div>
-                        <h4 id="active-chat-title">غرفة النيل العامة 🌍</h4>
-                        <span style="font-size:11px; color:var(--neon-green);" id="encryption-indicator-text">🔒 مشفر ومحمي تلقائياً</span>
+                        <h4 id="active-chat-title">نايل شات</h4>
+                        <span style="font-size:11px; color:var(--neon-green);" id="encryption-indicator-text">اتصال آمن</span>
                     </div>
                 </div>
                 <div style="display: flex; gap: 15px;">
-                    <span style="cursor: pointer; font-size: 20px;" onclick="initiateWebRTCCall('audio')" title="مكالمة صوتية فائقة الجودة">📞</span>
-                    <span style="cursor: pointer; font-size: 20px;" onclick="initiateWebRTCCall('video')" title="مكالمة فيديو لايف">📹</span>
+                    <span style="cursor: pointer; font-size: 20px;" onclick="initiateWebRTCCall('audio')">📞</span>
+                    <span style="cursor: pointer; font-size: 20px;" onclick="initiateWebRTCCall('video')">📹</span>
                 </div>
             </div>
 
             <div class="chat-messages-area" id="chat-messages-box"></div>
 
-            <div id="reply-context-footer-container" style="display:none; background:rgba(0,0,0,0.1); padding:8px 15px; border-top:1px solid var(--border-color); justify-content:space-between; align-items:center;">
+            <div id="reply-context-footer-container" style="display:none; background:rgba(0,0,0,0.1); padding:8px 15px; border-top:1px solid var(--border-color); justify-content:space-between; align-items:center; position: relative; z-index: 20;">
                 <div id="reply-context-footer-text" style="font-size:13px; color:var(--text-muted);"></div>
                 <span style="cursor:pointer; color:red;" onclick="cancelReplyContext()">✖</span>
             </div>
 
             <div class="chat-footer">
-                <span style="cursor:pointer; font-size:22px;" onclick="toggleEmojiTray()" title="لوحة الإيموجي الشاملة">😊</span>
-                <label for="chat-file-uploader" title="مرفقات وصور وفيديوهات سريعة">📎</label>
+                <span style="cursor:pointer; font-size:22px;" onclick="toggleEmojiTray()">😊</span>
+                <label for="chat-file-uploader">📎</label>
                 <input type="file" id="chat-file-uploader" style="display:none;" onchange="handleFileTransmission(this)">
                 
-                <span id="voice-record-mic-btn" style="cursor:pointer; font-size:22px;" onclick="toggleVoiceRecording()" title="تسجيل رسالة صوتية فورا">🎙️</span>
+                <span id="voice-record-mic-btn" style="cursor:pointer; font-size:22px;" onclick="toggleVoiceRecording()">🎙️</span>
 
-                <input type="text" id="chat-message-input-field" placeholder="اكتب رسالة بريميوم هنا... يمكنك مناداة @NileAI للرد" onkeydown="if(event.key === 'Enter') sendTextMessageToServer()">
-                <button onclick="sendTextMessageToServer()" title="إرسال">🚀</button>
+                <input type="text" id="chat-message-input-field" placeholder="اكتب رسالة..." onkeydown="if(event.key === 'Enter') sendTextMessageToServer()">
+                <button onclick="sendTextMessageToServer()">🚀</button>
             </div>
             
             <div id="emoji-tray-popover" style="display:none; position:absolute; bottom:65px; left:20px; background:var(--panel-bg); border:1px solid var(--border-color); border-radius:12px; padding:10px; width:280px; grid-template-columns: repeat(7, 1fr); gap:6px; z-index:20000;"></div>
@@ -228,14 +227,14 @@
         <div class="call-user-info">
             <img id="call-screen-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150">
             <h2 id="call-screen-name">مكالمة جارية...</h2>
-            <p id="call-status-label" style="color:var(--neon-green); margin-top:5px;">متصل - جودة فائقة WebRTC</p>
+            <p id="call-status-label" style="color:var(--neon-green); margin-top:5px;">متصل</p>
             
             <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
-                <select id="voice-changer-selector" onchange="applyVoiceFilterConfig()" style="padding:6px; border-radius:4px; background:#222; color:#fff; border:1px solid var(--neon-green);">
-                    <option value="none">🎙️ صوت طبيعي (بدون فلتر)</option>
-                    <option value="girl">👧 فلتر صوت فتاة</option>
-                    <option value="boy">👦 فلتر صوت ولد صغير</option>
-                    <option value="announcer">📻 فلتر صوت مذيع راديو</option>
+                <select id="voice-changer-selector" onchange="applyVoiceFilterConfig()" style="padding:6px; border-radius:4px; background:#222; color:#fff; border:1px solid var(--neon-green); position: relative; z-index: 13000;">
+                    <option value="none">صوت طبيعي</option>
+                    <option value="girl">صوت فتاة</option>
+                    <option value="boy">صوت ولد</option>
+                    <option value="announcer">صوت مذيع</option>
                 </select>
             </div>
         </div>
@@ -244,11 +243,11 @@
             <video class="video-stream-box" id="remote-video-stream-el" autoplay playsinline></video>
             <video class="local-mini-preview" id="local-video-stream-el" autoplay playsinline muted></video>
             
-            <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:5px; border-radius:4px;">
-                <select id="ar-face-filter" style="font-size:11px; background:#000; color:#fff; border:none;" onchange="alert('تم تفعيل مرشح الوش والـ AR المحدد بنجاح على دفق الكاميرا!')">
-                    <option value="none">✨ مرشحات وش AR (سناب)</option>
-                    <option value="neon-glasses">🕶️ نظارات نيون ذكية</option>
-                    <option value="cyber-punk">🤖 قناع سايبر بانك الحية</option>
+            <div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); padding:5px; border-radius:4px; z-index: 13000;">
+                <select id="ar-face-filter" style="font-size:11px; background:#000; color:#fff; border:none;" onchange="alert('تم تفعيل الفلتر')">
+                    <option value="none">فلاتر الوجه</option>
+                    <option value="neon-glasses">نظارات نيون</option>
+                    <option value="cyber-punk">قناع سايبر</option>
                 </select>
             </div>
         </div>
@@ -261,40 +260,38 @@
 
     <div id="settings-modal" class="modal-view">
         <div class="modal-content-box">
-            <h3 style="color:var(--neon-green); margin-bottom:15px;">⚙️ الإعدادات والتحكم الشامل (ميزة 26)</h3>
+            <h3 style="color:var(--neon-green); margin-bottom:15px;">الإعدادات</h3>
             
-            <label style="display:block; margin:10px 0 5px; font-size:13px;">تغيير اسم الملف الشخصي:</label>
+            <label style="display:block; margin:10px 0 5px; font-size:13px;">تغيير الاسم:</label>
             <input type="text" id="settings-name-input">
 
-            <label style="display:block; margin:10px 0 5px; font-size:13px;">رابط الصورة الشخصية (Avatar URL):</label>
+            <label style="display:block; margin:10px 0 5px; font-size:13px;">رابط الصورة الشخصية:</label>
             <input type="text" id="settings-avatar-input">
 
-            <label style="display:block; margin:10px 0 5px; font-size:13px;">الحالة المكتوبة المخصصة:</label>
+            <label style="display:block; margin:10px 0 5px; font-size:13px;">الحالة المخصصة:</label>
             <input type="text" id="settings-status-text-input">
 
-            <label style="display:block; margin:10px 0 5px; font-size:13px;">نغمة رنين المكالمات المخصصة لك (ميزة 33):</label>
+            <label style="display:block; margin:10px 0 5px; font-size:13px;">نغمة الرينق:</label>
             <select id="settings-ringtone-select" style="width:100%; padding:10px; background:var(--dark-bg); color:#fff; border-radius:6px; margin-bottom:10px;">
-                <option value="premium-neon.mp3">🎵 نغمة نيون بريميوم الافتراضية</option>
-                <option value="whatsapp-classic.mp3">🎵 رنين كلاسيكي واتس آب مطور</option>
-                <option value="guitar-vibe.mp3">🎵 رنين جيتار هادئ</option>
+                <option value="default.mp3">النغمة الافتراضية</option>
             </select>
 
-            <label style="display:block; margin:10px 0 5px; font-size:13px;">رابط خلفية الشات المخصصة (Wallpaper URL - ميزة 39):</label>
-            <input type="text" id="settings-wallpaper-input" placeholder="أدخل رابط صورة لتغيير خلفية الشات فوراً">
+            <label style="display:block; margin:10px 0 5px; font-size:13px;">خلفية الشات المخصصة:</label>
+            <input type="text" id="settings-wallpaper-input" placeholder="رابط الصورة">
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin:15px 0;">
-                <span>وضع المظهر (ميزة 27):</span>
+                <span>المظهر:</span>
                 <button onclick="toggleThemeMode()" style="padding:6px 12px; background:var(--neon-blue); border:none; border-radius:4px; color:#fff; cursor:pointer;">تغيير المظهر 🌗</button>
             </div>
 
-            <button onclick="toggleArcadeGameView()" style="width:100%; padding:10px; background:rgba(255,165,0,0.2); border:1px solid orange; border-radius:6px; color:orange; margin-bottom:15px; font-weight:bold; cursor:pointer;">🕹️ تشغيل لعبة ديناصور الأركيد عند انقطاع النت (ميزة 22)</button>
+            <button onclick="toggleArcadeGameView()" style="width:100%; padding:10px; background:rgba(255,165,0,0.2); border:1px solid orange; border-radius:6px; color:orange; margin-bottom:15px; font-weight:bold; cursor:pointer;">تشغيل اللعبة الترفيهية</button>
             
             <div id="dino-game-wrapper">
-                <p>اضغط المسافة للقفز وتفادي الصبار 🌵</p>
+                <p>اضغط المسافة للقفز 🌵</p>
                 <canvas id="dino-canvas" width="400" height="150"></canvas>
             </div>
 
-            <button onclick="saveProfileSettingsLive()" style="width:100%; padding:12px; background:var(--neon-green); border:none; border-radius:6px; font-weight:bold; color:#000; cursor:pointer; margin-top:10px;">حفظ وتطبيق البث الفوري لايف 🚀</button>
+            <button onclick="saveProfileSettingsLive()" style="width:100%; padding:12px; background:var(--neon-green); border:none; border-radius:6px; font-weight:bold; color:#000; cursor:pointer; margin-top:10px;">حفظ التغييرات</button>
             <span style="position:absolute; top:15px; left:15px; cursor:pointer; font-size:18px;" onclick="closeSettingsDashboard()">✖</span>
         </div>
     </div>
@@ -302,12 +299,12 @@
     <div id="creator-modal" class="modal-view">
         <div class="modal-content-box">
             <h3 style="color:var(--neon-green); margin-bottom:15px;" id="creator-modal-title">إضافة جديدة</h3>
-            <input type="text" id="creator-name-input" placeholder="أدخل الاسم هنا...">
+            <input type="text" id="creator-name-input" placeholder="الاسم...">
             <select id="creator-type-select" style="width:100%; padding:12px; background:var(--dark-bg); color:#fff; border-radius:6px; margin-bottom:15px;">
-                <option value="group">👥 مجموعة شات عامة (جروب مع أدمن)</option>
-                <option value="channel">📢 قناة بث واتس آب جديدة (قنوات)</option>
+                <option value="group">مجموعة</option>
+                <option value="channel">قناة</option>
             </select>
-            <button onclick="executeUnitCreation()" style="width:100%; padding:12px; background:var(--neon-green); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">إنشاء وتفعيل فوراً</button>
+            <button onclick="executeUnitCreation()" style="width:100%; padding:12px; background:var(--neon-green); color:#000; font-weight:bold; border:none; border-radius:6px; cursor:pointer;">إنشاء</button>
             <span style="position:absolute; top:15px; left:15px; cursor:pointer; font-size:18px;" onclick="document.getElementById('creator-modal').style.display='none'">✖</span>
         </div>
     </div>
@@ -323,7 +320,7 @@
         let localStream = null;
 
         window.addEventListener('DOMContentLoaded', () => {
-            let saved = localStorage.getItem('nile_chat_premium_session');
+            let saved = localStorage.getItem('nile_chat_session');
             if (saved) {
                 currentUser = JSON.parse(saved);
                 document.getElementById('login-overlay').style.display = 'none';
@@ -335,14 +332,14 @@
             let phone = document.getElementById('login-phone').value.trim();
             let name = document.getElementById('login-name').value.trim();
             let email = document.getElementById('login-email').value.trim();
-            if (!phone || !name) { alert('من فضلك املأ رقم الهاتف والاسم أولاً!'); return; }
+            if (!phone || !name) { alert('الرجاء كتابة رقم الهاتف والاسم أولاً!'); return; }
             
             currentUser.phone = phone;
             currentUser.name = name;
             currentUser.email = email;
             currentUser.avatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
             
-            localStorage.setItem('nile_chat_premium_session', JSON.stringify(currentUser));
+            localStorage.setItem('nile_chat_session', JSON.stringify(currentUser));
             document.getElementById('login-overlay').style.display = 'none';
             bootNileChatCoreEngine();
         }
@@ -353,8 +350,8 @@
             
             socket.emit('register_user', currentUser);
             
-            document.getElementById('ai-chat-item-trigger').onclick = () => activateDirectChat(`AI_${currentUser.phone}`, 'مساعد NileAI الشخصي 🤖', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150');
-            document.getElementById('self-chat-item-trigger').onclick = () => activateDirectChat(`self_${currentUser.phone}`, 'مراسلة نفسك (الحافظة) 💾', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150');
+            document.getElementById('ai-chat-item-trigger').onclick = () => activateDirectChat(`AI_${currentUser.phone}`, 'الذكاء الاصطناعي', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150');
+            document.getElementById('self-chat-item-trigger').onclick = () => activateDirectChat(`self_${currentUser.phone}`, 'الرسائل المحفوظة', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150');
             
             socket.emit('join_room', { room: activeRoom });
             socket.emit('get_stories');
@@ -422,7 +419,7 @@
                     socket.emit('message', payload);
                     cancelReplyContext();
                 }
-            }).catch(err => alert('خطأ أثناء رفع الملف، حاول مجدداً!'));
+            }).catch(err => alert('خطأ أثناء رفع الملف'));
         }
 
         function toggleVoiceRecording() {
@@ -443,7 +440,7 @@
                     phone: currentUser.phone,
                     text: mockAudioUrl,
                     file_type: 'audio',
-                    file_name: 'رسالة صوتية مسجلة.mp3',
+                    file_name: 'صوت.mp3',
                     reply_to: replyContextId
                 };
                 socket.emit('message', payload);
@@ -452,10 +449,7 @@
         }
 
         socket.on('message', (msg) => {
-            if(msg.room !== activeRoom) {
-                showGlobalAlertToast(`إشعار جديد من ${msg.sender}: ${msg.text.substring(0, 30)}...`);
-                return;
-            }
+            if(msg.room !== activeRoom) return;
             renderSingleMessageCard(msg);
         });
 
@@ -469,7 +463,7 @@
             
             let contentHtml = '';
             if(msg.reply_to) {
-                contentHtml += `<div class="reply-preview-box">المراسلة رد على رسالة سابقة بالرقم</div>`;
+                contentHtml += `<div class="reply-preview-box">رد على رسالة</div>`;
             }
 
             if(msg.file_type === 'image') {
@@ -490,7 +484,6 @@
                         <span onclick="setReplyContext('${msg.id}', '${msg.text.substring(0,20)}')">🔄 رد</span>
                         <span onclick="reactToMessage('${msg.id}', '👍')">👍</span>
                         <span onclick="reactToMessage('${msg.id}', '❤️')">❤️</span>
-                        <span onclick="reactToMessage('${msg.id}', '😂')">😂</span>
                         <span onclick="triggerForwardMessage('${msg.text}', '${msg.file_type}')">➡️ تحويل</span>
                         ${isMe ? `<span onclick="triggerEditMessage('${msg.id}', '${msg.text}')">✏️ تعديل</span>` : ''}
                         ${isMe ? `<span onclick="triggerDeleteMessage('${msg.id}')" style="color:red;">🗑️ حذف</span>` : ''}
@@ -519,9 +512,9 @@
         function setReplyContext(id, snippet) { replyContextId = id; let f = document.getElementById('reply-context-footer-container'); f.style.display = 'flex'; document.getElementById('reply-context-footer-text').innerText = `الرد على: ${snippet}...`; }
         function cancelReplyContext() { replyContextId = ''; document.getElementById('reply-context-footer-container').style.display = 'none'; }
         function reactToMessage(id, emoji) { socket.emit('update_reaction', { id: id, reactions: emoji, room: activeRoom }); }
-        function triggerDeleteMessage(id) { if(confirm('هل تريد حذف هذه الرسالة نهائياً من الشات؟')) socket.emit('delete_message', { id: id, room: activeRoom }); }
-        function triggerEditMessage(id, oldTxt) { let n = prompt('تعديل نص الرسالة المحددة:', oldTxt); if(n) socket.emit('edit_message', { id: id, text: n, room: activeRoom }); }
-        function triggerForwardMessage(txt, type) { let targeted = prompt('أدخل رقم الهاتف للشخص المراد تحويل الرسالة إليه فوراً:'); if(targeted) { socket.emit('message', { id: `msg-${Date.now()}`, room: `user_${targeted}`, sender: currentUser.name, phone: currentUser.phone, text: txt, file_type: type, file_name: 'رسالة محولة', reply_to: '' }); alert('تم تحويل ومشاركة الرسالة بنجاح!'); } }
+        function triggerDeleteMessage(id) { if(confirm('هل تريد حذف الرسالة؟')) socket.emit('delete_message', { id: id, room: activeRoom }); }
+        function triggerEditMessage(id, oldTxt) { let n = prompt('تعديل الرسالة:', oldTxt); if(n) socket.emit('edit_message', { id: id, text: n, room: activeRoom }); }
+        function triggerForwardMessage(txt, type) { let targeted = prompt('رقم هاتف الشخص المستهدف:'); if(targeted) { socket.emit('message', { id: `msg-${Date.now()}`, room: `user_${targeted}`, sender: currentUser.name, phone: currentUser.phone, text: txt, file_type: type, file_name: 'رسالة محولة', reply_to: '' }); alert('تم التحويل'); } }
 
         socket.on('message_edited', (data) => { let el = document.querySelector(`#msg-block-${data.id} p`); if(el) el.innerText = data.text; });
         socket.on('message_deleted', (data) => { let el = document.getElementById(`msg-block-${data.id}`); if(el) el.remove(); });
@@ -539,20 +532,20 @@
                 h.innerHTML = `
                     <div class="chat-item" style="border: 1px dashed var(--neon-green);" onclick="activateDirectChat('user_${data.phone}', '${data.name}', '${data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}')">
                         <img src="${data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}">
-                        <div class="info"><h4>${data.name} (موجود)</h4><p>${data.status_text}</p></div>
+                        <div class="info"><h4>${data.name}</h4><p>${data.status_text}</p></div>
                     </div>
                 `;
             } else {
-                h.innerHTML = `<p style="padding:10px; font-size:12px; color:red; text-align:center;">رقم الهاتف غير مسجل بالتطبيق حالياً</p>`;
+                h.innerHTML = `<p style="padding:10px; font-size:12px; color:red; text-align:center;">غير مسجل</p>`;
             }
         });
 
         function triggerNewStoryCreation() {
-            let txt = prompt('اكتب نص الحالة / الستوري أو اترك فارغاً لرفع رابط الميديا:');
-            let type = prompt('نوع الستوري المطلوب (text أو image أو video للـ Reels):', 'text');
+            let txt = prompt('نص الحالة:');
+            let type = prompt('النوع (text أو image أو video):', 'text');
             let targetUrl = txt;
             if(type === 'image' || type === 'video') {
-                targetUrl = prompt('أدخل رابط الميديا المباشر للحالة أو مقطع الريلز:');
+                targetUrl = prompt('رابط الميديا:');
             }
             if(targetUrl) {
                 socket.emit('add_story', { sender: currentUser.name, phone: currentUser.phone, text: targetUrl, file_type: type });
@@ -565,7 +558,7 @@
             wrapper.innerHTML = '';
             if(data.stories) {
                 data.stories.forEach(s => {
-                    let mediaBlock = s.file_type === 'video' ? '🎬 مقطع ريلز نشط' : s.file_type === 'image' ? '📸 حالة ميديا وصورة' : s.text;
+                    let mediaBlock = s.file_type === 'video' ? 'فيديو' : s.file_type === 'image' ? 'صورة' : s.text;
                     let div = document.createElement('div');
                     div.className = 'chat-item';
                     div.onclick = () => viewStoryModalDisplay(s);
@@ -575,7 +568,6 @@
                             <h4>${s.sender}</h4>
                             <p>${mediaBlock}</p>
                         </div>
-                        <button onclick="event.stopPropagation(); executeStoryRepost('${s.text}', '${s.file_type}')" style="font-size:11px; padding:4px; background:var(--neon-green); border:none; border-radius:4px; color:#000; cursor:pointer;">🔁 ريبوست</button>
                     `;
                     wrapper.appendChild(div);
                 });
@@ -594,14 +586,12 @@
             modal.onclick = () => modal.remove();
             modal.innerHTML = `
                 <div class="modal-content-box" style="text-align:center;" onclick="event.stopPropagation()">
-                    <h3 style="margin-bottom:15px; color:var(--neon-green);">حالة المستخدِم: ${story.sender}</h3>
+                    <h3 style="margin-bottom:15px; color:var(--neon-green);">${story.sender}</h3>
                     ${viewHtml}
-                    <button onclick="this.parentElement.parentElement.remove()" style="margin-top:15px; width:100%; padding:10px; background:red; border:none; border-radius:6px; color:#fff; font-weight:bold; cursor:pointer;">إغلاق الحالة والعودة</button>
                 </div>
             `;
             document.body.appendChild(modal);
         }
-        function executeStoryRepost(txt, type) { socket.emit('repost_story', { sender: currentUser.name, phone: currentUser.phone, text: txt, file_type: type }); }
 
         function openCreatorDialog() { document.getElementById('creator-modal').style.display = 'flex'; }
         function executeUnitCreation() {
@@ -618,16 +608,14 @@
             w.innerHTML = '';
             if(data.units) {
                 data.units.forEach(u => {
-                    let isChan = (u.type === 'channel');
-                    let icon = isChan ? '📢' : '👥';
+                    let icon = u.type === 'channel' ? '📢' : '👥';
                     let div = document.createElement('div');
                     div.className = 'chat-item';
-                    div.onclick = () => activateDirectChat(u.id, `${icon} ${u.name}`, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=150');
+                    div.onclick = () => activateDirectChat(u.id, u.name, 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=150');
                     div.innerHTML = `
                         <div style="font-size:24px; margin-left:12px;">${icon}</div>
                         <div class="info">
                             <h4>${u.name}</h4>
-                            <p>${isChan ? 'قناة بث عامة للمتابعة أول بأول' : 'مجموعة دردشة عامة بنظام الأدمن'}</p>
                         </div>
                     `;
                     w.appendChild(div);
@@ -636,8 +624,8 @@
         });
 
         function openNewPostDialog() {
-            let txt = prompt('اكتب تفاصيل المنشور الجديد لليوميات:');
-            let mUrl = prompt('أدخل رابط صورة أو فيديو اختياري للمنشور:');
+            let txt = prompt('نص المنشور:');
+            let mUrl = prompt('رابط الصورة/الفيديو (اختياري):');
             let type = mUrl ? 'image' : 'text';
             if(txt) {
                 socket.emit('add_feed_post', { sender: currentUser.name, phone: currentUser.phone, avatar: currentUser.avatar, text: txt, media_url: mUrl, file_type: type });
@@ -656,7 +644,7 @@
                     card.innerHTML = `
                         <div class="feed-header">
                             <img src="${p.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'}">
-                            <div><strong>${p.sender}</strong><p style="font-size:11px; color:var(--text-muted);">منذ قليل لايف</p></div>
+                            <div><strong>${p.sender}</strong></div>
                         </div>
                         <div class="feed-body">
                             <p>${p.text}</p>
@@ -670,13 +658,13 @@
 
         function initiateWebRTCCall(type) {
             document.getElementById('call-screen').style.display = 'flex';
-            document.getElementById('call-screen-name').innerText = `طلب اتصال ${type === 'video' ? 'فيديو' : 'صوتي'}...`;
+            document.getElementById('call-screen-name').innerText = 'جاري الاتصال...';
             if(type === 'video') {
                 document.getElementById('video-frame-block').style.display = 'block';
                 navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
                     localStream = stream;
                     document.getElementById('local-video-stream-el').srcObject = stream;
-                }).catch(e => console.log("Camera trigger bypass active."));
+                }).catch(e => console.log("Camera bypass"));
             }
             socket.emit('call_signal', { target_phone: activeRoom.replace('user_', ''), sender_name: currentUser.name, avatar: currentUser.avatar, call_type: type, action: 'dial' });
         }
@@ -684,15 +672,14 @@
         socket.on('call_signal', (data) => {
             if(data.action === 'dial') {
                 document.getElementById('call-screen').style.display = 'flex';
-                document.getElementById('call-screen-name').innerText = `مكالمة واردة من: ${data.sender_name}`;
+                document.getElementById('call-screen-name').innerText = `مكالمة من: ${data.sender_name}`;
                 document.getElementById('call-screen-avatar').src = data.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
                 if(data.call_type === 'video') document.getElementById('video-frame-block').style.display = 'block';
             }
         });
 
         function acceptIncomingCallSignal() {
-            document.getElementById('call-screen-name').innerText = "المكالمة نشطة الآن 🌐";
-            alert('تم تأسيس اتصال الـ WebRTC الآمن والمباشر بدون أي تقطيع بنجاح!');
+            document.getElementById('call-screen-name').innerText = "المكالمة نشطة";
         }
 
         function terminateActiveCallPipeline() {
@@ -703,17 +690,12 @@
 
         function applyVoiceFilterConfig() {
             let filter = document.getElementById('voice-changer-selector').value;
-            alert(`تم تطبيق مرشح ومعالج تحويل الصوت الفوري إلى [${filter}] على المكالمة الجارية بنجاح!`);
         }
 
         function triggerVoiceNavigator() {
-            let cmd = prompt('🎙️ المساعد الصوتي نشط! اكتب أمر التنقل الصوتي (مثال: "افتح شات الذكاء الاصطناعي" أو "شغل المظهر الفاتح"):');
+            let cmd = prompt('المساعد الصوتي:');
             if(cmd && (cmd.includes('ذكاء') || cmd.includes('AI'))) {
                 document.getElementById('ai-chat-item-trigger').click();
-            } else if(cmd && cmd.includes('مظهر')) {
-                toggleThemeMode();
-            } else {
-                alert('التعرف على الصوت تم بنجاح، جاري معالجة الأمر التنقلي...');
             }
         }
 
@@ -771,7 +753,7 @@
 
         function buildEmojiTrayMatrix() {
             let tray = document.getElementById('emoji-tray-popover');
-            let emojis = ['😊','😂','❤️','👍','🔥','🎉','👏','🙌','😍','🚀','✨','💡','⭐','⚡','🎵','🎬','🎮','📱','💻','🔒','🌍'];
+            let emojis = ['😊','😂','❤️','👍','🔥','🎉','👏'];
             tray.innerHTML = '';
             emojis.forEach(e => {
                 let s = document.createElement('span');
@@ -782,15 +764,6 @@
             });
         }
         function toggleEmojiTray() { let t = document.getElementById('emoji-tray-popover'); t.style.display = t.style.display === 'grid' ? 'none' : 'grid'; }
-        
-        function showGlobalAlertToast(msg) {
-            let toast = document.createElement('div');
-            toast.style.position = 'fixed'; toast.style.bottom = '80px'; toast.style.right = '20px';
-            toast.style.background = 'var(--neon-blue)'; toast.style.color = '#fff';
-            toast.style.padding = '12px 20px'; toast.style.borderRadius = '8px'; toast.style.zIndex = '99999';
-            toast.innerText = msg; document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
     </script>
 </body>
 </html>
