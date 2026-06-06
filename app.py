@@ -73,7 +73,9 @@ def init_db():
             wallpaper TEXT DEFAULT '', 
             voice_setting TEXT DEFAULT 'normal',
             blocked_numbers TEXT DEFAULT '[]',
-            pinned_rooms TEXT DEFAULT '[]'
+            pinned_rooms TEXT DEFAULT '[]',
+            theme_mode TEXT DEFAULT 'light',
+            saved_login_token TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
@@ -102,6 +104,24 @@ def init_db():
             comments_json TEXT DEFAULT '[]'
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_phone TEXT,
+            contact_phone TEXT,
+            contact_name TEXT,
+            timestamp REAL
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS private_groups (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            creator TEXT,
+            members TEXT DEFAULT '[]',
+            timestamp REAL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -117,18 +137,18 @@ def get_groq_ai_response(user_message):
         payload = {
             "model": "llama3-8b-8192",
             "messages": [
-                {"role": "system", "content": "أنت الذكاء الاصطناعي المدمج في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد باللغة العربية."},
+                {"role": "system", "content": "أنت الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7,
-            "max_tokens": 250
+            "max_tokens": 400
         }
         response = requests.post(url, json=payload, headers=headers, timeout=12)
         if response.status_code == 200:
             return response.json()['choices'][0]['message']['content'].strip()
-        return f"Error: {response.status_code}"
+        return f"عذراً، لم أتمكن من معالجة الطلب حالياً. (خطأ: {response.status_code})"
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"فشل الاتصال بالذكاء الاصطناعي: {str(e)}"
 
 @app.route('/')
 def index():
@@ -163,17 +183,38 @@ def handle_register(data):
     name = data.get('name', 'User')
     avatar = data.get('avatar', '')
     email = data.get('email', '')
+    token = data.get('token', '')
     if phone:
         join_room(f"user_{phone}")
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM profiles WHERE phone = ?", (phone,))
-        if not cursor.fetchone():
-            cursor.execute("INSERT INTO profiles (phone, name, avatar, email) VALUES (?, ?, ?, ?)", (phone, name, avatar, email))
+        cursor.execute("SELECT name, theme_mode FROM profiles WHERE phone = ?", (phone,))
+        row = cursor.fetchone()
+        if not row:
+            cursor.execute("INSERT INTO profiles (phone, name, avatar, email, saved_login_token) VALUES (?, ?, ?, ?, ?)", (phone, name, avatar, email, token))
+            theme = 'light'
         else:
-            cursor.execute("UPDATE profiles SET name=?, avatar=?, email=? WHERE phone=?", (name, avatar, email, phone))
+            cursor.execute("UPDATE profiles SET name=?, avatar=?, email=?, saved_login_token=? WHERE phone=?", (name, avatar, email, token, phone))
+            theme = row[1]
         conn.commit()
         conn.close()
+        emit('login_persist_status', {'status': 'verified', 'phone': phone, 'theme_mode': theme})
+
+@socketio.on('verify_saved_login')
+def verify_saved_login(data):
+    phone = str(data.get('phone')).strip()
+    token = data.get('token', '')
+    if phone and token:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name, avatar, theme_mode FROM profiles WHERE phone = ? AND saved_login_token = ?", (phone, token))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            join_room(f"user_{phone}")
+            emit('login_persist_status', {'status': 'success', 'phone': phone, 'name': row[0], 'avatar': row[1], 'theme_mode': row[2]})
+            return
+    emit('login_persist_status', {'status': 'failed'})
 
 @socketio.on('update_profile_live')
 def handle_profile_update(data):
@@ -184,16 +225,18 @@ def handle_profile_update(data):
     ringtone = data.get('custom_ringtone', 'default.mp3')
     voice_setting = data.get('voice_setting', 'normal')
     status_text = data.get('status_text', 'Available')
+    theme_mode = data.get('theme_mode', 'light')
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE profiles 
-        SET name=?, avatar=?, wallpaper=?, custom_ringtone=?, voice_setting=?, status_text=? 
+        SET name=?, avatar=?, wallpaper=?, custom_ringtone=?, voice_setting=?, status_text=?, theme_mode=? 
         WHERE phone=?
-    """, (name, avatar, wallpaper, ringtone, voice_setting, status_text, phone))
+    """, (name, avatar, wallpaper, ringtone, voice_setting, status_text, theme_mode, phone))
     conn.commit()
     conn.close()
+    emit('profile_updated_success', {'theme_mode': theme_mode}, room=f"user_{phone}")
 
 @socketio.on('find_user_by_phone')
 def find_user_by_phone(data):
@@ -207,6 +250,79 @@ def find_user_by_phone(data):
         emit('user_search_result', {'found': True, 'phone': row[0], 'name': row[1], 'avatar': row[2], 'status_text': row[3]})
     else:
         emit('user_search_result', {'found': False, 'phone': search_phone})
+
+@socketio.on('add_new_contact')
+def add_new_contact(data):
+    user_phone = str(data.get('user_phone')).strip()
+    contact_phone = str(data.get('contact_phone')).strip()
+    contact_name = data.get('contact_name', '').strip()
+    
+    if user_phone and contact_phone:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT phone, name, avatar FROM profiles WHERE phone = ?", (contact_phone,))
+        profile = cursor.fetchone()
+        if profile:
+            cursor.execute("SELECT id FROM contacts WHERE user_phone = ? AND contact_phone = ?", (user_phone, contact_phone))
+            if not cursor.fetchone():
+                cursor.execute("INSERT INTO contacts (user_phone, contact_phone, contact_name, timestamp) VALUES (?, ?, ?, ?)", 
+                               (user_phone, contact_phone, contact_name if contact_name else profile[1], time.time()))
+                conn.commit()
+            emit('contact_added_status', {'status': 'success', 'phone': profile[0], 'name': contact_name if contact_name else profile[1], 'avatar': profile[2]})
+        else:
+            emit('contact_added_status', {'status': 'not_found'})
+        conn.close()
+
+@socketio.on('get_my_contacts')
+def get_my_contacts(data):
+    user_phone = str(data.get('user_phone')).strip()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.contact_phone, c.contact_name, p.avatar, p.status_text 
+        FROM contacts c JOIN profiles p ON c.contact_phone = p.phone 
+        WHERE c.user_phone = ? ORDER BY c.contact_name ASC
+    """, (user_phone,))
+    rows = cursor.fetchall()
+    conn.close()
+    contacts_list = [{"phone": r[0], "name": r[1], "avatar": r[2], "status_text": r[3]} for r in rows]
+    emit('my_contacts_list', {'contacts': contacts_list})
+
+@socketio.on('create_private_group')
+def create_private_group(data):
+    name = data.get('group_name', '').strip()
+    creator = str(data.get('creator_phone')).strip()
+    members = data.get('members', [])
+    if creator not in members:
+        members.append(creator)
+    
+    if name and creator:
+        group_id = f"group_{int(time.time() * 1000)}"
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO private_groups (id, name, creator, members, timestamp) VALUES (?, ?, ?, ?, ?)",
+                       (group_id, name, creator, json.dumps(members), time.time()))
+        conn.commit()
+        conn.close()
+        
+        for member in members:
+            emit('new_private_group_alert', {'group_id': group_id, 'name': name}, room=f"user_{member}")
+
+@socketio.on('get_my_private_groups')
+def get_my_private_groups(data):
+    phone = str(data.get('user_phone')).strip()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, creator, members FROM private_groups")
+    rows = cursor.fetchall()
+    conn.close()
+    
+    my_groups = []
+    for r in rows:
+        members_list = json.loads(r[3])
+        if phone in members_list:
+            my_groups.append({"id": r[0], "name": r[1], "creator": r[2], "members": members_list})
+    emit('my_private_groups_list', {'groups': my_groups})
 
 @socketio.on('join_room')
 def on_join_room(data):
@@ -238,6 +354,10 @@ def handle_message_event(data):
     file_name = data.get('file_name', '')
     reply_to = data.get('reply_to', '')
     
+    if not msg_id:
+        msg_id = f"msg-{int(time.time() * 1000)}"
+        data['id'] = msg_id
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("""
@@ -245,9 +365,11 @@ def handle_message_event(data):
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (msg_id, room, sender, phone, text, time.time(), file_type, file_name, reply_to))
     conn.commit()
+    
     emit('message', data, room=room)
+    emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
-    if room == 'AI_bot' and phone != 'AI_SYSTEM':
+    if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         ai_reply = get_groq_ai_response(text)
         ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
         ai_data = {
@@ -410,6 +532,14 @@ def handle_ice(data):
 def handle_offer_answer(data):
     target = data.get('target_phone')
     emit('webrtc_offer_answer', data, room=f"user_{target}")
+
+@socketio.on('request_qr_code_link')
+def generate_qr_info(data):
+    room = data.get('room')
+    user = data.get('phone')
+    if room and user:
+        qr_string = f"nilechat://join?room={room}&invited_by={user}"
+        emit('qr_code_generated', {'qr_string': qr_string, 'room': room}, room=f"user_{user}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
