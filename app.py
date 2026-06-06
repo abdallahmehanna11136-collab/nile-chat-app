@@ -1,12 +1,13 @@
 import os
 import sqlite3
 import time
+import requests
 from flask import Flask, render_template, make_response, request, jsonify, url_for
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'nile_chat_key_2026'
+app.config['SECRET_KEY'] = 'nile_chat_premium_secure_key_2026'
 
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -21,74 +22,70 @@ socketio = SocketIO(
 )
 DB_PATH = 'nile_chat_database.db'
 
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_XbW76VymhF0yJp9uS7NnWGdyb3FYM3Yp5vR9kL8mJq2bN4oP3qR")
+
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS messages (
-            id TEXT PRIMARY KEY, 
-            room TEXT, 
-            sender TEXT, 
-            phone TEXT, 
-            text TEXT, 
-            timestamp REAL, 
-            file_type TEXT DEFAULT 'text', 
-            file_name TEXT DEFAULT '', 
-            reactions TEXT DEFAULT '', 
-            status_ticks TEXT DEFAULT 'sent', 
-            reply_to TEXT DEFAULT ''
+            id TEXT PRIMARY KEY, room TEXT, sender TEXT, phone TEXT, text TEXT, 
+            timestamp REAL, file_type TEXT DEFAULT 'text', file_name TEXT DEFAULT '', 
+            reactions TEXT DEFAULT '', status_ticks TEXT DEFAULT 'sent', reply_to TEXT DEFAULT ''
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS stories (
-            id TEXT PRIMARY KEY, 
-            sender TEXT, 
-            phone TEXT, 
-            text TEXT, 
-            file_type TEXT, 
-            timestamp REAL, 
-            reposts_count INTEGER DEFAULT 0
+            id TEXT PRIMARY KEY, sender TEXT, phone TEXT, text TEXT, 
+            file_type TEXT, timestamp REAL, reposts_count INTEGER DEFAULT 0
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS profiles (
-            phone TEXT PRIMARY KEY, 
-            name TEXT, 
-            avatar TEXT, 
-            email TEXT DEFAULT '', 
-            status_text TEXT DEFAULT 'Available', 
-            archived_chats TEXT DEFAULT '', 
-            custom_ringtone TEXT DEFAULT 'default.mp3', 
-            privacy_mode TEXT DEFAULT 'public', 
-            wallpaper TEXT DEFAULT ''
+            phone TEXT PRIMARY KEY, name TEXT, avatar TEXT, email TEXT DEFAULT '', 
+            status_text TEXT DEFAULT 'Available', archived_chats TEXT DEFAULT '', 
+            custom_ringtone TEXT DEFAULT 'default.mp3', privacy_mode TEXT DEFAULT 'public', 
+            wallpaper TEXT DEFAULT '', voice_setting TEXT DEFAULT 'normal'
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS units (
-            id TEXT PRIMARY KEY, 
-            name TEXT, 
-            type TEXT, 
-            creator TEXT, 
-            admins TEXT
+            id TEXT PRIMARY KEY, name TEXT, type TEXT, creator TEXT, admins TEXT
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS feed_posts (
-            id TEXT PRIMARY KEY, 
-            sender TEXT, 
-            phone TEXT, 
-            avatar TEXT, 
-            text TEXT, 
-            media_url TEXT, 
-            file_type TEXT, 
-            timestamp REAL, 
-            likes INTEGER DEFAULT 0
+            id TEXT PRIMARY KEY, sender TEXT, phone TEXT, avatar TEXT, text TEXT, 
+            media_url TEXT, file_type TEXT, timestamp REAL, likes INTEGER DEFAULT 0
         )
     ''')
     conn.commit()
     conn.close()
 
 init_db()
+
+def get_groq_ai_response(user_message):
+    try:
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "llama3-8b-8192",
+            "messages": [
+                {"role": "system", "content": "أنت الذكاء الاصطناعي المدمج في تطبيق نايل شات. تجيب بذكاء وبلاغة واختصار شديد باللغة العربية."},
+                {"role": "user", "content": user_message}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 250
+        }
+        response = requests.post(url, json=payload, headers=headers, timeout=12)
+        if response.status_code == 200:
+            return response.json()['choices'][0]['message']['content'].strip()
+        return f"خطأ في معالجة الطلب من الخادم الرئيسي: {response.status_code}"
+    except Exception as e:
+        return f"فشل الاتصال بمحرك جروق الذكي: {str(e)}"
 
 @app.route('/')
 def index():
@@ -98,25 +95,17 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files: 
-        return jsonify({'error': 'No file'}), 400
+    if 'file' not in request.files: return jsonify({'error': 'No file'}), 400
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-        
+    if file.filename == '': return jsonify({'error': 'No selected file'}), 400
     filename = secure_filename(f"{int(time.time() * 1000)}_{file.filename}")
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
-    
     ext = filename.split('.')[-1].lower()
     f_type = 'text'
-    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
-        f_type = 'image'
-    elif ext in ['mp4', 'webm', 'ogg', 'mov']:
-        f_type = 'video'
-    elif ext in ['mp3', 'wav', 'aac', 'm4a', 'ogg']:
-        f_type = 'audio'
-        
+    if ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']: f_type = 'image'
+    elif ext in ['mp4', 'webm', 'ogg', 'mov']: f_type = 'video'
+    elif ext in ['mp3', 'wav', 'aac', 'm4a']: f_type = 'audio'
     f_url = url_for('static', filename=f"uploads/{filename}", _external=True)
     return jsonify({'url': f_url, 'file_type': f_type, 'name': file.filename})
 
@@ -144,9 +133,12 @@ def handle_profile_update(data):
     name = data.get('name')
     avatar = data.get('avatar')
     wallpaper = data.get('wallpaper', '')
+    ringtone = data.get('custom_ringtone', 'default.mp3')
+    voice_setting = data.get('voice_setting', 'normal')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE profiles SET name=?, avatar=?, wallpaper=? WHERE phone=?", (name, avatar, wallpaper, phone))
+    cursor.execute("UPDATE profiles SET name=?, avatar=?, wallpaper=?, custom_ringtone=?, voice_setting=? WHERE phone=?", 
+                   (name, avatar, wallpaper, ringtone, voice_setting, phone))
     conn.commit()
     conn.close()
 
@@ -159,13 +151,7 @@ def find_user_by_phone(data):
     row = cursor.fetchone()
     conn.close()
     if row:
-        emit('user_search_result', {
-            'found': True, 
-            'phone': row[0], 
-            'name': row[1], 
-            'avatar': row[2], 
-            'status_text': row[3]
-        })
+        emit('user_search_result', {'found': True, 'phone': row[0], 'name': row[1], 'avatar': row[2], 'status_text': row[3]})
     else:
         emit('user_search_result', {'found': False, 'phone': search_phone})
 
@@ -175,18 +161,10 @@ def on_join_room(data):
     join_room(room)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, room, sender, text, file_type, file_name, reactions, reply_to, phone 
-        FROM messages WHERE room = ? ORDER BY timestamp ASC
-    """, (room,))
+    cursor.execute("SELECT id, room, sender, text, file_type, file_name, reactions, reply_to, phone FROM messages WHERE room = ? ORDER BY timestamp ASC", (room,))
     rows = cursor.fetchall()
     conn.close()
-    
-    history = [{
-        "id": r[0], "room": r[1], "sender": r[2], "text": r[3], 
-        "file_type": r[4], "file_name": r[5], "reactions": r[6], 
-        "reply_to": r[7], "phone": r[8]
-    } for r in rows]
+    history = [{"id": r[0], "room": r[1], "sender": r[2], "text": r[3], "file_type": r[4], "file_name": r[5], "reactions": r[6], "reply_to": r[7], "phone": r[8]} for r in rows]
     emit('chat_history', {'messages': history})
 
 @socketio.on('message')
@@ -202,48 +180,48 @@ def handle_message_event(data):
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reply_to) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (msg_id, room, sender, phone, text, time.time(), file_type, file_name, reply_to))
+    cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reply_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                   (msg_id, room, sender, phone, text, time.time(), file_type, file_name, reply_to))
     conn.commit()
-    conn.close()
     emit('message', data, room=room)
+
+    if room == 'AI_bot' and phone != 'AI_SYSTEM':
+        ai_reply = get_groq_ai_response(text)
+        ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
+        ai_data = {'id': ai_msg_id, 'room': 'AI_bot', 'sender': 'جروق الذكي', 'phone': 'AI_SYSTEM', 'text': ai_reply, 'file_type': 'text', 'file_name': '', 'reply_to': msg_id}
+        cursor.execute("INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reply_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                       (ai_msg_id, 'AI_bot', 'جروق الذكي', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
+        conn.commit()
+        emit('message', ai_data, room='AI_bot')
+        
+    conn.close()
 
 @socketio.on('edit_message')
 def handle_edit_message(data):
-    msg_id = data.get('id')
-    new_text = data.get('text')
-    room = data.get('room')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE messages SET text=? WHERE id=?", (new_text, msg_id))
+    cursor.execute("UPDATE messages SET text=? WHERE id=?", (data.get('text'), data.get('id')))
     conn.commit()
     conn.close()
-    emit('message_edited', data, room=room)
+    emit('message_edited', data, room=data.get('room'))
 
 @socketio.on('delete_message')
 def handle_delete_message(data):
-    msg_id = data.get('id')
-    room = data.get('room')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM messages WHERE id=?", (msg_id,))
+    cursor.execute("DELETE FROM messages WHERE id=?", (data.get('id'),))
     conn.commit()
     conn.close()
-    emit('message_deleted', data, room=room)
+    emit('message_deleted', data, room=data.get('room'))
 
 @socketio.on('update_reaction')
 def handle_reaction(data):
-    msg_id = data.get('id')
-    reaction = data.get('reactions')
-    room = data.get('room')
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE messages SET reactions=? WHERE id=?", (reaction, msg_id))
+    cursor.execute("UPDATE messages SET reactions=? WHERE id=?", (data.get('reactions'), data.get('id')))
     conn.commit()
     conn.close()
-    emit('reaction_updated', data, room=room)
+    emit('reaction_updated', data, room=data.get('room'))
 
 @socketio.on('add_story')
 def handle_story(data):
@@ -260,24 +238,17 @@ def handle_story(data):
 def get_stories():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT s.id, s.sender, s.text, s.file_type, p.avatar 
-        FROM stories s LEFT JOIN profiles p ON s.phone = p.phone 
-        ORDER BY s.timestamp DESC
-    """)
+    cursor.execute("SELECT s.id, s.sender, s.text, s.file_type, p.avatar, s.phone FROM stories s LEFT JOIN profiles p ON s.phone = p.phone ORDER BY s.timestamp DESC")
     rows = cursor.fetchall()
     conn.close()
-    emit('stories_list', {'stories': [
-        {"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3], "avatar": r[4]} for r in rows
-    ]})
+    emit('stories_list', {'stories': [{"id": r[0], "sender": r[1], "text": r[2], "file_type": r[3], "avatar": r[4], "phone": r[5]} for r in rows]})
 
 @socketio.on('create_unit')
 def create_unit(data):
     u_id = f"unit_{int(time.time() * 1000)}"
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO units (id, name, type, creator) VALUES (?, ?, ?, ?)", 
-                   (u_id, data.get('name'), data.get('type'), data.get('creator')))
+    cursor.execute("INSERT INTO units (id, name, type, creator) VALUES (?, ?, ?, ?)", (u_id, data.get('name'), data.get('type'), data.get('creator')))
     conn.commit()
     conn.close()
     emit('unit_created_alert', broadcast=True)
@@ -296,10 +267,8 @@ def add_feed_post(data):
     post_id = f"post-{int(time.time() * 1000)}"
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO feed_posts (id, sender, phone, avatar, text, media_url, file_type, timestamp) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (post_id, data.get('sender'), data.get('phone'), data.get('avatar'), data.get('text'), data.get('media_url'), data.get('file_type'), time.time()))
+    cursor.execute("INSERT INTO feed_posts (id, sender, phone, avatar, text, media_url, file_type, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                   (post_id, data.get('sender'), data.get('phone'), data.get('avatar'), data.get('text'), data.get('media_url'), data.get('file_type'), time.time()))
     conn.commit()
     conn.close()
     emit('new_feed_post_alert', broadcast=True)
@@ -308,12 +277,10 @@ def add_feed_post(data):
 def get_feed_posts():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT id, sender, text, media_url, avatar, file_type FROM feed_posts ORDER BY timestamp DESC")
+    cursor.execute("SELECT id, sender, text, media_url, avatar, file_type, likes FROM feed_posts ORDER BY timestamp DESC")
     rows = cursor.fetchall()
     conn.close()
-    emit('feed_posts_list', {'posts': [
-        {"id": r[0], "sender": r[1], "text": r[2], "media_url": r[3], "avatar": r[4], "file_type": r[5]} for r in rows
-    ]})
+    emit('feed_posts_list', {'posts': [{"id": r[0], "sender": r[1], "text": r[2], "media_url": r[3], "avatar": r[4], "file_type": r[5], "likes": r[6]} for r in rows]})
 
 @socketio.on('call_signal')
 def handle_call_signal(data):
