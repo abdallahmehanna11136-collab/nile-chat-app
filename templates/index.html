@@ -1101,7 +1101,7 @@
             const targetPhone = document.getElementById('contact-target-phone-field').value.trim();
             const customName = document.getElementById('contact-target-custom-name').value.trim();
             if (!targetPhone || !customName) return;
-            socket.emit('add_contact', { 'my_phone': myProfile.phone, 'target_phone': targetPhone, 'custom_name': customName });
+            socket.emit('add_new_contact', { 'user_phone': myProfile.phone, 'contact_phone': targetPhone, 'contact_name': customName });
             closeModalOverlay('modal-add-contact-view');
             document.getElementById('contact-target-phone-field').value = '';
             document.getElementById('contact-target-custom-name').value = '';
