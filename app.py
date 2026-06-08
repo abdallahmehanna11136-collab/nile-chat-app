@@ -483,9 +483,48 @@ def generate_qr_info(data):
     if room and user:
         qr_string = f"nilechat://join?room={room}&invited_by={user}"
         emit('qr_code_generated', {'qr_string': qr_string, 'room': room}, room=f"user_{user}")
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=36500)
 
+@socketio.on('delete_message')
+def handle_delete_message(data):
+    message_id = data.get('message_id')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM messages WHERE id = ?', (message_id,))
+    conn.commit()
+    conn.close()
+    emit('message_deleted', {'message_id': message_id}, broadcast=True)
+
+@socketio.on('add_reaction')
+def handle_add_reaction(data):
+    message_id = data.get('message_id')
+    emoji = data.get('emoji')
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('UPDATE messages SET reaction = ? WHERE id = ?', (emoji, message_id))
+    conn.commit()
+    conn.close()
+    emit('reaction_added', {'message_id': message_id, 'emoji': emoji}, broadcast=True)
+
+@socketio.on('forward_or_reply')
+def handle_forward_reply(data):
+    phone = session.get('user_phone')
+    message_text = data.get('message')
+    reply_to_id = data.get('reply_to_id')
+    is_forwarded = data.get('is_forwarded', False)
+    
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO messages (phone, message, reply_to_id, is_forward, timestamp) 
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ''', (phone, message_text, reply_to_id, is_forwarded))
+    conn.commit()
+    conn.close()
+    emit('new_message_status', data, broadcast=True)
+
+init_db()
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
     
-init_db()
