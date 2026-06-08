@@ -1062,7 +1062,7 @@
                 document.body.setAttribute('data-theme', 'dark');
                 myProfile.theme_mode = 'dark';
             }
-            socket.emit('update_profile', { 'phone': myProfile.phone, 'theme_mode': myProfile.theme_mode });
+            socket.emit('update_profile_live', { 'phone': myProfile.phone, 'name': name, 'avatar': avatar, 'voice_setting': vSetting, 'status_text': sText, 'theme_mode': myProfile.theme_mode });
         }
 
         function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
