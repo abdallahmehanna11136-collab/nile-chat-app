@@ -994,5 +994,91 @@ window.onclick = function(event) {
         function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
         function scrollMessagesToBottomContainer() { const c = document.getElementById('chat-messages-stream-anchor'); c.scrollTop = c.scrollHeight; }
     </script>
+<div id="messageContextMenu" style="display: none; position: fixed; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); width: 160px;">
+    <div style="display: flex; gap: 5px; justify-content: space-around; padding-bottom: 8px; border-bottom: 1px solid #334155; margin-bottom: 5px;">
+        <span onclick="reactToMsg('👍')" style="cursor: pointer; font-size: 18px;">👍</span>
+        <span onclick="reactToMsg('❤️')" style="cursor: pointer; font-size: 18px;">❤️</span>
+        <span onclick="reactToMsg('😂')" style="cursor: pointer; font-size: 18px;">😂</span>
+        <span onclick="reactToMsg('🔥')" style="cursor: pointer; font-size: 18px;">🔥</span>
+    </div>
+    <div onclick="replyToMsg()" style="color: white; padding: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">↩️ رد بالنص</div>
+    <div onclick="forwardMsg()" style="color: white; padding: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">➡️ تحويل الرسالة</div>
+    <div onclick="deleteMsg()" style="color: #ef4444; padding: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; font-weight: bold;">🗑️ مسح للطرفين</div>
+</div>
+
+<script>
+let selectedMessageId = null;
+let selectedMessageText = "";
+
+document.addEventListener('contextmenu', function(e) {
+    const msgElement = e.target.closest('.message-box');
+    if (msgElement) {
+        e.preventDefault();
+        selectedMessageId = msgElement.getAttribute('data-id');
+        selectedMessageText = msgElement.innerText;
+        
+        const menu = document.getElementById('messageContextMenu');
+        menu.style.display = 'block';
+        menu.style.top = e.clientY + 'px';
+        menu.style.left = e.clientX + 'px';
+    }
+});
+
+document.addEventListener('click', function() {
+    document.getElementById('messageContextMenu').style.display = 'none';
+});
+
+function deleteMsg() {
+    if (selectedMessageId) {
+        socket.emit('delete_message', { 'message_id': selectedMessageId });
+    }
+}
+
+function reactToMsg(emoji) {
+    if (selectedMessageId) {
+        socket.emit('add_reaction', { 'message_id': selectedMessageId, 'emoji': emoji });
+    }
+}
+
+function replyToMsg() {
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.focus();
+        chatInput.value = `[رد على: ${selectedMessageText}] ` + chatInput.value;
+        window.currentReplyId = selectedMessageId;
+    }
+}
+
+function forwardMsg() {
+    if (selectedMessageId) {
+        socket.emit('forward_or_reply', {
+            'message': selectedMessageText,
+            'reply_to_id': null,
+            'is_forwarded': true
+        });
+    }
+}
+
+socket.on('message_deleted', function(data) {
+    const msgEl = document.querySelector(`[data-id="${data.message_id}"]`);
+    if (msgEl) {
+        msgEl.innerHTML = `<i style="color: #94a3b8;">🗑️ تم حذف هذه الرسالة</i>`;
+    }
+});
+
+socket.on('reaction_added', function(data) {
+    const msgEl = document.querySelector(`[data-id="${data.message_id}"]`);
+    if (msgEl) {
+        let reactBadge = msgEl.querySelector('.react-badge');
+        if (!reactBadge) {
+            reactBadge = document.createElement('span');
+            reactBadge.className = 'react-badge';
+            reactBadge.style = 'position: absolute; bottom: -10px; right: 10px; background: #334155; border-radius: 10px; padding: 2px 6px; font-size: 12px;';
+            msgEl.appendChild(reactBadge);
+        }
+        reactBadge.innerText = data.emoji;
+    }
+});
+</script>
 </body>
 </html>
