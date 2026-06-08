@@ -323,19 +323,32 @@ def handle_message_event(data):
     emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
     if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
+        user_specific_room = f"ai_room_{phone}"
+        join_room(user_specific_room)
+        
         ai_reply = get_groq_ai_response(text)
         ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
+        
         ai_data = {
-            'id': ai_msg_id, 'room': 'AI_bot', 'sender': 'Nile AI', 
-            'phone': 'AI_SYSTEM', 'text': ai_reply, 'file_type': 'text', 
-            'file_name': '', 'reply_to': msg_id, 'is_edited': 0, 'star_status': 0
+            'id': ai_msg_id, 
+            'room': 'AI_bot', 
+            'sender': 'Nile AI', 
+            'phone': 'AI_SYSTEM', 
+            'text': ai_reply, 
+            'file_type': 'text', 
+            'file_name': '', 
+            'reply_to': msg_id, 
+            'is_edited': 0, 
+            'star_status': 0
         }
+        
         cursor.execute("""
             INSERT INTO messages (id, room, sender, phone, text, timestamp, file_type, file_name, reply_to) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (ai_msg_id, 'AI_bot', 'Nile AI', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
         conn.commit()
-        emit('message', ai_data, room='AI_bot')
+        
+        emit('message', ai_data, room=user_specific_room)
     conn.close()
 
 @socketio.on('edit_message')
