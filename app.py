@@ -1,6 +1,7 @@
-from flask import Flask, render_template, make_response, request, jsonify, url_for
+from flask import Flask, render_template, make_response, request, jsonify, url_for, session
 from flask_socketio import SocketIO, emit, join_room
 from werkzeug.utils import secure_filename
+from datetime import timedelta
 import sqlite3
 import time
 import os
@@ -11,6 +12,7 @@ monkey.patch_all()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=36500)
 UPLOAD_FOLDER = 'static/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -27,7 +29,7 @@ def init_db():
             id TEXT PRIMARY KEY, room TEXT, sender TEXT, phone TEXT, text TEXT, 
             timestamp REAL, file_type TEXT DEFAULT 'text', file_name TEXT DEFAULT '', 
             reactions TEXT DEFAULT '', status_ticks TEXT DEFAULT 'sent', reply_to TEXT DEFAULT '',
-            is_edited INTEGER DEFAULT 0, star_status INTEGER DEFAULT 0
+            is_edited INTEGER DEFAULT 0, star_status INTEGER DEFAULT 0, is_forward INTEGER DEFAULT 0
         )
     ''')
     cursor.execute('''
@@ -72,6 +74,7 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+
 def get_groq_ai_response(user_message):
     try:
         url = "https://api.groq.com/openai/v1/chat/completions"
@@ -90,6 +93,10 @@ def get_groq_ai_response(user_message):
         return f"عذراً، لم أتمكن من معالجة الطلب حالياً. (خطأ: {response.status_code})"
     except Exception as e:
         return f"فشل الاتصال بالذكاء الاصطناعي: {str(e)}"
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 @app.route('/')
 def index():
@@ -342,12 +349,14 @@ def handle_edit_message(data):
 
 @socketio.on('delete_message')
 def handle_delete_message(data):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM messages WHERE id=?", (data.get('id'),))
-    conn.commit()
-    conn.close()
-    emit('message_deleted', data, room=data.get('room'))
+    message_id = data.get('id') or data.get('message_id')
+    if message_id:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM messages WHERE id=?", (message_id,))
+        conn.commit()
+        conn.close()
+        emit('message_deleted', {'id': message_id, 'message_id': message_id, 'room': data.get('room')}, room=data.get('room'))
 
 @socketio.on('toggle_star_message')
 def handle_toggle_star(data):
@@ -368,6 +377,39 @@ def handle_reaction(data):
     conn.commit()
     conn.close()
     emit('reaction_updated', data, room=data.get('room'))
+
+@socketio.on('add_reaction')
+def handle_add_reaction(data):
+    message_id = data.get('message_id')
+    emoji = data.get('emoji')
+    if message_id and emoji:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute('UPDATE messages SET reactions = ? WHERE id = ?', (emoji, message_id))
+        conn.commit()
+        conn.close()
+        emit('reaction_added', {'message_id': message_id, 'emoji': emoji, 'room': data.get('room')}, broadcast=True)
+
+@socketio.on('forward_or_reply')
+def handle_forward_reply(data):
+    phone = session.get('user_phone') or data.get('phone')
+    message_text = data.get('message') or data.get('text')
+    reply_to_id = data.get('reply_to_id') or data.get('reply_to')
+    is_forwarded = data.get('is_forwarded', False)
+    room = data.get('room', 'public_room')
+    msg_id = f"msg-{int(time.time() * 1000)}"
+    
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO messages (id, room, sender, phone, text, timestamp, reply_to, is_forward) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (msg_id, room, data.get('sender', 'User'), phone, message_text, time.time(), reply_to_id, 1 if is_forwarded else 0))
+    conn.commit()
+    conn.close()
+    
+    data['id'] = msg_id
+    emit('message', data, room=room)
 
 @socketio.on('add_story')
 def handle_story(data):
@@ -483,48 +525,9 @@ def generate_qr_info(data):
     if room and user:
         qr_string = f"nilechat://join?room={room}&invited_by={user}"
         emit('qr_code_generated', {'qr_string': qr_string, 'room': room}, room=f"user_{user}")
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=36500)
-
-@socketio.on('delete_message')
-def handle_delete_message(data):
-    message_id = data.get('message_id')
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM messages WHERE id = ?', (message_id,))
-    conn.commit()
-    conn.close()
-    emit('message_deleted', {'message_id': message_id}, broadcast=True)
-
-@socketio.on('add_reaction')
-def handle_add_reaction(data):
-    message_id = data.get('message_id')
-    emoji = data.get('emoji')
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('UPDATE messages SET reaction = ? WHERE id = ?', (emoji, message_id))
-    conn.commit()
-    conn.close()
-    emit('reaction_added', {'message_id': message_id, 'emoji': emoji}, broadcast=True)
-
-@socketio.on('forward_or_reply')
-def handle_forward_reply(data):
-    phone = session.get('user_phone')
-    message_text = data.get('message')
-    reply_to_id = data.get('reply_to_id')
-    is_forwarded = data.get('is_forwarded', False)
-    
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO messages (phone, message, reply_to_id, is_forward, timestamp) 
-        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-    ''', (phone, message_text, reply_to_id, is_forwarded))
-    conn.commit()
-    conn.close()
-    emit('new_message_status', data, broadcast=True)
 
 init_db()
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
-    
