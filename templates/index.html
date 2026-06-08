@@ -993,7 +993,7 @@ window.onclick = function(event) {
         function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
         function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
         function scrollMessagesToBottomContainer() { const c = document.getElementById('chat-messages-stream-anchor'); c.scrollTop = c.scrollHeight; }
-    </script>
+
 <div id="messageContextMenu" style="display: none; position: fixed; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); width: 160px;">
     <div style="display: flex; gap: 5px; justify-content: space-around; padding-bottom: 8px; border-bottom: 1px solid #334155; margin-bottom: 5px;">
         <span onclick="reactToMsg('👍')" style="cursor: pointer; font-size: 18px;">👍</span>
