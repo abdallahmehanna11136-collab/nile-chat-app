@@ -1,6 +1,6 @@
 {
   "short_name": "NileChat",
-  "name": "Nile Chat Application",
+  "name": "Nile Chat App",
   "icons": [
     {
       "src": "/static/icon.png",
@@ -10,12 +10,13 @@
     {
       "src": "/static/icon.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#0b141a",
-  "theme_color": "#00a884",
+  "background_color": "#ffffff",
+  "theme_color": "#0078ff",
   "display": "standalone",
   "orientation": "portrait"
 }
