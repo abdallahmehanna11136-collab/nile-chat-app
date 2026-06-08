@@ -112,6 +112,89 @@
 </head>
 <body>
 
+    <div id="customStatusModal" style="background: #1e293b; color: white; padding: 20px; border-radius: 12px; max-width: 400px; margin: 20px auto; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+    <h3 style="margin-bottom: 15px; font-size: 18px;">✨ إضافة حالة جديدة</h3>
+    
+    <form action="/upload_status" method="POST" enctype="multipart/form-data" id="statusDirectForm">
+        <button type="button" onclick="document.getElementById('galleryImageInput').click();" style="background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 8px; margin: 8px 0; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            📸 اختر صورة من المعرض
+        </button>
+        <input type="file" name="status_image" id="galleryImageInput" accept="image/*" style="display:none;" onchange="document.getElementById('statusDirectForm').submit()">
+
+        <button type="button" onclick="document.getElementById('galleryVideoInput').click();" style="background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 8px; margin: 8px 0; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            🎥 اختر فيديو من المعرض
+        </button>
+        <input type="file" name="status_video" id="galleryVideoInput" accept="video/*" style="display:none;" onchange="document.getElementById('statusDirectForm').submit()">
+    </form>
+
+    <div style="border-top: 1px solid #334155; margin-top: 15px; padding-top: 15px;">
+        <p style="font-size: 14px; color: #94a3b8; margin-bottom: 10px;">أو شارك حالة من تطبيقاتك المفضلة:</p>
+        <div class="social-status-icons" style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+            <a href="intent://tiktok.com/#Intent;scheme=https;package=com.zhiliaoapp.musically;end" title="تيك توك"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="42" height="42"></a>
+            <a href="intent://instagram.com/#Intent;scheme=https;package=com.instagram.android;end" title="إنستغرام"><img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="42" height="42"></a>
+            <a href="intent://youtube.com/#Intent;scheme=https;package=com.google.android.youtube;end" title="يوتيوب"><img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="42" height="42"></a>
+            <a href="intent://snapchat.com/#Intent;scheme=https;package=com.snapchat.android;end" title="سناب شات"><img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="42" height="42"></a>
+            <a href="intent://twitter.com/#Intent;scheme=https;package=com.twitter.android;end" title="تويتر"><img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" width="42" height="42"></a>
+        </div>
+    </div>
+</div>
+
+    <div style="text-align: center; margin: 15px 0;">
+    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; width: 85%; justify-content: center;" onclick="console.log('تم ربط حساب نايل شات بالفيسبوك تلقائياً')">
+        <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="20" height="20"> دخول المنتدى بحسابك
+    </a>
+</div>
+
+    <div class="social-dropdown-container" style="position: fixed; top: 15px; left: 15px; z-index: 9999;">
+    <button type="button" onclick="toggleSocialMenu()" style="background-color: #475569; color: white; padding: 8px 15px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        🌐 المنصات
+    </button>
+    
+    <div id="socialDropdownMenu" style="display: none; position: absolute; top: 40px; left: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px; width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+        <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
+        </a>
+        <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
+        </a>
+        <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
+        </a>
+        <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
+        </a>
+        <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
+        </a>
+        <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; padding: 8px; font-size: 14px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670151.png" width="24" height="24"> تويتر
+        </a>
+    </div>
+</div>
+
+<script>
+function toggleSocialMenu() {
+    var menu = document.getElementById("socialDropdownMenu");
+    if (menu.style.display === "none" || menu.style.display === "") {
+        menu.style.display = "block";
+    } else {
+        menu.style.display = "none";
+    }
+}
+// إغلاق القائمة لو المستخدم ضغط في أي مكان برة
+window.onclick = function(event) {
+    if (!event.target.matches('button')) {
+        var dropdowns = document.getElementsByClassName("social-dropdown-container");
+        for (var i = 0; i < dropdowns.length; i++) {
+            var openDropdown = document.getElementById("socialDropdownMenu");
+            if (openDropdown && openDropdown.style.display === "block" && !dropdowns[i].contains(event.target)) {
+                openDropdown.style.display = "none";
+            }
+        }
+    }
+}
+</script>
+
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
