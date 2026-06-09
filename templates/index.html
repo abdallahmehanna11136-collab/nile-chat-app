@@ -555,80 +555,107 @@ function openNileAdvancedSettings() {
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'nileAdvancedSettingsModal';
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: flex; justify-content: center; align-items: center; z-index: 999999999; font-family: system-ui, -apple-system, sans-serif; direction: rtl; box-sizing: border-box; padding: 12px;';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; color: #f8fafc; z-index: 999999999; font-family: system-ui, -apple-system, sans-serif; direction: rtl; box-sizing: border-box; display: flex; flex-direction: column;';
         
         modal.innerHTML = `
-            <div style="background: #1e293b; color: white; padding: 20px; border-radius: 16px; width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); border: 1px solid #475569; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box;">
+            <div style="background: #1e293b; padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #334155; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                <button id="nileCloseSettingsBtn" style="background: transparent; border: none; color: #38bdf8; font-size: 22px; cursor: pointer; display: flex; align-items: center; outline: none;">➡️</button>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #f8fafc;">إعدادات المنظومة المطورة</h2>
+            </div>
+
+            <div style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; max-width: 600px; width: 100%; margin: 0 auto; box-sizing: border-box;">
                 
-                <h3 style="margin: 0; text-align: center; border-bottom: 2px solid #38bdf8; padding-bottom: 10px; font-size: 18px; color: #38bdf8; font-weight: bold;">⚙️ إعدادات المنظومة</h3>
-                
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #cbd5e1;">🔒 مستوى الخصوصية:</label>
-                    <select id="nilePrivacySelect" style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569; font-size: 13px; box-sizing: border-box; outline: none;">
-                        <option value="everyone">الجميع (متصل الآن)</option>
-                        <option value="contacts">جهات الاتصال فقط</option>
-                        <option value="nobody">إخفاء الحالة تماماً</option>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 14px 8px; border-bottom: 1px solid #1e293b;">
+                    <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">🔒</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600;">مستوى الخصوصية والأمان</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">التحكم في ظهور الحالة الشخصية والاتصال الآن</div>
+                    </div>
+                    <select id="nilePrivacySelect" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+                        <option value="everyone">الجميع</option>
+                        <option value="contacts">جهات الاتصال</option>
+                        <option value="nobody">إخفاء تماماً</option>
                     </select>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #cbd5e1;">📝 الحالة المكتوبة:</label>
-                    <input type="text" id="nileStatusInput" placeholder="اكتب حالتك المخصصة..." style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569; font-size: 13px; box-sizing: border-box; outline: none;">
+                <div style="display: flex; align-items: center; gap: 16px; padding: 14px 8px; border-bottom: 1px solid #1e293b;">
+                    <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">📝</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600;">الحالة الشخصية المكتوبة</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">تحديث النص الظاهر للمستخدمين في ملفك</div>
+                    </div>
+                    <input type="text" id="nileStatusInput" placeholder="اكتب حالتك..." style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 12px; width: 120px; outline: none; text-align: center;">
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #cbd5e1;">🎨 مظهر لون البرنامج:</label>
-                    <select id="nileThemeSelect" style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569; font-size: 13px; box-sizing: border-box; outline: none;">
-                        <option value="dark">الوضع المظلم الافتراضي</option>
-                        <option value="light">الوضع الفاتح</option>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 14px 8px; border-bottom: 1px solid #1e293b;">
+                    <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">🎨</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600;">مظهر ألوان واجهة نايل شات</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">تغيير الثيم الكلي للبرنامج والأزرار النشطة</div>
+                    </div>
+                    <select id="nileThemeSelect" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+                        <option value="dark">مظلم قياسي</option>
+                        <option value="light">وضع فاتح</option>
                         <option value="green">🏡 المظهر الأخضر</option>
                         <option value="blue">🔷 المظهر الأزرق</option>
                         <option value="red">❤️ المظهر الأحمر</option>
-                        <option value="yellow">💛 المظهر الأصفر</option>
-                        <option value="purple">🔮 المظهر البنفسجي</option>
                     </select>
                 </div>
 
-                <div style="background: #0f172a; padding: 12px; border-radius: 10px; border: 1px dashed #475569; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
-                    <span style="font-weight: bold; font-size: 13px; color: #38bdf8; display: block;">🖼️ تخصيص خلفيات من الاستوديو:</span>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 11px; color: #94a3b8;">خلفية البرنامج العامة (الباك جراوند):</span>
-                        <input type="file" id="nileAppBgInput" accept="image/*" style="font-size: 12px; color: #cbd5e1; width: 100%;">
+                <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 8px; border-bottom: 1px solid #1e293b; background: #1e293b; border-radius: 10px; margin-top: 6px;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">🖼️</div>
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: #38bdf8;">معرض الخلفيات المخصصة</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">رفع وتعيين صور خلفية مخصصة من الاستوديو</div>
+                        </div>
                     </div>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 2px;">
-                        <span style="font-size: 11px; color: #94a3b8;">خلفية شاشة المحادثة داخل الشات:</span>
-                        <input type="file" id="nileChatBgInput" accept="image/*" style="font-size: 12px; color: #cbd5e1; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding-right: 46px;">
+                        <div>
+                            <span style="display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 4px;">خلفية البرنامج العامة:</span>
+                            <input type="file" id="nileAppBgInput" accept="image/*" style="font-size: 12px; color: #cbd5e1;">
+                        </div>
+                        <div>
+                            <span style="display: block; font-size: 11px; color: #cbd5e1; margin-bottom: 4px;">خلفية شاشة الدردشة:</span>
+                            <input type="file" id="nileChatBgInput" accept="image/*" style="font-size: 12px; color: #cbd5e1;">
+                        </div>
                     </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #cbd5e1;">🎙️ فلاتر الرسائل الصوتية:</label>
-                    <select id="nileVoiceSelect" style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569; font-size: 13px; box-sizing: border-box; outline: none;">
-                        <option value="normal">صوت طبيعي</option>
-                        <option value="robot">فلتر الروبوت</option>
-                        <option value="child">فلتر الطفل</option>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 14px 8px; border-bottom: 1px solid #1e293b;">
+                    <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">🎙️</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600;">مؤثرات الفلاتر الصوتية</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">تغيير طبقة الصوت للرسائل الصوتية المرسلة</div>
+                    </div>
+                    <select id="nileVoiceSelect" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+                        <option value="normal">بدون فلتر</option>
+                        <option value="robot">روبوت مدمج</option>
+                        <option value="child">صوت طفل</option>
                     </select>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-weight: 600; font-size: 13px; color: #cbd5e1;">🎵 نغمة رنين التنبيهات:</label>
-                    <select id="nileRingtoneSelect" style="width: 100%; padding: 10px; border-radius: 8px; background: #334155; color: white; border: 1px solid #475569; font-size: 13px; box-sizing: border-box; outline: none;">
-                        <option value="default">النغمة الافتراضية</option>
-                        <option value="iphone">نغمة الرنين المخصصة</option>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 14px 8px; border-bottom: 1px solid #1e293b;">
+                    <div style="font-size: 22px; color: #38bdf8; width: 30px; text-align: center;">🎵</div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 14px; font-weight: 600;">نغمات الإشعارات والتنبيه</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">تخصيص نغمة رنين الرسائل الواردة للمنظومة</div>
+                    </div>
+                    <select id="nileRingtoneSelect" style="background: #1e293b; color: white; border: 1px solid #475569; padding: 6px; border-radius: 6px; font-size: 12px; outline: none;">
+                        <option value="default">النغمة القياسية</option>
+                        <option value="iphone">نغمة رنين خاصة</option>
                     </select>
                 </div>
 
-                <div style="display: flex; gap: 8px; width: 100%; box-sizing: border-box; margin-top: 4px;">
-                    <button id="nileModalPlatformsBtn" style="flex: 1; background: #0284c7; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap; outline: none;">🌐 فتح المنصات</button>
-                    <button id="nileModalQrBtn" style="flex: 1; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; white-space: nowrap; outline: none;">🔲 طلب رمز QR</button>
+                <div style="display: flex; gap: 10px; padding: 14px 8px; margin-top: 10px;">
+                    <button id="nileModalPlatformsBtn" style="flex: 1; background: #0284c7; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; outline: none;">🌐 استعراض المنصات</button>
+                    <button id="nileModalQrBtn" style="flex: 1; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; outline: none;">🔲 إنشاء كود QR</button>
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end; width: 100%; box-sizing: border-box; border-top: 1px solid #334155; padding-top: 12px; margin-top: 4px;">
-                    <button id="nileSaveSettingsBtn" style="background: #22c55e; color: white; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; outline: none;">حفظ</button>
-                    <button id="nileCloseSettingsBtn" style="background: #ef4444; color: white; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 13px; outline: none;">إغلاق</button>
+                <div style="padding: 10px 8px; margin-top: auto;">
+                    <button id="nileSaveSettingsBtn" style="width: 100%; background: #22c55e; color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; outline: none; box-shadow: 0 4px 12px rgba(34,197,94,0.3);">حفظ وتطبيق التغييرات</button>
                 </div>
+
             </div>
         `;
         document.body.appendChild(modal);
@@ -726,12 +753,6 @@ function applyNileTheme(theme) {
         case 'red':
             bg = '#1a0505'; text = '#fde8e8'; accent = '#dc2626';
             break;
-        case 'yellow':
-            bg = '#1c1917'; text = '#fef08a'; accent = '#ca8a04';
-            break;
-        case 'purple':
-            bg = '#130a1c'; text = '#f3e8ff'; accent = '#9333ea';
-            break;
         default:
             bg = '#0f172a'; text = '#ffffff'; accent = '#38bdf8';
             break;
@@ -750,62 +771,69 @@ function applyNileTheme(theme) {
     }
     targetBody.style.color = text;
 
-    var headers = document.querySelectorAll('.app-header, .top-bar, header, [class*="header"], div[class*="top"]');
-    headers.forEach(function(el) {
-        el.style.backgroundColor = bg;
-        el.style.borderBottom = '2px solid ' + accent;
-    });
-
     var customStyle = document.getElementById('nileThemeStyles') || document.createElement('style');
     customStyle.id = 'nileThemeStyles';
     
     var customChatBg = localStorage.getItem('nile_custom_chat_bg');
-    var chatBgRule = customChatBg ? `div[class*="chat-container"], div[class*="messages-box"], div[class*="chatBox"], .messages-wrapper, main, [class*="chat_wrapper"] { background-image: url('${customChatBg}') !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }` : '';
+    var chatBgRule = customChatBg ? `div[class*="chat-container"], div[class*="messages-box"], div[class*="chatBox"], .messages-wrapper, main { background-image: url('${customChatBg}') !important; background-size: cover !important; }` : '';
 
     customStyle.innerHTML = `
-        .active, .selected, button[class*="send"], .tab-item.active { background-color: ${accent} !important; color: white !important; }
-        ::-webkit-scrollbar-thumb { background: ${accent} !important; }
+        .active, .selected, button[class*="send"] { background-color: ${accent} !important; color: white !important; }
         ${chatBgRule}
     `;
     if (!document.getElementById('nileThemeStyles')) document.head.appendChild(customStyle);
 }
 
-// التثبيت الآمن بدون تداخل مع أي شاشة موبايل
 (function() {
-    function injectNileTriggers() {
-        if (!document.getElementById('nileAbsoluteSettingsBtn')) {
-            var absBtn = document.createElement('button');
-            absBtn.id = 'nileAbsoluteSettingsBtn';
-            absBtn.innerHTML = '⚙️';
-            absBtn.style.cssText = 'position: fixed; top: 12px; left: 12px; width: 44px; height: 44px; background: #1e293b; color: white; border: 2px solid #38bdf8; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 9999999; box-shadow: 0 4px 10px rgba(0,0,0,0.4);';
-            absBtn.onclick = function(e) {
+    function injectNileHeaderTrigger() {
+        var header = document.querySelector('header') || 
+                     document.querySelector('.top-bar') || 
+                     document.querySelector('.app-header') ||
+                     document.querySelector('[class*="header"]') ||
+                     document.querySelector('div[class*="top"]');
+
+        if (header) {
+            var avatar = header.querySelector('img[src*="avatar"]') || header.querySelector('img');
+
+            if (avatar && !document.getElementById('nileStandardHeaderBtn')) {
+                var btn = document.createElement('button');
+                btn.id = 'nileStandardHeaderBtn';
+                btn.innerHTML = '⚙️';
+                btn.title = 'إعدادات نايل شات';
+                btn.style.cssText = 'background: transparent; border: none; font-size: 18px; cursor: pointer; padding: 6px; color: inherit; display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin: 0 8px; outline: none; transition: transform 0.2s;';
+                
+                btn.onclick = function(e) {
+                    e.preventDefault(); e.stopPropagation();
+                    openNileAdvancedSettings();
+                };
+
+                if (avatar.nextSibling) {
+                    avatar.parentNode.insertBefore(btn, avatar.nextSibling);
+                } else {
+                    avatar.parentNode.appendChild(btn);
+                }
+            }
+        }
+        
+        if (!header && !document.getElementById('nileStandardHeaderBtn')) {
+            var fallbackBtn = document.createElement('button');
+            fallbackBtn.id = 'nileStandardHeaderBtn';
+            fallbackBtn.innerHTML = '⚙️';
+            fallbackBtn.style.cssText = 'position: fixed; top: 10px; left: 10px; width: 38px; height: 38px; background: #1e293b; color: white; border: 1px solid #475569; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 9999999;';
+            fallbackBtn.onclick = function(e) {
                 e.preventDefault(); e.stopPropagation();
                 openNileAdvancedSettings();
             };
-            document.body.appendChild(absBtn);
-        }
-
-        var avatar = document.querySelector('img[src*="avatar"]') || 
-                     document.querySelector('.user-profile img') || 
-                     document.querySelector('header img') ||
-                     document.querySelector('[class*="profile"] img');
-
-        if (avatar && !avatar.classList.contains('nile-hooked')) {
-            avatar.classList.add('nile-hooked');
-            avatar.style.cursor = 'pointer';
-            avatar.addEventListener('click', function(e) {
-                e.preventDefault(); e.stopPropagation();
-                openNileAdvancedSettings();
-            });
+            document.body.appendChild(fallbackBtn);
         }
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectNileTriggers);
+        document.addEventListener('DOMContentLoaded', injectNileHeaderTrigger);
     } else {
-        injectNileTriggers();
+        injectNileHeaderTrigger();
     }
-    setInterval(injectNileTriggers, 1500);
+    setInterval(injectNileHeaderTrigger, 1200);
 
     var savedTheme = localStorage.getItem('nile_theme') || 'dark';
     setTimeout(function() { applyNileTheme(savedTheme); }, 500);
