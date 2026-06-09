@@ -538,8 +538,7 @@
     </div>
     
     <script>
-        // التفعيل التلقائي عند فتح الصفحة وحفظ الجلسة
-var socket = typeof socket !== 'undefined' ? socket : io(); 
+       var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
 
 (function() {
@@ -553,15 +552,12 @@ var myProfile = { name: '', phone: '', avatar: '' };
         myProfile.phone = savedPhone;
         myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
         
-        // تحديث الاسم والصورة في الهيدر عندك تلقائياً
-        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = savedName;
-        if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = savedAvatar;
+        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = myProfile.name;
+        if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = myProfile.avatar;
         
-        // ربط البيانات بالسيرفر
-        socket.emit('verify_saved_login', { phone: savedPhone, token: savedToken });
-        socket.emit('register_user', { phone: savedPhone, name: savedName, avatar: savedAvatar });
+        socket.emit('verify_saved_login', { phone: myProfile.phone, token: savedToken });
+        socket.emit('register_user', { phone: myProfile.phone, name: myProfile.name, avatar: myProfile.avatar });
     } else {
-        // إذا لم يكن مسجلاً، افتح مودال التسجيل الموجود عندك في كودك
         var authModal = document.getElementById('modal-user-registration-auth');
         if (authModal) {
             authModal.classList.add('open');
@@ -569,6 +565,52 @@ var myProfile = { name: '', phone: '', avatar: '' };
         }
     }
 })();
+
+socket.on('message', function(data) {
+    if (data && data.room) {
+        var storageKey = "nile_history_" + data.room;
+        var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        var isExist = localHistory.some(function(m) { 
+            return m.id === data.id || (m.text === data.text && m.timestamp === data.timestamp); 
+        });
+        
+        if (!isExist) {
+            localHistory.push(data);
+            if(localHistory.length > 300) localHistory.shift(); 
+            localStorage.setItem(storageKey, JSON.stringify(localHistory));
+        }
+    }
+});
+
+function openMyPrivateAIChat() {
+    if (!myProfile.phone) {
+        alert("برجاء تسجيل الدخول أولاً لتفعيل المساعد الذكي!");
+        return;
+    }
+    
+    var privateAIRoomId = "AI_ROOM_" + myProfile.phone;
+    
+    if (typeof joinChatRoomHook === 'function') {
+        joinChatRoomHook(privateAIRoomId, "المساعد الذكي (Nile AI)");
+    } else if (typeof joinRoom === 'function') {
+        joinRoom(privateAIRoomId, "المساعد الذكي (Nile AI)");
+    }
+    
+    var storageKey = "nile_history_" + privateAIRoomId;
+    var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+    var anchor = document.getElementById('chat-messages-stream-anchor');
+    
+    if (anchor && localHistory.length > 0) {
+        anchor.innerHTML = ''; 
+        localHistory.forEach(function(msgData) {
+            if (typeof renderSingleBubbleLayout === 'function') {
+                renderSingleBubbleLayout(msgData);
+            }
+        });
+        anchor.scrollTop = anchor.scrollHeight;
+    }
+}
     function toggleSocialMenu(event) {
         if(event) event.stopPropagation();
         var menu = document.getElementById("socialDropdownMenu");
