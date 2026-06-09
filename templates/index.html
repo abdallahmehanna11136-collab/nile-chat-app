@@ -540,6 +540,52 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        function checkNileAdminPrivileges(roomId, userPhone, callback) {
+    if (typeof socket !== 'undefined' && socket.emit) {
+        socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
+            if (response && response.isAdmin) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        });
+    }
+}
+
+function kickNileGroupMember(roomId, memberPhone) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            if (confirm("هل أنت متأكد من طرد هذا العضو؟")) {
+                socket.emit('kick_group_member', { room: roomId, target: memberPhone });
+                alert("تم طرد العضو بنجاح!");
+            }
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
+
+function promoteNileToAdmin(roomId, memberPhone) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            socket.emit('promote_to_admin', { room: roomId, target: memberPhone });
+            alert("تم تعيين العضو كمسؤول (أدمن) للجروب!");
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
+
+function toggleNileGroupChatLock(roomId, isLocked) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            socket.emit('toggle_room_lock', { room: roomId, locked: isLocked });
+            alert(isLocked ? "تم قفل الجروب، الإرسال للأدمن فقط!" : "تم فتح الجروب للجميع!");
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
         (function() {
     var modalHtml = `
     <div id="nileAdvancedSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 20000; justify-content: center; align-items: center; font-family: sans-serif;">
