@@ -784,7 +784,8 @@ if (typeof socket !== 'undefined' && socket.on) {
         }
     });
 }
-        function checkNileAdminPrivileges(roomId, userPhone, callback) {
+        
+function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
         socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
             if (response && response.isAdmin) {
@@ -1178,6 +1179,23 @@ function openMyPrivateAIChat() {
             menu.style.display = "none";
         }
     });
+        (function() {
+    if (typeof socket !== 'undefined' && socket.on) {
+        socket.on('receive_message', function(data) {
+            if (data.room === 'nile_ai_room' || data.senderName === 'Nile AI') {
+                if (typeof displayMessage === 'function') {
+                    displayMessage(data);
+                } else if (typeof appendMessage === 'function') {
+                    appendMessage(data);
+                }
+                
+                if (typeof playNotificationSound === 'function') {
+                    playNotificationSound();
+                }
+            }
+        });
+    }
+})();
     </script>
 
     <div class="app-container">
