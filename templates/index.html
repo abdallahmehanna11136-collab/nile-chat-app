@@ -1461,6 +1461,19 @@ function openMyPrivateAIChat() {
         }
 
         function commitUserRegistrationAuthLive() {
+            var nameField = document.getElementById('auth-input-name');
+var phoneField = document.getElementById('auth-input-phone');
+var avatarField = document.getElementById('auth-input-avatar');
+
+var user_name = nameField ? nameField.value : '';
+var user_phone = phoneField ? phoneField.value : '';
+var user_avatar = avatarField ? avatarField.value : '';
+
+var newToken = 'tk_' + Math.random().toString(36).substring(2) + Date.now();
+localStorage.setItem('nile_name', user_name);
+localStorage.setItem('nile_phone', user_phone);
+localStorage.setItem('nile_avatar', user_avatar);
+localStorage.setItem('saved_login_token', newToken);
             const ph = document.getElementById('auth-input-phone').value.trim();
             const nm = document.getElementById('auth-input-name').value.trim();
             const av = document.getElementById('auth-input-avatar').value.trim();
