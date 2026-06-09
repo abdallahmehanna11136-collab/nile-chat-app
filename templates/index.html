@@ -540,6 +540,110 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        function openNileAdvancedSettings() {
+    var modal = document.getElementById('nileAdvancedSettingsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'nileAdvancedSettingsModal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10000; font-family: sans-serif;';
+        
+        var content = document.createElement('div');
+        content.style.cssText = 'background: #1e293b; color: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); direction: rtl;';
+        
+        content.innerHTML = `
+            <h3 style="margin-top: 0; text-align: center; border-bottom: 1px solid #475569; padding-bottom: 10px;">⚙️ إعدادات نايل شات</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">🔒 إعدادات الخصوصية:</label>
+                <select id="nilePrivacySelect" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: white; border: none;">
+                    <option value="everyone">الجميع (أونلاين)</option>
+                    <option value="contacts">جهات اتصالي فقط</option>
+                    <option value="nobody">إخفاء الحالة تماماً</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">🎨 المظهر والسمات:</label>
+                <select id="nileThemeSelect" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: white; border: none;">
+                    <option value="dark">الوضع المظلم</option>
+                    <option value="light">الوضع الفاتح</option>
+                    <option value="whatsapp">ثيم الواتساب الأخضر</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">🎙️ تغيير فلاتر الصوت (الرسائل والمكالمات):</label>
+                <select id="nileVoiceSelect" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: white; border: none;">
+                    <option value="normal">صوت عادي طبيعي</option>
+                    <option value="robot">صوت رجل آلي (روبوت)</option>
+                    <option value="child">صوت طفل صغير</option>
+                    <option value="chipmunk">صوت سنجاب سريع</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">🎵 نغمة رنين الإشعارات:</label>
+                <select id="nileRingtoneSelect" style="width: 100%; padding: 8px; border-radius: 6px; background: #334155; color: white; border: none;">
+                    <option value="default">النغمة الافتراضية</option>
+                    <option value="iphone">نغمة آيفون</option>
+                    <option value="galaxy">نغمة سامسونج</option>
+                    <option value="guitar">عزف جيتار قصير</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">📝 الحالة المكتوبة (الستاتيوس):</label>
+                <input type="text" id="nileStatusInput" placeholder="اكتب حالتك هنا..." style="width: 100%; padding: 8px; box-sizing: border-box; border-radius: 6px; background: #334155; color: white; border: none;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="nileSaveSettingsBtn" style="background: #22c55e; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">حفظ التغييرات</button>
+                <button id="nileCloseSettingsBtn" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">إغلاق</button>
+            </div>
+        `;
+        
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        document.getElementById('nileCloseSettingsBtn').onclick = function() {
+            modal.style.display = 'none';
+        };
+
+        document.getElementById('nileSaveSettingsBtn').onclick = function() {
+            var privacy = document.getElementById('nilePrivacySelect').value;
+            var theme = document.getElementById('nileThemeSelect').value;
+            var voice = document.getElementById('nileVoiceSelect').value;
+            var ringtone = document.getElementById('nileRingtoneSelect').value;
+            var statusText = document.getElementById('nileStatusInput').value;
+
+            localStorage.setItem('nile_privacy', privacy);
+            localStorage.setItem('nile_theme', theme);
+            localStorage.setItem('nile_voice_filter', voice);
+            localStorage.setItem('nile_ringtone_type', ringtone);
+            localStorage.setItem('nile_status_text', statusText);
+
+            if (typeof socket !== 'undefined' && socket.emit) {
+                socket.emit('update_user_settings', {
+                    phone: myProfile.phone,
+                    privacy: privacy,
+                    status: statusText
+                });
+            }
+
+            alert('تم حفظ كل الإعدادات بنجاح!');
+            modal.style.display = 'none';
+            location.reload();
+        };
+    }
+
+    document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
+    document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
+    document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_filter') || 'normal';
+    document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default';
+    document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || '';
+
+    modal.style.display = 'flex';
+}
         (function() {
     function setupTopBarButtons() {
         var oldPlatformBtn = document.getElementById('platformBtn') || document.querySelector('.platform-btn-class'); 
