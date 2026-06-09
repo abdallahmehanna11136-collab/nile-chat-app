@@ -539,7 +539,6 @@
     
 <script>
 (function() {
-    // 1. تهيئة المتغيرات الأساسية للمنظومة
     var socket = typeof socket !== 'undefined' ? socket : (typeof io !== 'undefined' ? io() : null); 
     var myProfile = { name: '', phone: '', avatar: '' };
 
@@ -552,16 +551,6 @@
         });
     }
 
-    // 2. إخفاء أي نصوص برمجية مبعثرة قديمة لضمان نظافة الواجهة
-    var styleFix = document.createElement('style');
-    styleFix.innerHTML = `
-        body, html, div, p, span { font-family: system-ui, -apple-system, sans-serif !important; }
-        /* منع ظهور الأكواد كأصوات أو نصوص مبعثرة على الشاشة */
-        .nile-hidden-code { display: none !important; }
-    `;
-    document.head.appendChild(styleFix);
-
-    // 3. بناء نافذة الإعدادات المتكاملة (تفتح فقط عند الضغط على الزر)
     function openNileAdvancedSettings() {
         var modal = document.getElementById('nileAdvancedSettingsModal');
         if (!modal) {
@@ -574,13 +563,10 @@
                     <button id="nileCloseSettingsBtn" style="background: transparent !important; border: none !important; color: #38bdf8 !important; font-size: 22px !important; cursor: pointer !important;">➡️</button>
                     <h2 style="margin: 0 !important; font-size: 18px !important; font-weight: 600 !important; color: #f8fafc !important;">إعدادات المنظومة المطورة</h2>
                 </div>
-
                 <div style="flex: 1 !important; overflow-y: auto !important; padding: 16px !important; display: flex !important; flex-direction: column !important; gap: 14px !important; max-width: 600px !important; width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important;">
-                    
                     <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 0 !important; border-bottom: 1px solid #1e293b !important;">
                         <div>
                             <div style="font-size: 14px !important; font-weight: 600 !important;">🔒 مستوى الخصوصية والأمان</div>
-                            <div style="font-size: 11px !important; color: #94a3b8 !important;">التحكم في ظهور الحالة الشخصية</div>
                         </div>
                         <select id="nilePrivacySelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 6px !important; border-radius: 6px !important;">
                             <option value="everyone">الجميع</option>
@@ -588,57 +574,19 @@
                             <option value="nobody">إخفاء تماماً</option>
                         </select>
                     </div>
-
-                    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 0 !important; border-bottom: 1px solid #1e293b !important;">
-                        <div>
-                            <div style="font-size: 14px !important; font-weight: 600 !important;">📝 الحالة الشخصية المكتوبة</div>
-                            <div style="font-size: 11px !important; color: #94a3b8 !important;">تحديث النص الظاهر للمستخدمين</div>
-                        </div>
-                        <input type="text" id="nileStatusInput" placeholder="اكتب حالتك..." style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 6px !important; border-radius: 6px !important; width: 130px !important; text-align: center !important;">
-                    </div>
-
                     <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 0 !important; border-bottom: 1px solid #1e293b !important;">
                         <div>
                             <div style="font-size: 14px !important; font-weight: 600 !important;">🎨 واجهة نايل شات</div>
-                            <div style="font-size: 11px !important; color: #94a3b8 !important;">تغيير الثيم الكلي للبرنامج</div>
                         </div>
                         <select id="nileThemeSelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 6px !important; border-radius: 6px !important;">
                             <option value="dark">مظلم قياسي</option>
                             <option value="light">وضع فاتح</option>
-                            <option value="green">🏡 المظهر الأخضر</option>
-                            <option value="blue">🔷 المظهر الأزرق</option>
-                            <option value="red">❤️ المظهر الأحمر</option>
                         </select>
                     </div>
-
-                    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 0 !important; border-bottom: 1px solid #1e293b !important;">
-                        <div>
-                            <div style="font-size: 14px !important; font-weight: 600 !important;">🎙️ مؤثرات الفلاتر الصوتية</div>
-                            <div style="font-size: 11px !important; color: #94a3b8 !important;">تغيير طبقة الصوت للمرسل</div>
-                        </div>
-                        <select id="nileVoiceSelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 6px !important; border-radius: 6px !important;">
-                            <option value="normal">بدون فلتر</option>
-                            <option value="robot">روبوت مدمج</option>
-                            <option value="child">صوت طفل</option>
-                        </select>
-                    </div>
-
-                    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important; padding: 12px 0 !important; border-bottom: 1px solid #1e293b !important;">
-                        <div>
-                            <div style="font-size: 14px !important; font-weight: 600 !important;">🎵 نغمات التنبيه</div>
-                            <div style="font-size: 11px !important; color: #94a3b8 !important;">تخصيص نغمة الرسائل الواردة</div>
-                        </div>
-                        <select id="nileRingtoneSelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 6px !important; border-radius: 6px !important;">
-                            <option value="default">النغمة القياسية</option>
-                            <option value="iphone">نغمة رنين خاصة</option>
-                        </select>
-                    </div>
-
                     <div style="display: flex !important; gap: 10px !important; margin-top: 10px !important;">
                         <button id="nileModalPlatformsBtn" style="flex: 1 !important; background: #0284c7 !important; color: white !important; border: none !important; padding: 12px !important; border-radius: 8px !important; cursor: pointer !important; font-size: 13px !important; font-weight: bold !important;">🌐 استعراض المنصات</button>
                         <button id="nileModalQrBtn" style="flex: 1 !important; background: #4f46e5 !important; color: white !important; border: none !important; padding: 12px !important; border-radius: 8px !important; cursor: pointer !important; font-size: 13px !important; font-weight: bold !important;">🔲 إنشاء كود QR</button>
                     </div>
-
                     <div style="margin-top: auto !important; padding-top: 20px !important;">
                         <button id="nileSaveSettingsBtn" style="width: 100% !important; background: #22c55e !important; color: white !important; border: none !important; padding: 14px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important; font-size: 14px !important;">حفظ وتطبيق التغييرات</button>
                     </div>
@@ -646,7 +594,6 @@
             `;
             document.body.appendChild(modal);
 
-            // تشغيل أزرار المودال الداخلية
             document.getElementById('nileModalPlatformsBtn').onclick = function(e) {
                 e.preventDefault();
                 if (typeof openPlatformsModal === 'function') openPlatformsModal();
@@ -668,97 +615,46 @@
                 var chosenTheme = document.getElementById('nileThemeSelect').value;
                 localStorage.setItem('nile_privacy', document.getElementById('nilePrivacySelect').value);
                 localStorage.setItem('nile_theme', chosenTheme);
-                localStorage.setItem('nile_voice_filter', document.getElementById('nileVoiceSelect').value);
-                localStorage.setItem('nile_ringtone_type', document.getElementById('nileRingtoneSelect').value);
-                localStorage.setItem('nile_status_text', document.getElementById('nileStatusInput').value);
-
-                if (socket && socket.emit) {
-                    var phoneNum = myProfile.phone ? myProfile.phone : '123';
-                    socket.emit('update_user_settings', {
-                        phone: phoneNum,
-                        privacy: document.getElementById('nilePrivacySelect').value,
-                        status: document.getElementById('nileStatusInput').value
-                    });
-                }
                 applyNileTheme(chosenTheme);
                 modal.style.setProperty('display', 'none', 'important');
             };
         }
 
-        // تعبئة البيانات المحفوظة عند فتح النافذة
         document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
         document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
-        document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_filter') || 'normal';
-        document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default';
-        document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || '';
-
         modal.style.setProperty('display', 'flex', 'important');
     }
 
-    // 4. دالة تطبيق المظهر المختار على عناصر الواجهة الأصلية للبرنامج
     function applyNileTheme(theme) {
-        var bg, text, accent;
-        switch (theme) {
-            case 'light': bg = '#f8fafc'; text = '#0f172a'; accent = '#0284c7'; break;
-            case 'green': bg = '#0b141a'; text = '#e9edef'; accent = '#00a884'; break;
-            case 'blue': bg = '#0f172a'; text = '#f1f5f9'; accent = '#2563eb'; break;
-            case 'red': bg = '#1a0505'; text = '#fde8e8'; accent = '#dc2626'; break;
-            default: bg = '#0f172a'; text = '#ffffff'; accent = '#38bdf8'; break;
-        }
-
+        var bg = theme === 'light' ? '#f8fafc' : '#0f172a';
+        var text = theme === 'light' ? '#0f172a' : '#ffffff';
         var target = document.body || document.documentElement;
         target.style.setProperty('background-color', bg, 'important');
         target.style.setProperty('color', text, 'important');
-
-        var customStyle = document.getElementById('nileThemeStyles') || document.createElement('style');
-        customStyle.id = 'nileThemeStyles';
-        customStyle.innerHTML = `
-            div[class*="chat-container"], .messages-box, main { background-color: ${bg} !important; }
-            .active, .selected, button[class*="send"] { background-color: ${accent} !important; color: white !important; }
-        `;
-        if (!document.getElementById('nileThemeStyles')) document.head.appendChild(customStyle);
     }
 
-    // 5. زر الترس الذكي (⚙️) يوضع أعلى اليمين بدقة متناهية بجانب أيقونة جاري التحميل
     function injectNileTopHeaderButton() {
         if (document.getElementById('nileStandardHeaderBtn')) return;
-
-        // البحث عن الحاوية العلوية اليمنى في الهيدر الأصلي الخاص بالبرنامج
-        var topBar = document.querySelector('header') || 
-                     document.querySelector('.top-bar') || 
-                     document.querySelector('.app-header') ||
-                     document.querySelector('div[class*="top"]') ||
-                     document.body;
-
+        var topBar = document.querySelector('header') || document.body;
         if (topBar) {
             var btn = document.createElement('button');
             btn.id = 'nileStandardHeaderBtn';
             btn.innerHTML = '⚙️';
-            btn.title = 'إعدادات المنظومة المطورة';
-            
-            // تحديد الموضع بدقة في أعلى يمين الشاشة ليكون متاحاً وسهلاً للضغط
-            btn.style.cssText = 'position: fixed !important; top: 12px !important; right: 12px !important; width: 36px !important; height: 36px !important; background: #1e293b !important; color: #38bdf8 !important; border: 1px solid #334155 !important; border-radius: 8px !important; font-size: 18px !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 9999999 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; outline: none !important;';
-            
+            btn.style.cssText = 'position: fixed !important; top: 12px !important; right: 12px !important; width: 36px !important; height: 36px !important; background: #1e293b !important; color: #38bdf8 !important; border: 1px solid #334155 !important; border-radius: 8px !important; font-size: 18px !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 9999999 !important; outline: none !important;';
             btn.onclick = function(e) {
                 e.preventDefault(); e.stopPropagation();
                 openNileAdvancedSettings();
             };
-
             topBar.appendChild(btn);
         }
     }
 
-    // تشغيل فوري ومستمر لضمان عدم اختفاء الزر عند تنقل الصفحات
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', injectNileTopHeaderButton);
     } else {
         injectNileTopHeaderButton();
     }
     setInterval(injectNileTopHeaderButton, 1000);
-
-    // تطبيق الثيم المحفوظ تلقائياً
-    var savedTheme = localStorage.getItem('nile_theme') || 'dark';
-    setTimeout(function() { applyNileTheme(savedTheme); }, 300);
 })();
 </script>
         function openNileAdvancedSettings() {
