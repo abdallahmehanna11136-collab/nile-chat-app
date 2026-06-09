@@ -540,6 +540,55 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        function requestNileNotificationPermission() {
+    if ("Notification" in window) {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                console.log('تم تفعيل نظام الإشعارات بنجاح!');
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(requestNileNotificationPermission, 2000);
+});
+
+function playNileIncomingRingtone() {
+    var savedRingtone = localStorage.getItem('nile_ringtone_type') || 'default';
+    var customFile = localStorage.getItem('nile_custom_ringtone_file');
+    var audio;
+
+    if (savedRingtone === 'custom' && customFile) {
+        audio = new Audio(customFile);
+    } else {
+        var ringtoneUrls = {
+            'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
+            'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3',
+            'guitar': 'https://www.soundjay.com/button/sounds/button-20.mp3',
+            'cyber': 'https://www.soundjay.com/button/sounds/button-10.mp3',
+            'default': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3'
+        };
+        audio = new Audio(ringtoneUrls[savedRingtone] || ringtoneUrls['default']);
+    }
+    audio.volume = 1.0;
+    audio.play().catch(function(e) { console.log("البرنامج محجوب من التشغيل التلقائي للصوت"); });
+}
+
+if (typeof socket !== 'undefined' && socket.on) {
+    socket.on('receive_message', function(msg) {
+        if (document.hidden || (typeof currentRoomId !== 'undefined' && currentRoomId !== msg.room)) {
+            playNileIncomingRingtone();
+            if (Notification.permission === "granted") {
+                new Notification("رسالة جديدة من: " + (msg.senderName || "مستخدم نايل"), {
+                    body: msg.text,
+                    icon: '/icon.png',
+                    tag: 'nile-chat'
+                });
+            }
+        }
+    });
+}
         function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
         socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
