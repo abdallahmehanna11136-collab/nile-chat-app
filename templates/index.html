@@ -540,6 +540,62 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        (function() {
+    function injectFloatingTopBar() {
+        if (!document.getElementById('nileCustomFloatingGroup')) {
+            // إنشاء حاوية عائمة وثابتة أعلى الشاشة جهة اليمين لضمان الظهور التام
+            var btnGroup = document.createElement('div');
+            btnGroup.id = 'nileCustomFloatingGroup';
+            btnGroup.style.cssText = 'position: fixed; top: 15px; right: 15px; display: flex; align-items: center; gap: 12px; background: rgba(30, 41, 59, 0.95); padding: 6px 12px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999999; direction: rtl;';
+
+            // 1. زرار المنصات
+            var platformBtn = document.createElement('button');
+            platformBtn.innerHTML = '🌐';
+            platformBtn.title = 'المنصات';
+            platformBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
+            platformBtn.onclick = function() {
+                if (typeof openPlatformsModal === 'function') openPlatformsModal();
+            };
+
+            // 2. زرار الـ QR Code
+            var qrBtn = document.createElement('button');
+            qrBtn.innerHTML = '🔲';
+            qrBtn.title = 'رمز الـ QR';
+            qrBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
+            qrBtn.onclick = function() {
+                if (typeof socket !== 'undefined' && socket.emit) {
+                    var phoneNum = (typeof myProfile !== 'undefined' && myProfile.phone) ? myProfile.phone : '123';
+                    socket.emit('request_qr_code_link', { room: 'global', phone: phoneNum });
+                }
+            };
+
+            // 3. زرار الإعدادات الشاملة (الترس)
+            var settingsBtn = document.createElement('button');
+            settingsBtn.innerHTML = '⚙️';
+            settingsBtn.title = 'الإعدادات';
+            settingsBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
+            settingsBtn.onclick = function() {
+                if (typeof openNileAdvancedSettings === 'function') openNileAdvancedSettings();
+            };
+
+            // إضافة الأزرار الثلاثة بالترتيب داخل الحاوية
+            btnGroup.appendChild(platformBtn);
+            btnGroup.appendChild(qrBtn);
+            btnGroup.appendChild(settingsBtn);
+
+            // حقن الحاوية في الصفحة مباشرة
+            document.body.appendChild(btnGroup);
+        }
+    }
+
+    // تفعيل وتكرار الفحص للتأكد من ثبات ظهورها
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', injectFloatingTopBar);
+    } else {
+        injectFloatingTopBar();
+    }
+    setInterval(injectFloatingTopBar, 1000);
+})();
         function openNileAdvancedSettings() {
     var modal = document.getElementById('nileAdvancedSettingsModal');
     if (!modal) {
