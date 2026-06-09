@@ -542,7 +542,7 @@ def generate_qr_info(data):
 @socketio.on('send_message')
 def handle_nile_notification(data):
     room = data.get('room')
-    if room:
+    if room and data.get('senderName') != 'Nile AI':
         emit('receive_message', data, room=room, include_self=False)
 init_db()
 
