@@ -538,6 +538,37 @@
     </div>
     
     <script>
+        // التفعيل التلقائي عند فتح الصفحة وحفظ الجلسة
+var socket = typeof socket !== 'undefined' ? socket : io(); 
+var myProfile = { name: '', phone: '', avatar: '' };
+
+(function() {
+    var savedName = localStorage.getItem('nile_name');
+    var savedPhone = localStorage.getItem('nile_phone');
+    var savedAvatar = localStorage.getItem('nile_avatar');
+    var savedToken = localStorage.getItem('saved_login_token');
+
+    if (savedPhone && savedToken) {
+        myProfile.name = savedName || "مستخدم نايل شات";
+        myProfile.phone = savedPhone;
+        myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
+        
+        // تحديث الاسم والصورة في الهيدر عندك تلقائياً
+        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = savedName;
+        if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = savedAvatar;
+        
+        // ربط البيانات بالسيرفر
+        socket.emit('verify_saved_login', { phone: savedPhone, token: savedToken });
+        socket.emit('register_user', { phone: savedPhone, name: savedName, avatar: savedAvatar });
+    } else {
+        // إذا لم يكن مسجلاً، افتح مودال التسجيل الموجود عندك في كودك
+        var authModal = document.getElementById('modal-user-registration-auth');
+        if (authModal) {
+            authModal.classList.add('open');
+            authModal.style.display = 'flex';
+        }
+    }
+})();
     function toggleSocialMenu(event) {
         if(event) event.stopPropagation();
         var menu = document.getElementById("socialDropdownMenu");
