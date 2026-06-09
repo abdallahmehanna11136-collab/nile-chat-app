@@ -537,39 +537,30 @@
         </div>
     </div>
     
-    <script>
-       var socket = typeof socket !== 'undefined' ? socket : io(); 
-var myProfile = { name: '', phone: '', avatar: '' };
-        (function() {
-    function injectNileTopButtons() {
-        // البحث عن الجزء العلوي اللي فيه اسم المستخدم وصورة البروفايل
-        var headerRight = document.querySelector('.header-right, .profile-container') || 
-                           document.querySelector('[id*="Profile"], [class*="profile"]') ||
-                           document.querySelector('header') || 
-                           document.body;
+    (function() {
+    function injectNileButtonsDirectly() {
+        var targetIcon = document.querySelector('.fa-moon, .fa-sun, .fa-plus') || document.querySelector('.header-right i');
+        
+        if (targetIcon && !document.getElementById('nileTopButtonsContainer')) {
+            var parentContainer = targetIcon.parentElement;
 
-        // إذا وجدنا الحاوية ولم يتم حقن الأزرار بعد
-        if (headerRight && !document.getElementById('nileTopButtonsContainer')) {
-            var btnContainer = document.createElement('div');
+            var btnContainer = document.createElement('span');
             btnContainer.id = 'nileTopButtonsContainer';
-            // تنسيق مرن يضمن ظهورهم جنب البروفايل مباشرة بشكل متناسق
-            btnContainer.style.cssText = 'display: inline-flex; align-items: center; gap: 10px; margin: 0 10px; vertical-align: middle; direction: rtl;';
+            btnContainer.style.cssText = 'display: inline-flex; align-items: center; gap: 8px; margin: 0 8px; vertical-align: middle;';
 
-            // 1. زرار المنصات
             var pBtn = document.createElement('button');
             pBtn.innerHTML = '🌐';
             pBtn.title = 'المنصات';
-            pBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 4px;';
+            pBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 2px;';
             pBtn.onclick = function(e) {
                 e.preventDefault();
                 if (typeof openPlatformsModal === 'function') openPlatformsModal();
             };
 
-            // 2. زرار الكيو ار كود (QR)
             var qBtn = document.createElement('button');
             qBtn.innerHTML = '🔲';
             qBtn.title = 'رمز QR';
-            qBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 4px;';
+            qBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 2px;';
             qBtn.onclick = function(e) {
                 e.preventDefault();
                 if (typeof socket !== 'undefined' && socket.emit) {
@@ -578,92 +569,24 @@ var myProfile = { name: '', phone: '', avatar: '' };
                 }
             };
 
-            // 3. زرار الإعدادات (الترس)
             var sBtn = document.createElement('button');
             sBtn.innerHTML = '⚙️';
             sBtn.title = 'الإعدادات المتقدمة';
-            sBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 4px;';
+            sBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 2px;';
             sBtn.onclick = function(e) {
                 e.preventDefault();
-                if (typeof openNileAdvancedSettings === 'function') {
-                    openNileAdvancedSettings();
-                } else {
-                    var m = document.getElementById('nileAdvancedSettingsModal');
-                    if (m) m.style.display = 'flex';
-                }
+                if (typeof openNileAdvancedSettings === 'function') openNileAdvancedSettings();
             };
 
-            // ترتيب الأزرار داخل الحاوية: المنصات ثم الـ QR ثم الإعدادات
             btnContainer.appendChild(pBtn);
             btnContainer.appendChild(qBtn);
             btnContainer.appendChild(sBtn);
 
-            // حقن الأزرار في بداية شريط البروفايل العلوي
-            headerRight.insertBefore(btnContainer, headerRight.firstChild);
+            parentContainer.insertBefore(btnContainer, targetIcon);
         }
     }
 
-    // فحص دوري مستمر لضمان الحقن فور ظهور عناصر الواجهة
-    var injectInterval = setInterval(injectNileTopButtons, 1000);
-    
-    // للتأكد التام عند تحميل الصفحة بالكامل
-    window.addEventListener('load', injectNileTopButtons);
-})();
-        (function() {
-    function injectFloatingTopBar() {
-        if (!document.getElementById('nileCustomFloatingGroup')) {
-            // إنشاء حاوية عائمة وثابتة أعلى الشاشة جهة اليمين لضمان الظهور التام
-            var btnGroup = document.createElement('div');
-            btnGroup.id = 'nileCustomFloatingGroup';
-            btnGroup.style.cssText = 'position: fixed; top: 15px; right: 15px; display: flex; align-items: center; gap: 12px; background: rgba(30, 41, 59, 0.95); padding: 6px 12px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 999999; direction: rtl;';
-
-            // 1. زرار المنصات
-            var platformBtn = document.createElement('button');
-            platformBtn.innerHTML = '🌐';
-            platformBtn.title = 'المنصات';
-            platformBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
-            platformBtn.onclick = function() {
-                if (typeof openPlatformsModal === 'function') openPlatformsModal();
-            };
-
-            // 2. زرار الـ QR Code
-            var qrBtn = document.createElement('button');
-            qrBtn.innerHTML = '🔲';
-            qrBtn.title = 'رمز الـ QR';
-            qrBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
-            qrBtn.onclick = function() {
-                if (typeof socket !== 'undefined' && socket.emit) {
-                    var phoneNum = (typeof myProfile !== 'undefined' && myProfile.phone) ? myProfile.phone : '123';
-                    socket.emit('request_qr_code_link', { room: 'global', phone: phoneNum });
-                }
-            };
-
-            // 3. زرار الإعدادات الشاملة (الترس)
-            var settingsBtn = document.createElement('button');
-            settingsBtn.innerHTML = '⚙️';
-            settingsBtn.title = 'الإعدادات';
-            settingsBtn.style.cssText = 'background: none; border: none; font-size: 20px; cursor: pointer; color: white; padding: 2px;';
-            settingsBtn.onclick = function() {
-                if (typeof openNileAdvancedSettings === 'function') openNileAdvancedSettings();
-            };
-
-            // إضافة الأزرار الثلاثة بالترتيب داخل الحاوية
-            btnGroup.appendChild(platformBtn);
-            btnGroup.appendChild(qrBtn);
-            btnGroup.appendChild(settingsBtn);
-
-            // حقن الحاوية في الصفحة مباشرة
-            document.body.appendChild(btnGroup);
-        }
-    }
-
-    // تفعيل وتكرار الفحص للتأكد من ثبات ظهورها
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectFloatingTopBar);
-    } else {
-        injectFloatingTopBar();
-    }
-    setInterval(injectFloatingTopBar, 1000);
+    setInterval(injectNileButtonsDirectly, 1000);
 })();
         function openNileAdvancedSettings() {
     var modal = document.getElementById('nileAdvancedSettingsModal');
