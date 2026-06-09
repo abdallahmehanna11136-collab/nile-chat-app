@@ -540,6 +540,90 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        function openNileAdvancedSettings() {
+    var modal = document.getElementById('nileAdvancedSettingsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        if (document.getElementById('setting-change-name-input')) {
+            document.getElementById('setting-change-name-input').value = myProfile.name || localStorage.getItem('nile_name') || '';
+        }
+    }
+}
+
+function saveNewNileName() {
+    var newName = document.getElementById('setting-change-name-input').value.trim();
+    if (newName) {
+        myProfile.name = newName;
+        localStorage.setItem('nile_name', newName);
+        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = newName;
+        if(typeof socket !== 'undefined' && socket.emit) {
+            socket.emit('register_user', { phone: myProfile.phone, name: newName, avatar: myProfile.avatar });
+        }
+        alert("تم تحديث وحفظ الاسم الجديد بنجاح للأبد!");
+    }
+}
+
+var activeVoiceFilter = 'normal';
+function changeNileVoiceFilter(filterValue) {
+    activeVoiceFilter = filterValue;
+    localStorage.setItem('nile_voice_filter', filterValue);
+}
+
+function changeNileRingtone(ringtoneValue) {
+    localStorage.setItem('nile_ringtone_type', ringtoneValue);
+    localStorage.removeItem('nile_custom_ringtone_file');
+}
+
+function uploadCustomRingtone(event) {
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem('nile_custom_ringtone_file', e.target.result);
+            localStorage.setItem('nile_ringtone_type', 'custom');
+            alert("تم حفظ نغمة الرنين المخصصة بنجاح!");
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function applyNileTheme(themeName) {
+    var root = document.documentElement;
+    var themes = {
+        'whatsapp-dark': { bg: '#0b141a', side: '#111b21', text: '#e9edef', chatBg: '#0b141a' },
+        'royal-blue': { bg: '#0f172a', side: '#1e293b', text: '#f8fafc', chatBg: '#0f172a' },
+        'purple-night': { bg: '#1a103c', side: '#2d1b6b', text: '#f3e8ff', chatBg: '#1a103c' },
+        'classic-light': { bg: '#f0f2f5', side: '#ffffff', text: '#111b21', chatBg: '#efeae2' }
+    };
+    var t = themes[themeName];
+    if (t) {
+        root.style.setProperty('--main-bg', t.bg);
+        root.style.setProperty('--sidebar-bg', t.side);
+        root.style.setProperty('--text-color', t.text);
+        var stream = document.getElementById('chat-messages-stream-anchor');
+        if (stream) { stream.style.backgroundColor = t.chatBg; stream.style.backgroundImage = 'none'; }
+        localStorage.setItem('nile_active_theme', themeName);
+        localStorage.removeItem('nile_custom_bg');
+    }
+}
+
+function uploadCustomChatBackground(event) {
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var base64Img = e.target.result;
+            var stream = document.getElementById('chat-messages-stream-anchor');
+            if (stream) {
+                stream.style.backgroundImage = "url('" + base64Img + "')";
+                stream.style.backgroundSize = "cover";
+                stream.style.backgroundPosition = "center";
+            }
+            localStorage.setItem('nile_custom_bg', base64Img);
+        };
+        reader.readAsDataURL(file);
+    }
+}
 
 (function() {
     var savedName = localStorage.getItem('nile_name');
