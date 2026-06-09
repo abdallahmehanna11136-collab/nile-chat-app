@@ -541,6 +541,63 @@
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
         (function() {
+    function setupTopBarButtons() {
+        var oldPlatformBtn = document.getElementById('platformBtn') || document.querySelector('.platform-btn-class'); 
+        if (oldPlatformBtn) oldPlatformBtn.style.display = 'none';
+
+        var profileContainer = document.querySelector('.fa-user, #myProfilePic, .profile-status')?.parentElement || document.querySelector('header') || document.body;
+        
+        if (profileContainer && !document.getElementById('nileCustomTopBarGroup')) {
+            var btnGroup = document.createElement('div');
+            btnGroup.id = 'nileCustomTopBarGroup';
+            btnGroup.style.cssText = 'display: inline-flex; align-items: center; gap: 12px; margin-left: 10px; vertical-align: middle;';
+
+            var platformBtn = document.createElement('button');
+            platformBtn.innerHTML = '🌐';
+            platformBtn.title = 'المنصات';
+            platformBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 5px;';
+            platformBtn.onclick = function() {
+                if (typeof openPlatformsModal === 'function') openPlatformsModal();
+            };
+
+            var qrBtn = document.createElement('button');
+            qrBtn.innerHTML = '🔲';
+            qrBtn.title = 'رمز الـ QR';
+            qrBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 5px;';
+            qrBtn.onclick = function() {
+                if (typeof socket !== 'undefined' && socket.emit) {
+                    socket.emit('request_qr_code_link', { room: typeof currentRoomId !== 'undefined' ? currentRoomId : 'global', phone: myProfile.phone });
+                }
+            };
+
+            var settingsBtn = document.createElement('button');
+            settingsBtn.innerHTML = '⚙️';
+            settingsBtn.title = 'الإعدادات';
+            settingsBtn.style.cssText = 'background: none; border: none; font-size: 18px; cursor: pointer; color: white; padding: 5px;';
+            settingsBtn.onclick = function() {
+                if (typeof openNileAdvancedSettings === 'function') {
+                    openNileAdvancedSettings();
+                } else {
+                    var modal = document.getElementById('nileAdvancedSettingsModal');
+                    if (modal) modal.style.display = 'flex';
+                }
+            };
+
+            btnGroup.appendChild(platformBtn);
+            btnGroup.appendChild(qrBtn);
+            btnGroup.appendChild(settingsBtn);
+            profileContainer.appendChild(btnGroup);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupTopBarButtons);
+    } else {
+        setupTopBarButtons();
+    }
+    setTimeout(setupTopBarButtons, 1500);
+})();
+        (function() {
     function injectSettingsButton() {
         // البحث عن شريط الأدوات العلوي بجانب زر الوضع الليلي
         var topBar = document.querySelector('.fa-moon, .fa-sun')?.parentElement?.parentElement || document.querySelector('header') || document.body;
