@@ -540,6 +540,67 @@
     <script>
        var socket = typeof socket !== 'undefined' ? socket : io(); 
 var myProfile = { name: '', phone: '', avatar: '' };
+        // دالة لتشغيل القائمة عند الضغط المطول على الرسالة
+function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
+    if (!messageElement) return;
+
+    messageElement.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        
+        var menu = document.getElementById('nileMessageContextMenu');
+        if (!menu) return;
+
+        // إظهار القائمة مكان الضغطة
+        menu.style.display = 'block';
+        menu.style.top = e.clientY + 'px';
+        menu.style.left = e.clientX + 'px';
+
+        // تشغيل دالة الرد اللي عندك
+        document.getElementById('context-reply-btn').onclick = function() {
+            if (typeof setNileReplyTarget === 'function') {
+                setNileReplyTarget(messageId, senderName, messageText);
+            } else if (typeof replyMessage === 'function') {
+                replyMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة التحويل اللي عندك
+        document.getElementById('context-forward-btn').onclick = function() {
+            if (typeof forwardNileMessage === 'function') {
+                forwardNileMessage(messageText);
+            } else if (typeof forwardMessage === 'function') {
+                forwardMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة التفاعل
+        document.getElementById('context-react-btn').onclick = function() {
+            var chosenEmoji = prompt("أدخل الإيموجي أو التفاعل النصي:", "👍");
+            if (chosenEmoji && typeof reactToNileMessage === 'function') {
+                reactToNileMessage(messageId, chosenEmoji);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة المسح اللي عندك
+        document.getElementById('context-delete-btn').onclick = function() {
+            if (typeof deleteNileMessage === 'function') {
+                deleteNileMessage(messageId);
+            } else if (typeof deleteMessage === 'function') {
+                deleteMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+    });
+}
+
+// إخفاء القائمة لو ضغطت في أي مكان فاضي بالصفحة
+document.addEventListener('click', function() {
+    var menu = document.getElementById('nileMessageContextMenu');
+    if (menu) menu.style.display = 'none';
+});
         function openNileAdvancedSettings() {
     var modal = document.getElementById('nileAdvancedSettingsModal');
     if (modal) {
