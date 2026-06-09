@@ -539,6 +539,11 @@ def generate_qr_info(data):
         qr_string = f"nilechat://join?room={room}&invited_by={user}"
         emit('qr_code_generated', {'qr_string': qr_string, 'room': room}, room=f"user_{user}")
 
+@socketio.on('send_message')
+def handle_nile_notification(data):
+    room = data.get('room')
+    if room:
+        emit('receive_message', data, room=room, include_self=False)
 init_db()
 
 if __name__ == '__main__':
