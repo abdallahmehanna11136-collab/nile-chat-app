@@ -618,17 +618,16 @@ document.getElementById('nileSaveSettingsBtn').onclick = function() {
 };
     alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
             modal.style.display = 'none';
-            location.reload();
-        };
-    }
+// السطر 621 القديم عندك
+    location.reload();
 
     document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
-    document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
-    document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_filter') || 'normal';
+    document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'light';
+    document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_pitch') || '1';
     document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default';
     document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || '';
 
-modal.style.display = 'flex';
+    modal.style.display = 'flex';
 
 (function() {
     function setupTopBarButtons() {
