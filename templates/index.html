@@ -539,22 +539,25 @@
     
 <script>
 (function() {
+    // 1. فارات ربط السوكت والبروفايل الحية وتحديد الأنواع
     var nileSocket = typeof socket !== 'undefined' ? socket : null;
     var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
     var typeOfSocket = typeof nileSocket;
     var typeOfMyProfile = typeof nileProfile;
 
+    // 2. فارات اسم المستخدم والبروفايل
     var nileUsername = nileProfile.name ? nileProfile.name : 'مستخدم نايل';
     var nileUserAvatar = nileProfile.avatar ? nileProfile.avatar : '/static/images/default-avatar.png';
 
+    // 3. فارات قنوات الصوت (التنبيهات، الإرسال، ورنين المكالمات)
     var nileAlertAudio = new Audio('/static/sounds/alert.mp3'); 
     var nileSendAudio = new Audio('/static/sounds/send.mp3');   
     var nileCallRing = new Audio('/static/sounds/ringtone.mp3');
 
+    // 4. دالة تشغيل وإيجاف الأصوات وشروط الـ If للمكالمات والإشعارات
     window.playNileSystemSound = function(actionType) {
         var alertSetting = window.nilePrivacyValue || 'default';
         var voiceType = window.nileVoiceFilterValue || 'normal'; 
-
         var audioToPlay = null;
 
         if (actionType === 'alert' && alertSetting !== 'silent') {
@@ -589,6 +592,7 @@
         }
     };
 
+    // 5. محرك الذكاء الاصطناعي الخاص والشات الفوري
     window.getNileAiResponse = function(userMessage) {
         var text = userMessage.trim();
         if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا')) {
@@ -620,37 +624,41 @@
         }, 500);
     };
 
-    document.getElementById('nileSaveSettingsBtn').onclick = function() {
-        var privacy = document.getElementById('nilePrivacySelect').value;
-        var theme = document.getElementById('nileThemeSelect').value;
-        var voice = document.getElementById('nileVoiceSelect').value;
-        var ringtone = document.getElementById('nileRingtoneSelect').value;
-        var statusText = document.getElementById('nileStatusInput').value;
+    // 6. دالة زرار الحفظ الفوري المربوطة بالسوكت لايف
+    var saveBtn = document.getElementById('nileSaveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.onclick = function() {
+            var privacy = document.getElementById('nilePrivacySelect').value;
+            var theme = document.getElementById('nileThemeSelect').value;
+            var voice = document.getElementById('nileVoiceSelect').value;
+            var ringtone = document.getElementById('nileRingtoneSelect').value;
+            var statusText = document.getElementById('nileStatusInput').value;
 
-        window.nilePrivacyValue = privacy;
-        window.nileThemeValue = theme;
-        window.nileVoiceFilterValue = voice;
-        window.nileRingtoneTypeValue = ringtone;
-        window.nileStatusTextValue = statusText;
+            window.nilePrivacyValue = privacy;
+            window.nileThemeValue = theme;
+            window.nileVoiceFilterValue = voice;
+            window.nileRingtoneTypeValue = ringtone;
+            window.nileStatusTextValue = statusText;
 
-        if (nileSocket && nileSocket.emit) {
-            nileSocket.emit('update_user_settings', {
-                phone: nileProfile.phone ? nileProfile.phone : '',
-                privacy: privacy,
-                status: statusText,
-                theme: theme,
-                voice: voice,
-                ringtone: ringtone
-            });
-        }
+            if (nileSocket && nileSocket.emit) {
+                nileSocket.emit('update_user_settings', {
+                    phone: nileProfile.phone ? nileProfile.phone : '',
+                    privacy: privacy,
+                    status: statusText,
+                    theme: theme,
+                    voice: voice,
+                    ringtone: ringtone
+                });
+            }
 
-        window.playNileSystemSound('alert');
+            window.playNileSystemSound('alert');
 
-        if (typeof settingsModal !== 'undefined') {
-            settingsModal.style.setProperty('display', 'none', 'important');
-        }
-        alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
-    };
+            if (typeof settingsModal !== 'undefined') {
+                settingsModal.style.setProperty('display', 'none', 'important');
+            }
+            alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
+        };
+    }
 })();
 </script>
         
