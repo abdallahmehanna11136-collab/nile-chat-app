@@ -628,9 +628,9 @@ document.getElementById('nileSaveSettingsBtn').onclick = function() {
     document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default';
     document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || '';
 
-    modal.style.display = 'flex';
-}
-        (function() {
+modal.style.display = 'flex';
+
+(function() {
     function setupTopBarButtons() {
         var oldPlatformBtn = document.getElementById('platformBtn') || document.querySelector('.platform-btn-class'); 
         if (oldPlatformBtn) oldPlatformBtn.style.display = 'none';
