@@ -607,7 +607,7 @@
         return 'فهمت سؤالك تماماً بخصوص "' + text + '". أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة وبدون أي أخطاء!';
     };
 
-    window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
+   window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
         var chatBox = document.querySelector(chatContainerSelector || '.messages, .chat-box, #chat-messages');
         if (!chatBox) return;
 
@@ -624,8 +624,8 @@
         }, 500);
     };
 
-    // 6. دالة زرار الحفظ الفوري المربوطة بالسوكت لايف
-    var saveBtn = document.getElementById('nileSaveSettingsBtn');
+
+    document.getElementById('nileSaveSettingsBtn').onclick = function() {
     if (saveBtn) {
         saveBtn.onclick = function() {
             var privacy = document.getElementById('nilePrivacySelect').value;
