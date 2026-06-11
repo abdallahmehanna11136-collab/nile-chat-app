@@ -537,95 +537,11 @@
         </div>
     </div>
     
+</script>
+
 <script>
-(function() {
-    // 1. فارات ربط السوكت والبروفايل الحية وتحديد الأنواع
-    var nileSocket = typeof socket !== 'undefined' ? socket : null;
-    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
-    var typeOfSocket = typeof nileSocket;
-    var typeOfMyProfile = typeof nileProfile;
-
-    // 2. فارات اسم المستخدم والبروفايل
-    var nileUsername = nileProfile.name ? nileProfile.name : 'مستخدم نايل';
-    var nileUserAvatar = nileProfile.avatar ? nileProfile.avatar : '/static/images/default-avatar.png';
-
-    // 3. فارات قنوات الصوت (التنبيهات، الإرسال، ورنين المكالمات)
-    var nileAlertAudio = new Audio('/static/sounds/alert.mp3'); 
-    var nileSendAudio = new Audio('/static/sounds/send.mp3');   
-    var nileCallRing = new Audio('/static/sounds/ringtone.mp3');
-
-    // 4. دالة تشغيل وإيجاف الأصوات وشروط الـ If للمكالمات والإشعارات
-    window.playNileSystemSound = function(actionType) {
-        var alertSetting = window.nilePrivacyValue || 'default';
-        var voiceType = window.nileVoiceFilterValue || 'normal'; 
-        var audioToPlay = null;
-
-        if (actionType === 'alert' && alertSetting !== 'silent') {
-            audioToPlay = nileAlertAudio;
-        }
-        if (actionType === 'send') {
-            audioToPlay = nileSendAudio;
-        }
-        if (actionType === 'incoming_call') {
-            audioToPlay = nileCallRing;
-        }
-        if (actionType === 'stop_call') { 
-            nileCallRing.pause(); 
-            nileCallRing.currentTime = 0; 
-            return; 
-        }
-
-        if (audioToPlay) {
-            try {
-                if (voiceType === 'man') {
-                    audioToPlay.playbackRate = 0.75;
-                } else if (voiceType === 'child') {
-                    audioToPlay.playbackRate = 1.4;
-                } else {
-                    audioToPlay.playbackRate = 1.0;
-                }
-                audioToPlay.play().catch(function(){});
-            } catch(err) {
-                audioToPlay.playbackRate = 1.0;
-                audioToPlay.play().catch(function(){});
-            }
-        }
-    };
-
-    // 5. محرك الذكاء الاصطناعي الخاص والشات الفوري
-    window.getNileAiResponse = function(userMessage) {
-        var text = userMessage.trim();
-        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا')) {
-            return 'وعليكم السلام يا غالي! مرحباً بك في شات الذكاء الاصطناعي الخاص بك. كيف يمكنني مساعدتك اليوم؟';
-        }
-        if (text.includes('اسمك') || text.includes('مين انت')) {
-            return 'أنا مساعدك الذكي الخاص المدمج في المنظومة وجاهز لخدمتك فوراً!';
-        }
-        if (text.includes('المكالمة') || text.includes('اتصال')) {
-            return 'يمكنك بدء المكالمات الصوتية والمرئية مباشرة، وتأكد من تفعيل نغمات الرنين من الإعدادات.';
-        }
-        return 'فهمت سؤالك تماماً بخصوص "' + text + '". أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة وبدون أي أخطاء!';
-    };
-
-   window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
-        var chatBox = document.querySelector(chatContainerSelector || '.messages, .chat-box, #chat-messages');
-        if (!chatBox) return;
-
-        var userBubble = '<div style="text-align: right; margin: 10px; padding: 10px; background: #0284c7; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>أنت:</strong> ' + userInputText + '</div><br>';
-        chatBox.innerHTML += userBubble;
-        window.playNileSystemSound('send');
-
-        setTimeout(function() {
-            var aiReplyText = window.getNileAiResponse(userInputText);
-            var aiBubble = '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>المساعد الذكي:</strong> ' + aiReplyText + '</div><br>';
-            chatBox.innerHTML += aiBubble;
-            chatBox.scrollTop = chatBox.scrollHeight;
-            window.playNileSystemSound('alert');
-        }, 500);
-    };
-
-
-    document.getElementById('nileSaveSettingsBtn').onclick = function() {
+    // 6. دالة زرار الحفظ المطور الفوري لايف للكل
+    var saveBtn = document.getElementById('nileSaveSettingsBtn');
     if (saveBtn) {
         saveBtn.onclick = function() {
             var privacy = document.getElementById('nilePrivacySelect').value;
@@ -640,9 +556,10 @@
             window.nileRingtoneTypeValue = ringtone;
             window.nileStatusTextValue = statusText;
 
-            if (nileSocket && nileSocket.emit) {
-                nileSocket.emit('update_user_settings', {
-                    phone: nileProfile.phone ? nileProfile.phone : '',
+            var socketConn = typeof socket !== 'undefined' ? socket : (typeof nileSocket !== 'undefined' ? nileSocket : null);
+            if (socketConn && socketConn.emit) {
+                socketConn.emit('update_user_settings', {
+                    phone: typeof myProfile !== 'undefined' ? myProfile.phone : (nileProfile.phone ? nileProfile.phone : ''),
                     privacy: privacy,
                     status: statusText,
                     theme: theme,
@@ -651,31 +568,34 @@
                 });
             }
 
-            window.playNileSystemSound('alert');
+            if (typeof window.playNileSystemSound === 'function') {
+                localStorage.setItem('nile_voice_pitch', voice);
+                window.playNileSystemSound('alert');
+            }
 
             if (typeof settingsModal !== 'undefined') {
                 settingsModal.style.setProperty('display', 'none', 'important');
             }
             alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
+            if (typeof modal !== 'undefined') modal.style.display = 'none';
+        };
+    }
 
         
 
-        document.getElementById('nileSaveSettingsBtn').onclick = function() {
-    // 1. قراءة القيم الفورية الحالية من عناصر الصفحة مباشرة
+document.getElementById('nileSaveSettingsBtn').onclick = function() {
     var privacy = document.getElementById('nilePrivacySelect').value;
     var theme = document.getElementById('nileThemeSelect').value;
     var voice = document.getElementById('nileVoiceSelect').value;
     var ringtone = document.getElementById('nileRingtoneSelect').value;
     var statusText = document.getElementById('nileStatusInput').value;
 
-    // 2. تحديث المتغيرات الحية داخل الصفحة فوراً وبدون localStorage
     window.nilePrivacyValue = privacy;
     window.nileThemeValue = theme;
     window.nileVoiceFilterValue = voice;
     window.nileRingtoneTypeValue = ringtone;
     window.nileStatusTextValue = statusText;
 
-    // 3. إرسال البيانات فوراً عبر السوكت للسيرفر عشان التغيير يحصل لايف للكل
     if (typeof socket !== 'undefined' && socket.emit) {
         socket.emit('update_user_settings', {
             phone: typeof myProfile !== 'undefined' ? myProfile.phone : '',
@@ -687,16 +607,15 @@
         });
     }
 
-    // 4. تشغيل فلتر تغيير الصوت الفوري وتنبيه المستخدم
     if (typeof window.playNileSystemSound === 'function') {
-        localStorage.setItem('nile_voice_pitch', voice); // السطر ده بس عشان دالة الصوت تقرأ الفلتر (راجل/طفل) حقيقي ويشتغل الصوت فوراً
         window.playNileSystemSound('alert');
     }
 
-    // إغلاق اللوحة ملو الشاشة تلقائياً بعد نجاح التثبيت
     if (typeof settingsModal !== 'undefined') {
         settingsModal.style.setProperty('display', 'none', 'important');
     }
+    alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
+};
     alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
             modal.style.display = 'none';
             location.reload();
