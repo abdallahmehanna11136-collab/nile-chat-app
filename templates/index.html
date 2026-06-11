@@ -619,6 +619,7 @@ document.getElementById('nileSaveSettingsBtn').onclick = function() {
     alert('تم إرسال وتثبيت الإعدادات الحية في المنظومة بنجاح!');
             modal.style.display = 'none';
 location.reload();
+    };
 
     document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
     document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'light';
@@ -627,6 +628,7 @@ location.reload();
     document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || '';
 
     modal.style.display = 'flex';
+}
 
 (function() {
     function setupTopBarButtons() {
