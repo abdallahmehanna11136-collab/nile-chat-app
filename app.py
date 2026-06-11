@@ -100,6 +100,7 @@ def make_session_permanent():
 
 @app.route('/')
 def index():
+    return render_template('index.html')
     # كود الواجهة المطور والمقاوم لتمطيط الفريمات مدمج داخل البايثون مباشرة
     html_content = """
     <!DOCTYPE html>
