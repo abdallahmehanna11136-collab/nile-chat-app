@@ -539,7 +539,7 @@
     
 <script>
 (function() {
-    // 1. منع زوم المتصفح المقرف وإجبار مقاس الموبايل العرضي
+    // 1. إجبار الشاشة على مقاس الموبايل ومنع الزوم العشوائي
     if (!document.querySelector('meta[name="viewport"]')) {
         var meta = document.createElement('meta');
         meta.name = 'viewport';
@@ -547,7 +547,7 @@
         document.head.appendChild(meta);
     }
 
-    // 2. المتغيرات والـ socket بالترتيب الصحيح اللي طلبته
+    // 2. ترتيب السوكت والبروفايل زي ما طلبت بالظبط
     var socket = typeof socket !== 'undefined' ? socket : (typeof io !== 'undefined' ? io() : null);
     var myProfile = { name: '', phone: '', avatar: '' };
 
@@ -560,14 +560,14 @@
         });
     }
 
-    // 3. بناء الشاشة لتكون ملو الشاشة 100% غصب عن أي فريمات
+    // 3. بناء نافذة الإعدادات لتكون مستقلة تماماً وتفرش 100% ملو الشاشة
     window.openNileAdvancedSettings = function() {
         var modal = document.getElementById('nileAdvancedSettingsModal');
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'nileAdvancedSettingsModal';
             
-            // جعل العرض والطول 100% كاملين بدون أي هوامش جانبية تضغطه
+            // ستايل عازل يمنع التمدد الطولي ويجبره يفتح بكامل العرض
             modal.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; max-width: 100vw !important; max-height: 100vh !important; background: #0f172a !important; color: #f8fafc !important; z-index: 2147483647 !important; direction: rtl !important; box-sizing: border-box !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important; transform: none !important;';
             
             modal.innerHTML = `
@@ -605,7 +605,7 @@
                     </div>
                 </div>
             `;
-            // الحقن في جذر الصفحة مباشرة لمنع الاحتجاز داخل الفريمات الضيقة
+            // حقن مباشر في أعلى جذر للصفحة لتخطي حواجز الفريمات
             document.documentElement.appendChild(modal);
 
             document.getElementById('nileModalPlatformsBtn').onclick = function(e) {
@@ -646,7 +646,7 @@
         target.style.setProperty('color', text, 'important');
     }
 
-    // 4. زر الترس العلوي في المكان اللي حددته في الفيديو بالظبط
+    // 4. زر الترس العلوي بجانب أيقونات التطبيق
     function injectNileTopHeaderButton() {
         if (document.getElementById('nileStandardHeaderBtn')) return;
         var topBar = document.querySelector('.header') || document.querySelector('header') || document.body;
@@ -654,7 +654,6 @@
             var btn = document.createElement('button');
             btn.id = 'nileStandardHeaderBtn';
             btn.innerHTML = '⚙️';
-            // الإحداثيات مظبوطة لتنزيله بجانب الأيقونات العلوية تماماً
             btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 38px !important; height: 38px !important; background: #1e293b !important; color: #38bdf8 !important; border: 1px solid #334155 !important; border-radius: 8px !important; font-size: 18px !important; cursor: pointer !important; display: flex !important; align-items: center !important; justify-content: center !important; z-index: 9999999 !important; outline: none !important; transform: none !important;';
             btn.onclick = function(e) {
                 e.preventDefault(); e.stopPropagation();
@@ -672,8 +671,6 @@
     setInterval(injectNileTopHeaderButton, 1000);
 })();
 </script>
-</div>
-</div>
         function openNileAdvancedSettings() {
     var modal = document.getElementById('nileAdvancedSettingsModal');
     if (!modal) {
