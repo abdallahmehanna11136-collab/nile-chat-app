@@ -539,7 +539,7 @@
     
 <script>
 (function() {
-    var socket = typeof socket !== 'undefined' ? socket : (typeof io !== 'undefined' ? io() : null); 
+    var socket = typeof socket !== 'undefined' ? socket : (typeof io !== 'undefined' ? io() : null);
     var myProfile = { name: '', phone: '', avatar: '' };
 
     if (socket && socket.on) {
@@ -657,6 +657,8 @@
     setInterval(injectNileTopHeaderButton, 1000);
 })();
 </script>
+</div>
+</div>
         function openNileAdvancedSettings() {
     var modal = document.getElementById('nileAdvancedSettingsModal');
     if (!modal) {
