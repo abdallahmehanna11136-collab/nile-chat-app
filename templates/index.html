@@ -2122,31 +2122,47 @@ localStorage.setItem('saved_login_token', newToken);
 (function() {
     var nileSocket = typeof socket !== 'undefined' ? socket : null;
     var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
-    
-    // المتغيرات الأساسية
+
     window.nileSocket = typeof socket !== 'undefined' ? socket : null;
-    
-    // 1. محرك الذكاء الاصطناعي نايل AI
+    window.nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
+
+    // 1. محرك الذكاء الاصطناعي (Nile AI) الفعلي والرد الفوري
     window.getNileAiResponse = function(userMessage) {
         var text = userMessage.trim();
         if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
-            return 'وعليكم السلام يا غالي! منور نايل شات، المساعد الذكي معاك وجاهز لخدمتك فوراً، تؤمرني بإيه؟';
+            return 'وعليكم السلام يا غالي! المساعد الذكي الخاص بك في نايل شات معاك وجاهز لخدمتك، تؤمرني بإيه؟';
         }
-        return 'أنا معاك وسامعك ومتابع شاتك لحظة بلحظة وبدون أي تهنيج. فهمت قصدك تماماً بخصوص: ' + text;
+        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
+            return 'أنا بوت الذكاء الاصطناعي الخاص بيك، مدمج هنا عشان أتابع شاتك وأساعدك في أي وقت!';
+        }
+        return 'سامعك ومتابع معاك لحظة بلحظة يا غالي. أنا هنا لمساعدتك بخصوص: ' + text;
     };
 
     window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
         var chatBox = document.querySelector(chatContainerSelector) || document.querySelector('.messages, .chat-box, #chat-messages');
         if (!chatBox) return;
-        chatBox.innerHTML += '<div style="text-align: right; margin: 10px; padding: 10px; background: #0284c7; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>أنت:</strong> ' + userInputText + '</div><br>';
+        var userBubble = '<div style="text-align: right; margin: 10px; padding: 10px; background: #0284c7; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>أنت:</strong> ' + userInputText + '</div><br>';
+        chatBox.innerHTML += userBubble;
         setTimeout(function() {
-            var reply = window.getNileAiResponse(userInputText);
-            chatBox.innerHTML += '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>نايل AI:</strong> ' + reply + '</div><br>';
+            var aiReplyText = window.getNileAiResponse(userInputText);
+            var aiBubble = '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>نايل AI:</strong> ' + aiReplyText + '</div><br>';
+            chatBox.innerHTML += aiBubble;
             chatBox.scrollTop = chatBox.scrollHeight;
-        }, 500);
+        }, 400);
     };
 
-    // 2. محرك السمات الـ 18 الفعلي
+    // ربط الشات الفوري عند الضغط على خانه إرسال الرسائل لـ Nile AI
+    var aiChatInput = document.querySelector('input[placeholder*="رسالتك للمساعد"], #chat-input');
+    if (aiChatInput) {
+        aiChatInput.onkeypress = function(e) {
+            if (e.key === 'Enter' && aiChatInput.value.trim() !== '') {
+                window.triggerNilePrivateAiChat(aiChatInput.value, null);
+                aiChatInput.value = '';
+            }
+        };
+    }
+
+    // 2. دمج وتطبيق السمات الـ 18 بدون أي كود خارجي منكوش
     window.applyNileTheme = function(themeName) {
         var body = document.body;
         body.className = body.className.replace(/\bnile-theme-\S+/g, '');
@@ -2155,7 +2171,12 @@ localStorage.setItem('saved_login_token', newToken);
             'light': { bg: '#ffffff', text: '#1e293b' }, 'dark': { bg: '#0f172a', text: '#f8fafc' },
             'blue-dark': { bg: '#0f172a', text: '#38bdf8' }, 'blue-light': { bg: '#f0f9ff', text: '#0369a1' },
             'red-dark': { bg: '#450a0a', text: '#fca5a5' }, 'red-light': { bg: '#fff5f5', text: '#b91c1c' },
-            'green-dark': { bg: '#064e3b', text: '#6ee7b7' }, 'green-light': { bg: '#f0fdf4', text: '#15803d' }
+            'green-dark': { bg: '#064e3b', text: '#6ee7b7' }, 'green-light': { bg: '#f0fdf4', text: '#15803d' },
+            'purple-dark': { bg: '#581c87', text: '#e9d5ff' }, 'purple-light': { bg: '#faf5ff', text: '#6b21a8' },
+            'orange-dark': { bg: '#7c2d12', text: '#ffedd5' }, 'orange-light': { bg: '#fff7ed', text: '#c2410c' },
+            'yellow-dark': { bg: '#713f12', text: '#fef08a' }, 'yellow-light': { bg: '#fefce8', text: '#a16207' },
+            'pink-dark': { bg: '#831843', text: '#fbcfe8' }, 'pink-light': { bg: '#fff1f2', text: '#be185d' },
+            'cyan-dark': { bg: '#164e63', text: '#a5f3fc' }, 'cyan-light': { bg: '#ecfeff', text: '#0e7490' }
         };
         if (colors[themeName]) {
             body.style.backgroundColor = colors[themeName].bg;
@@ -2163,8 +2184,8 @@ localStorage.setItem('saved_login_token', newToken);
         }
     };
 
-    // 3. زرار الحفظ للأبد وتشغيل الإعدادات
-    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn');
+    // 3. حفظ الجلسة، البروفايل، والشات للأبد ومنع النكشة
+    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn') || document.querySelector('.btn-success, [onclick*="save"]');
     if (saveBtn) {
         saveBtn.onclick = function() {
             var privacy = document.getElementById('nilePrivacySelect') ? document.getElementById('nilePrivacySelect').value : 'everyone';
@@ -2180,28 +2201,37 @@ localStorage.setItem('saved_login_token', newToken);
             localStorage.setItem('nile_status_text', statusText);
             localStorage.setItem('nile_session_active', 'true');
 
+            if (window.nileSocket && window.nileSocket.emit) {
+                window.nileSocket.emit('update_user_settings', {
+                    phone: window.nileProfile.phone || '', privacy: privacy, status: statusText, theme: theme, voice: voice, ringtone: ringtone
+                });
+            }
             window.applyNileTheme(theme);
-            alert('تم حفظ الجلسة وتثبيت الميزات للأبد!');
+            alert('تم حفظ الإعدادات وتثبيت الجلسة بنجاح!');
             location.reload();
         };
     }
 
-    // 4. تشغيل أزرار الشريط العلوي والمنصات بتأخير
+    // 4. تشغيل زرار الإعدادات (الترس) النظيف وتأخير الأزرار لمنع التهنيج
     window.setupTopBarButtons = function() {
-        var openSettingsBtn = document.getElementById('nileOpenSettingsBtn') || document.getElementById('openSettingsBtn') || document.getElementById('platformsBtn');
-        var modalElement = document.getElementById('nileSettingsModal') || document.getElementById('settingsModal');
+        var openSettingsBtn = document.getElementById('platformsBtn') || document.querySelector('.fa-cog')?.parentElement || document.getElementById('openSettingsBtn');
+        var modalElement = document.getElementById('settingsModal') || document.querySelector('.modal');
+        
         if (openSettingsBtn && modalElement) {
-            openSettingsBtn.onclick = function() { modalElement.style.display = 'flex'; };
+            openSettingsBtn.onclick = function() {
+                modalElement.style.display = 'flex';
+            };
         }
     };
 
-    // تشغيل تلقائي فوراً عند تحميل الصفحة لمنع الحركة واللخبطة
-    var metaViewport = document.querySelector('meta[name="viewport"]');
-    if (metaViewport) { metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); }
-    
+    // استعادة الإعدادات والسمة المحفوظة فوراً عند فتح الصفحة
     var savedTheme = localStorage.getItem('nile_theme') || 'light';
     window.applyNileTheme(savedTheme);
 
+    var metaViewport = document.querySelector('meta[name="viewport"]');
+    if (metaViewport) { metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); }
+
+    // تشغيل ذكي للأزرار بعد ثانية ونصف لضمان استقرار الواجهة التاني
     setTimeout(window.setupTopBarButtons, 1500);
 </script>
 </body>
