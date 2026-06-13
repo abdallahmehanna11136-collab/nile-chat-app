@@ -685,21 +685,19 @@
 })();    setTimeout(setupTopBarButtons, 1500);
 })();
 </script>
-    
-        (function() {
-  function injectSettingsButton() {
-    // لو الزرار موجود أصلاً مش هنعمله تاني عشان نمنع التكرار
+<script>
+(function() {
+    // لمنع تكرار الزرار
     if (document.getElementById('nileSettingsBtn')) return;
     
-    // 🚀 هنا بنركب الزرار في جسم الصفحة مباشرة (body) عشان يظهر فوراً بدون لف ودوران
     var body = document.body;
     if (body) {
         var btn = document.createElement('button');
         btn.id = 'nileSettingsBtn';
         btn.innerHTML = '⚙️';
         
-        // التثبيت السحري في الشاشة فوق على الشمال عشان يظهر غصب عن أي حاجة وبشكل شيك
-        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        // تنسيق الترس وتثبيته فوق على الشمال غصب عن أي حاجة وبشكل مخفي وراء النوافذ بشكل صحيح
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
         btn.title = 'إعدادات نايل شات';
         
         btn.onclick = function(e) {
@@ -715,12 +713,10 @@
         
         body.appendChild(btn);
     }
-}
-
-// تشغيل الدالة فوراً وتكرار فحصها كل ثانية للتأكد من ثبات الزرار
-injectSettingsButton();
-setInterval(injectSettingsButton, 1000);
-        function requestNileNotificationPermission() {
+})();
+</script>
+    
+     function requestNileNotificationPermission() {
     if ("Notification" in window) {
         Notification.requestPermission().then(function(permission) {
             if (permission === 'granted') {
