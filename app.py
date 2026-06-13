@@ -1,4 +1,4 @@
-from flask import render_template_string
+from flask import Flask, render_template, make_response, request, jsonify, url_for, session
 from flask_socketio import SocketIO, emit, join_room
 from werkzeug.utils import secure_filename
 from datetime import timedelta
@@ -98,35 +98,11 @@ def get_groq_ai_response(user_message):
 def make_session_permanent():
     session.permanent = True
 
-from flask import render_template_string, session # تأكد أن render_template_string مستدعاة فوق
-
 @app.route('/')
 def index():
-    # 1. بنجيب تليفون المستخدم المسجل من الـ Session
-    user_phone = session.get('phone', '')
+    # 🚀 رجعنا الدالة الأصلية النضيفة اللي بتعشقها واللي هتقرأ ملف index.html بتاعك مباشرة!
+    return render_template('index.html')
     
-    saved_theme = 'dark' # الثيم الافتراضي لو مفيش حاجة متسيفة
-    saved_privacy = 'everyone'
-    
-    # 2. لو المستخدم مسجل دخول، بنروح نفتح قاعدة البيانات ونقرأ ثيم الشات المحفوظ بتاعه غصب عن الكاش
-    if user_phone:
-        try:
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-            
-            # بنروح لجدول الـ profiles اللي عندك في الداتابيز ونجيب منه الـ theme_mode
-            cursor.execute("SELECT theme_mode, privacy_mode FROM profiles WHERE phone = ?", (user_phone,))
-            row = cursor.fetchone()
-            if row:
-                saved_theme = row[0] if row[0] else 'dark'
-                saved_privacy = row[1] if row[1] else 'everyone'
-            conn.close()
-        except Exception as e:
-            pass
-
-    # 3. 🚀 هنا رجعنا الدالة تقرأ ملف الـ index.html بتاعك الفعلي، وبنبعت معاه الثيم المحفوظ عشان يثبت دايماً!
-    return render_template('index.html', current_theme=saved_theme, current_privacy=saved_privacy)
-
 @app.route('/static/manifest.json')
 def serve_manifest():
     manifest_data = {
