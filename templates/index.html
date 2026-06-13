@@ -2117,14 +2117,11 @@ localStorage.setItem('saved_login_token', newToken);
                 reactBadge.innerText = data.emoji;
             }
         });
-    </script>
-    <style id="nile-shield">
-    #nileAdvancedSettingsModal, script, style { display: none !important; }
-</style>
+</script>
 
 <script>
 (function() {
-    // 1. تثبيت أبعاد الشاشة ومنع الارتداد والزوم (واجهة واتساب ثابتة)
+    // 1. تثبيت أبعاد الشاشة فوراً في الخلفية ومنع الارتداد والزوم (تجربة الواتساب الصافية)
     var meta = document.querySelector('meta[name="viewport"]');
     if (!meta) {
         meta = document.createElement('meta');
@@ -2142,7 +2139,7 @@ localStorage.setItem('saved_login_token', newToken);
     var nileSocket = typeof socket !== 'undefined' ? socket : null;
     var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'Abdallah', avatar: '/static/images/default-avatar.png' };
 
-    // 2. محرك الـ 18 ثيم الكامل لجميع الألوان
+    // 2. محرك الـ 18 ثيم الكامل لجميع الألوان (فاتح وداكن)
     window.applyNileTheme = function(themeName) {
         var body = document.body;
         body.className = body.className.replace(/\bnile-theme-\S+/g, '');
@@ -2165,22 +2162,22 @@ localStorage.setItem('saved_login_token', newToken);
         }
     };
 
-    // 3. بناء واجهة الإعدادات الكاملة في الخلفية
+    // 3. بناء واجهة الإعدادات المتطورة في الخلفية (تفتح عند الضغط على الترس)
     function createNileAdvancedModal() {
         if (document.getElementById('nileAdvancedSettingsModal')) return;
         var modalDiv = document.createElement('div');
-        modalDiv.id = 'nileAdvancedSettings';
+        modalDiv.id = 'nileAdvancedSettingsModal';
         modalDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; display:none; align-items:center; justify-content:center; direction:rtl; font-family:sans-serif;';
         
         modalDiv.innerHTML = '<div style="background:#1e293b; color:white; padding:20px; border-radius:12px; width:90%; max-width:420px; text-align:right; max-height:85vh; overflow-y:auto;">' +
-            '<h3 style="margin-top:0; border-bottom:1px solid #475569; padding-bottom:10px; color:#38bdf8;">⚙️ إعدادات نايل شات</h3>' +
+            '<h3 style="margin-top:0; border-bottom:1px solid #475569; padding-bottom:10px; color:#38bdf8;">⚙️ إعدادات نايل شات المتطورة</h3>' +
             
-            '<h4 style="margin:10px 0 5px 0;">🛡️ الخصوصية</h4>' +
-            '<select id="nilePrivacySelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="everyone">الكل (نشط)</option><option value="contacts">جهاتي فقط</option><option value="nobody">مخفي</option></select>' +
+            '<h4 style="margin:10px 0 5px 0;">🛡️ الخصوصية والحساب</h4>' +
+            '<select id="nilePrivacySelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="everyone">الكل (نشط الآن)</option><option value="contacts">جهاتي فقط</option><option value="nobody">لا أحد (مخفي)</option></select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎨 اختيار الثيم (18 لون)</h4>' +
+            '<h4 style="margin:15px 0 5px 0;">🎨 المظهر والـ 18 ثيم</h4>' +
             '<select id="nileThemeSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;">' +
-                '<option value="dark">الوضع الداكن</option><option value="light">الوضع الفاتح</option>' +
+                '<option value="dark">الوضع الداكن الافتراضي</option><option value="light">الوضع الفاتح الافتراضي</option>' +
                 '<option value="blue-dark">أزرق داكن</option><option value="blue-light">أزرق فاتح</option>' +
                 '<option value="red-dark">أحمر داكن</option><option value="red-light">أحمر فاتح</option>' +
                 '<option value="green-dark">أخضر داكن</option><option value="green-light">أخضر فاتح</option>' +
@@ -2191,11 +2188,11 @@ localStorage.setItem('saved_login_token', newToken);
                 '<option value="cyan-dark">سماوي داكن</option><option value="cyan-light">سماوي فاتح</option>' +
             '</select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎵 نغمات المكالمات</h4>' +
-            '<select id="nileRingtoneSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">نغمة الواتساب الأصلية</option><option value="classic">رنين كلاسيك</option><option value="silent">صامت</option></select>' +
+            '<h4 style="margin:15px 0 5px 0;">🎵 المكالمات ونغمات الرنين</h4>' +
+            '<select id="nileRingtoneSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">نغمة الواتساب الأصلية</option><option value="classic">رنين كلاسيكي هادئ</option><option value="silent">صامت بدون صوت</option></select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎙️ تغيير فلاتر الصوت</h4>' +
-            '<select id="nileVoiceSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="1">الصوت الطبيعي</option><option value="2">روبوت</option><option value="3">طفل</option></select>' +
+            '<h4 style="margin:15px 0 5px 0;">🎙️ فلاتر وتغيير الصوت</h4>' +
+            '<select id="nileVoiceSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="1">صوتك الحقيقي الطبيعي</option><option value="2">صوت رجل آلي (روبوت)</option><option value="3">صوت طفل صغير</option></select>' +
             
             '<h4 style="margin:15px 0 5px 0;">✍️ الحالة الشخصية</h4>' +
             '<input type="text" id="nileStatusInput" placeholder="اكتب حالتك هنا..." style="width:95%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;">' +
@@ -2228,6 +2225,7 @@ localStorage.setItem('saved_login_token', newToken);
             }
             window.applyNileTheme(theme);
             document.getElementById('nileAdvancedSettingsModal').style.display = 'none';
+            alert('تم حفظ كافة إعدادات الواتساب وتثبيت الثيم المختار بنجاح!');
         };
 
         document.getElementById('nileCloseSettingsBtn').onclick = function() {
@@ -2235,7 +2233,7 @@ localStorage.setItem('saved_login_token', newToken);
         };
     }
 
-    // 4. مراقبة الضغط على الترس لفتح الإعدادات
+    // 4. مراقبة الضغط على الترس لفتح الإعدادات فوراً
     document.addEventListener('click', function(e) {
         if (e.target.closest('#platformsBtn') || e.target.closest('.fa-cog') || e.target.closest('#openSettingsBtn') || e.target.closest('[data-testid="settings-btn"]')) {
             e.preventDefault();
@@ -2252,7 +2250,7 @@ localStorage.setItem('saved_login_token', newToken);
         }
     });
 
-    // 5. محرك المساعد الذكي (Nile AI)
+    // 5. محرك المساعد الذكي الخاص بك (Nile AI)
     window.getNileAiResponse = function(userMessage) {
         var text = userMessage.trim();
         if (/السلام|هلا|مرحبا|ازيك|أهلاً|اهلا/.test(text)) {
