@@ -687,39 +687,39 @@
 </script>
     
         (function() {
-    function injectSettingsButton() {
-        // البحث عن شريط الأدوات العلوي بجانب زر الوضع الليلي
-        var topBar = document.querySelector('.fa-moon, .fa-sun')?.parentElement?.parentElement || document.querySelector('header') || document.body;
+  function injectSettingsButton() {
+    // لو الزرار موجود أصلاً مش هنعمله تاني عشان نمنع التكرار
+    if (document.getElementById('nileSettingsBtn')) return;
+    
+    // 🚀 هنا بنركب الزرار في جسم الصفحة مباشرة (body) عشان يظهر فوراً بدون لف ودوران
+    var body = document.body;
+    if (body) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = '⚙️';
         
-        if (topBar && !document.getElementById('nileSettingsBtn')) {
-            var btn = document.createElement('button');
-            btn.id = 'nileSettingsBtn';
-            btn.innerHTML = '⚙️';
-            btn.style.cssText = 'background: none; border: none; color: white; font-size: 20px; cursor: pointer; margin: 0 10px; padding: 5px; vertical-align: middle;';
-            btn.title = 'إعدادات نايل شات';
-            
-            btn.onclick = function() {
-                if (typeof openNileAdvancedSettings === 'function') {
-                    openNileAdvancedSettings();
-                } else {
-                    var modal = document.getElementById('nileAdvancedSettingsModal');
-                    if (modal) modal.style.display = 'flex';
-                }
-            };
-            
-            // إدراج الزر في البداية أو بجانب الأيقونات الأخرى
-            topBar.insertBefore(btn, topBar.firstChild);
-        }
+        // التثبيت السحري في الشاشة فوق على الشمال عشان يظهر غصب عن أي حاجة وبشكل شيك
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        btn.title = 'إعدادات نايل شات';
+        
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof openNileAdvancedSettings === 'function') {
+                openNileAdvancedSettings();
+            } else {
+                var modal = document.getElementById('nileAdvancedSettingsModal');
+                if (modal) modal.style.setProperty('display', 'flex', 'important');
+            }
+        };
+        
+        body.appendChild(btn);
     }
+}
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', injectSettingsButton);
-    } else {
-        injectSettingsButton();
-    }
-    // إعادة التحقق بعد فترة قصيرة لضمان الحقن بعد تحميل عناصر الصفحة كاملة
-    setTimeout(injectSettingsButton, 1500);
-})();
+// تشغيل الدالة فوراً وتكرار فحصها كل ثانية للتأكد من ثبات الزرار
+injectSettingsButton();
+setInterval(injectSettingsButton, 1000);
         function requestNileNotificationPermission() {
     if ("Notification" in window) {
         Notification.requestPermission().then(function(permission) {
