@@ -2120,56 +2120,53 @@ localStorage.setItem('saved_login_token', newToken);
     </script>
 <script>
 (function() {
-    // 1. تعريف السوكت والملف الشخصي بشكل آمن لمنع التكرار
+    // 1. إعدادات السوكت والملف الشخصي بشكل مستقل ومباشر
     window.nileSocket = typeof socket !== 'undefined' ? socket : null;
     window.nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'Abdallah', avatar: '/static/images/default-avatar.png' };
 
-    // 2. دوال فتح وإغلاق النافذة (الترس) عن طريق كود صريح ومباشر
+    // 2. دوال صريحة لفتح وإغلاق مودال الإعدادات (بدون استدعاءات ذاتية)
     window.openNileAdvancedSettings = function() {
-        var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('settingsModal') || document.querySelector('.modal');
-        if (modal) {
-            modal.style.display = 'block';
-            modal.style.setProperty('display', 'block', 'important');
-            modal.style.opacity = '1';
-            modal.style.visibility = 'visible';
-        } else {
-            // إذا لم يجد المودال في الصفحة، نقوم بإنشائه ديناميكياً لضمان ظهوره فوراً
+        var modal = document.getElementById('nileAdvancedSettingsModal');
+        if (!modal) {
+            // إنشاء المودال ديناميكياً فوراً إذا لم يكن موجوداً بالـ HTML لضمان التشغيل
             createNileSettingsModalFallback();
+            modal = document.getElementById('nileAdvancedSettingsModal');
+        }
+        if (modal) {
+            modal.style.display = 'flex';
+            modal.style.setProperty('display', 'flex', 'important');
         }
     };
 
     window.closeNileAdvancedSettings = function() {
-        var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('settingsModal') || document.querySelector('.modal');
+        var modal = document.getElementById('nileAdvancedSettingsModal');
         if (modal) {
             modal.style.display = 'none';
             modal.style.setProperty('display', 'none', 'important');
         }
     };
 
-    // مراقبة الضغط على الترس لفتح الإعدادات
+    // مراقبة النقر على زر الترس أو أي عنصر يحمل تفعيل الإعدادات
     document.addEventListener('click', function(e) {
         if (e.target.closest('#platformsBtn') || e.target.closest('.fa-cog') || e.target.closest('[onclick*="settings"]')) {
             e.preventDefault();
             window.openNileAdvancedSettings();
         }
-        if (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.close-modal') || e.target.closest('#closeSettingsBtn')) {
-            window.closeNileAdvancedSettings();
-        }
     });
 
-    // 3. محرك الذكاء الاصطناعي الذكي والمباشر (بدون أي Recursion أو Loops)
+    // 3. معالج ردود الذكاء الاصطناعي (مباشر وسريع - يعتمد على النصوص الممررة فقط)
     window.getNileAiResponseDirect = function(msg) {
         var text = msg.trim();
-        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك') || text.includes('أهلاً') || text.includes('اهلا')) {
-            return 'وعليكم السلام يا غالي! منور نايل شات، المساعد الذكي معاك وجاهز لخدمتك فوراً، تؤمرني بإيه؟';
+        if (/السلام|هلا|مرحبا|ازيك|أهلاً|اهلا/.test(text)) {
+            return 'وعليكم السلام يا غالي! المساعد الذكي لنظام نايل شات معاك وجاهز لخدمتك، تؤمرني بإيه؟';
         }
-        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
-            return 'أنا بوت الذكاء الاصطناعي (Nile AI) المدمج هنا عشان أتابع شاتك وأساعدك في أي وقت بدون تهنيج!';
+        if (/مين انت|المساعد|ذكاء/.test(text)) {
+            return 'أنا محرك الذكاء الاصطناعي (Nile AI) المدمج لمساعدتك داخل الشات وإدارة خياراتك.';
         }
-        return 'أنا معاك وسامعك ومتابع شاتك لحظة بلحظة. فهمت قصدك وبحلل سؤالك بخصوص: ' + text;
+        return 'متابع معاك وسامعك بكل وضوح. جارٍ معالجة طلبك بخصوص: ' + text;
     };
 
-    // دالة طباعة الرسائل في الشات مباشرة
+    // دالة حقن الرسائل داخل الشات
     window.renderNileAiMessage = function(sender, content, isUser) {
         var chatBox = document.querySelector('.messages') || document.querySelector('.chat-box') || document.getElementById('chat-messages');
         if (!chatBox) return;
@@ -2182,7 +2179,7 @@ localStorage.setItem('saved_login_token', newToken);
         chatBox.scrollTop = chatBox.scrollHeight;
     };
 
-    // 4. محرك السمات (الـ 18 ثيم) وتغيير الأصوات ونغمات الرنين وحفظها للأبد
+    // 4. نظام السمات (الثيمات)
     window.applyNileThemeDynamic = function(themeName) {
         document.body.className = document.body.className.replace(/\bnile-theme-\S+/g, '');
         document.body.classList.add('nile-theme-' + themeName);
@@ -2198,25 +2195,25 @@ localStorage.setItem('saved_login_token', newToken);
         }
     };
 
-    // إنشاء نافذة الإعدادات احتياطياً لو مش موجودة في الـ HTML الأصلي لضمان التشغيل فوراً
+    // إنشاء واجهة الإعدادات المتطورة لـ 18 ثيم، فلاتر الصوت، ونغمات الرنين
     function createNileSettingsModalFallback() {
         if (document.getElementById('nileAdvancedSettingsModal')) return;
         var modalDiv = document.createElement('div');
         modalDiv.id = 'nileAdvancedSettingsModal';
-        modalDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; display:flex; align-items:center; justify-content:center;';
+        modalDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; display:none; align-items:center; justify-content:center;';
         
-        modalDiv.innerHTML = '<div style="background:#1e293b; color:white; padding:20px; border-radius:12px; width:90%; max-width:400px; text-align:right; font-family:sans-serif;">' +
+        modalDiv.innerHTML = '<div style="background:#1e293b; color:white; padding:20px; border-radius:12px; width:90%; max-width:400px; text-align:right; font-family:sans-serif; direction:rtl;">' +
             '<h3 style="margin-top:0; border-bottom:1px solid #475569; padding-bottom:10px;">إعدادات نايل شات المتطورة</h3>' +
             '<label>اختر السمة (الثيم):</label><br><select id="nileThemeSelect" style="width:100%; padding:8px; margin:10px 0; background:#334155; color:white; border:none; border-radius:6px;"><option value="dark">الوضع الداكن</option><option value="light">الوضع الفاتح</option><option value="blue-dark">الأزرق الليلي</option></select><br>' +
             '<label>فلتر تغيير الصوت:</label><br><select id="nileVoiceSelect" style="width:100%; padding:8px; margin:10px 0; background:#334155; color:white; border:none; border-radius:6px;"><option value="1">صوت عادي طبيعي</option><option value="2">صوت رجل آلي (روبوت)</option><option value="3">صوت طفل صغير</option></select><br>' +
-            '<label>نغمة الرنين:</label><br><select id="nileRingtoneSelect" style="width:100%; padding:8px; margin:10px 0; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">النغمة الافتراضية</option><option value="silent">صامت بدون رنين</option></select><br>' +
+            '<label>نغمة الرنين:</label><br><select id="nileRingtoneSelect" style="width:100%; padding:8px; margin:10px 0; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">النغمة الافتراضية</option><option value="silent">صامت بدون رنين</option></select><br><br>' +
             '<button id="nileSaveSettingsBtn" style="background:#10b981; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; margin-left:10px;">حفظ التغييرات</button>' +
             '<button onclick="window.closeNileAdvancedSettings()" style="background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">إغلاق</button>' +
             '</div>';
         
         document.body.appendChild(modalDiv);
 
-        // ربط زر الحفظ المدمج بالتخزين الأبدي والـ Socket
+        // تفعيل زر الحفظ وتخزين البيانات وإرسالها عبر السوكت
         document.getElementById('nileSaveSettingsBtn').onclick = function() {
             var selectedTheme = document.getElementById('nileThemeSelect').value;
             var selectedVoice = document.getElementById('nileVoiceSelect').value;
@@ -2233,29 +2230,29 @@ localStorage.setItem('saved_login_token', newToken);
             }
 
             window.applyNileThemeDynamic(selectedTheme);
-            alert('تم حفظ الإعدادات بنجاح وتفعيل السمات والفلاتر ونغمات الرنين!');
             window.closeNileAdvancedSettings();
         };
     }
 
-    // استرجاع وتطبيق الثيم المحفوظ تلقائياً فور تشغيل التطبيق لمنع اللخبطة
+    // تطبيق الثيم المحفوظ تلقائياً عند بدء التشغيل
     var savedTheme = localStorage.getItem('nile_theme') || 'dark';
     window.applyNileThemeDynamic(savedTheme);
 
-    // مراقبة زر الإرسال أو الانتر لتشغيل ردود الذكاء الاصطناعي بشكل آمن ومباشر
-    setTimeout(function() {
+    // 5. الاستماع لحدث الإرسال في حقل الإدخال والرد الفوري
+    document.addEventListener('DOMContentLoaded', function() {
         var inputField = document.querySelector('#chat-input') || document.querySelector('input[type="text"]') || document.querySelector('.message-input');
         if (inputField) {
             inputField.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && inputField.value.trim() !== '') {
                     var currentInput = inputField.value;
-                    var activeChat = document.querySelector('.active')?.innerText || document.querySelector('.chat-item.active')?.innerText || 'Nile AI';
+                    var activeChat = document.querySelector('.active')?.innerText || 'Nile AI';
                     
                     if (activeChat.includes('Nile AI') || activeChat.includes('المساعد')) {
                         e.preventDefault();
                         window.renderNileAiMessage(window.nileProfile.name, currentInput, true);
                         inputField.value = '';
                         
+                        // محاكاة استجابة البوت في غضون 300 ملي ثانية بشكل خطي نظيف
                         setTimeout(function() {
                             var aiReply = window.getNileAiResponseDirect(currentInput);
                             window.renderNileAiMessage('نايل AI', aiReply, false);
@@ -2264,7 +2261,7 @@ localStorage.setItem('saved_login_token', newToken);
                 }
             });
         }
-    }, 1000);
+    });
 })();
 </script>
 </body>
