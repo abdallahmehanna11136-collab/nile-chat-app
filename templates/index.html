@@ -2120,27 +2120,39 @@ localStorage.setItem('saved_login_token', newToken);
     </script>
 <script>
 (function() {
-    // المتغيرات الأساسية للمستخدم والسوكت
-    var nileSocket = typeof socket !== 'undefined' ? socket : null;
-    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
+    // 1. المتغيرات الأساسية للمستخدم والسوكت لضمان الربط مع السيرفر
+    window.nileSocket = typeof socket !== 'undefined' ? socket : null;
+    window.nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
 
-    // 1. تشغيل نافذة الإعدادات الأصلية وطبقاً للفيديو لمنع النكشة
+    // 2. دالة تشغيل نافذة الإعدادات المتقدمة (الترس) ومنع النكشة
     window.openNileAdvancedSettings = function() {
         var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('settingsModal') || document.querySelector('.modal');
         if (modal) {
             modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
         }
     };
 
-    // ربط أيقونة الترس بالدالة الأصلية فوراً
-    var settingsIconBtn = document.getElementById('platformsBtn') || document.querySelector('.fa-cog')?.parentElement;
-    if (settingsIconBtn) {
-        settingsIconBtn.onclick = function() {
-            window.openNileAdvancedSettings();
-        };
-    }
+    window.closeNileAdvancedSettings = function() {
+        var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('settingsModal') || document.querySelector('.modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
 
-    // 2. محرك الذكاء الاصطناعي نايل AI وتفعيل الرد الفوري في غرف الشات
+    // ربط أيقونة الترس وزر الإغلاق بالدوال الفعالة
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#platformsBtn') || e.target.closest('.fa-cog')) {
+            e.preventDefault();
+            window.openNileAdvancedSettings();
+        }
+        if (e.target.closest('[data-dismiss="modal"]') || e.target.closest('.close-modal') || e.target.closest('#closeSettingsBtn')) {
+            window.closeNileAdvancedSettings();
+        }
+    });
+
+    // 3. محرك الذكاء الاصطناعي نايل AI والرد الفوري بالمصري
     window.getNileAiResponse = function(userMessage) {
         var text = userMessage.trim();
         if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
@@ -2165,8 +2177,26 @@ localStorage.setItem('saved_login_token', newToken);
         }, 400);
     };
 
-    // 3. زرار حفظ الجلسة للأبد وحفظ صوره البروفايل والشات لكل مستخدم بشكل مستقل
-    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn') || document.querySelector('[onclick*="save"]');
+    // 4. تطبيق السمات الفعلي (الـ 18 ثيم)
+    window.applyNileTheme = function(themeName) {
+        var body = document.body;
+        body.className = body.className.replace(/\bnile-theme-\S+/g, '');
+        body.classList.add('nile-theme-' + themeName);
+        
+        var colors = {
+            'light': { bg: '#ffffff', text: '#1e293b' }, 'dark': { bg: '#0f172a', text: '#f8fafc' },
+            'blue-dark': { bg: '#0f172a', text: '#38bdf8' }, 'blue-light': { bg: '#f0f9ff', text: '#0369a1' },
+            'red-dark': { bg: '#450a0a', text: '#fca5a5' }, 'red-light': { bg: '#fff5f5', text: '#b91c1c' },
+            'green-dark': { bg: '#064e3b', text: '#6ee7b7' }, 'green-light': { bg: '#f0fdf4', text: '#15803d' }
+        };
+        if (colors[themeName]) {
+            body.style.backgroundColor = colors[themeName].bg;
+            body.style.color = colors[themeName].text;
+        }
+    };
+
+    // 5. حفظ الإعدادات، نغمات الرنين، الفلاتر، والجلسة للأبد
+    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn') || document.querySelector('[onclick*="save"]') || document.querySelector('.btn-success');
     if (saveBtn) {
         saveBtn.onclick = function() {
             var privacy = document.getElementById('nilePrivacySelect')?.value || 'everyone';
@@ -2175,38 +2205,39 @@ localStorage.setItem('saved_login_token', newToken);
             var ringtone = document.getElementById('nileRingtoneSelect')?.value || 'default';
             var statusText = document.getElementById('nileStatusInput')?.value || '';
 
-            // حفظ أبدي في الـ LocalStorage الخاص بكل متصفح ومستخدم
+            // التخزين الأبدي في المتصفح والتطبيق
             localStorage.setItem('nile_privacy', privacy);
             localStorage.setItem('nile_theme', theme);
             localStorage.setItem('nile_voice_filter', voice);
             localStorage.setItem('nile_ringtone_type', ringtone);
             localStorage.setItem('nile_status_text', statusText);
-            localStorage.setItem('nile_profile_avatar', nileProfile.avatar);
+            localStorage.setItem('nile_profile_avatar', window.nileProfile.avatar);
             localStorage.setItem('nile_session_active', 'true');
 
-            // إرسال التحديث للسيرفر لو السوكيت مفتوح
-            if (nileSocket && nileSocket.emit) {
-                nileSocket.emit('update_user_settings', {
-                    phone: nileProfile.phone || '', privacy: privacy, status: statusText, theme: theme, voice: voice, ringtone: ringtone
+            // إرسال البيانات فوراً للسيرفر عبر السوكت
+            if (window.nileSocket && window.nileSocket.emit) {
+                window.nileSocket.emit('update_user_settings', {
+                    phone: window.nileProfile.phone || '', privacy: privacy, status: statusText, theme: theme, voice: voice, ringtone: ringtone
                 });
             }
 
-            alert('تم حفظ الإعدادات وتثبيت الجلسة بنجاح للأبد!');
+            alert('تم حفظ الإعدادات بنجاح وتثبيت الجلسة والسمات والميزات للأبد!');
+            window.closeNileAdvancedSettings();
             location.reload();
         };
     }
 
-    // استعادة المظهر التلقائي فور فتح التطبيق لمنع اللخبطة
+    // استرجاع السمات تلقائياً فور تشغيل التطبيق لمنع اللخبطة
     var savedTheme = localStorage.getItem('nile_theme') || 'light';
-    document.body.classList.add('nile-theme-' + savedTheme);
+    window.applyNileTheme(savedTheme);
 
-    // تشغيل ذكي للأزرار بعد تحميل الصفحة بـ 1500 مللي ثانية
+    // تفعيل مراقبة زر الانتر في خانة الكتابة للشات
     setTimeout(function() {
-        var inputField = document.querySelector('#chat-input') || document.querySelector('input[type="text"]');
+        var inputField = document.querySelector('#chat-input') || document.querySelector('input[type="text"]') || document.querySelector('.message-input');
         if (inputField) {
             inputField.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && inputField.value.trim() !== '') {
-                    var activeChat = document.querySelector('.active')?.innerText || '';
+                    var activeChat = document.querySelector('.active')?.innerText || document.querySelector('.chat-item.active')?.innerText || '';
                     if (activeChat.includes('Nile AI') || activeChat.includes('المساعد')) {
                         e.preventDefault();
                         window.triggerNilePrivateAiChat(inputField.value);
