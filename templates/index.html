@@ -2118,30 +2118,31 @@ localStorage.setItem('saved_login_token', newToken);
             }
         });
     </script>
+    <style id="nile-shield">
+    #nileAdvancedSettingsModal, script, style { display: none !important; }
+</style>
+
 <script>
 (function() {
-    // 1. تجميد ومنع ارتداد الشاشة (واجهة واتساب ثابتة وصافية 100%)
-    function freezeViewport() {
-        var meta = document.querySelector('meta[name="viewport"]');
-        if (!meta) {
-            meta = document.createElement('meta');
-            meta.name = 'viewport';
-            document.head.appendChild(meta);
-        }
-        meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
-
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.height = '100%';
+    // 1. تثبيت أبعاد الشاشة ومنع الارتداد والزوم (واجهة واتساب ثابتة)
+    var meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'viewport';
+        document.head.appendChild(meta);
     }
-    freezeViewport();
+    meta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover');
+
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
 
     var nileSocket = typeof socket !== 'undefined' ? socket : null;
     var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'Abdallah', avatar: '/static/images/default-avatar.png' };
 
-    // 2. محرك الـ 18 ثيم المتكامل (ألوان متناسقة للفاتح والداكن)
+    // 2. محرك الـ 18 ثيم الكامل لجميع الألوان
     window.applyNileTheme = function(themeName) {
         var body = document.body;
         body.className = body.className.replace(/\bnile-theme-\S+/g, '');
@@ -2164,44 +2165,44 @@ localStorage.setItem('saved_login_token', newToken);
         }
     };
 
-    // 3. لوحة التحكم المتقدمة (تظهر فقط عند الضغط على أيقونة الإعدادات/الترس)
+    // 3. بناء واجهة الإعدادات الكاملة في الخلفية
     function createNileAdvancedModal() {
         if (document.getElementById('nileAdvancedSettingsModal')) return;
         var modalDiv = document.createElement('div');
-        modalDiv.id = 'nileAdvancedSettingsModal';
+        modalDiv.id = 'nileAdvancedSettings';
         modalDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; display:none; align-items:center; justify-content:center; direction:rtl; font-family:sans-serif;';
         
         modalDiv.innerHTML = '<div style="background:#1e293b; color:white; padding:20px; border-radius:12px; width:90%; max-width:420px; text-align:right; max-height:85vh; overflow-y:auto;">' +
-            '<h3 style="margin-top:0; border-bottom:1px solid #475569; padding-bottom:10px; color:#38bdf8;">⚙️ إعدادات نايل شات المتقدمة</h3>' +
+            '<h3 style="margin-top:0; border-bottom:1px solid #475569; padding-bottom:10px; color:#38bdf8;">⚙️ إعدادات نايل شات</h3>' +
             
-            '<h4 style="margin:10px 0 5px 0;">🛡️ إدارة الخصوصية</h4>' +
+            '<h4 style="margin:10px 0 5px 0;">🛡️ الخصوصية</h4>' +
             '<select id="nilePrivacySelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="everyone">الكل (نشط)</option><option value="contacts">جهاتي فقط</option><option value="nobody">مخفي</option></select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎨 تخصيص المظهر (18 ثيم)</h4>' +
+            '<h4 style="margin:15px 0 5px 0;">🎨 اختيار الثيم (18 لون)</h4>' +
             '<select id="nileThemeSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;">' +
-                '<option value="dark">الوضع الداكن الافتراضي</option><option value="light">الوضع الفاتح</option>' +
-                '<option value="blue-dark">أزرق ملكي داكن</option><option value="blue-light">أزرق سماوي فاتح</option>' +
+                '<option value="dark">الوضع الداكن</option><option value="light">الوضع الفاتح</option>' +
+                '<option value="blue-dark">أزرق داكن</option><option value="blue-light">أزرق فاتح</option>' +
                 '<option value="red-dark">أحمر داكن</option><option value="red-light">أحمر فاتح</option>' +
-                '<option value="green-dark">أخضر عشبي داكن</option><option value="green-light">أخضر فاتح</option>' +
+                '<option value="green-dark">أخضر داكن</option><option value="green-light">أخضر فاتح</option>' +
                 '<option value="purple-dark">بنفسجي داكن</option><option value="purple-light">بنفسجي فاتح</option>' +
                 '<option value="orange-dark">برتقالي داكن</option><option value="orange-light">برتقالي فاتح</option>' +
-                '<option value="yellow-dark">أصفر ذهبي داكن</option><option value="yellow-light">أصفر فاتح</option>' +
+                '<option value="yellow-dark">أصفر داكن</option><option value="yellow-light">أصفر فاتح</option>' +
                 '<option value="pink-dark">وردي داكن</option><option value="pink-light">وردي فاتح</option>' +
                 '<option value="cyan-dark">سماوي داكن</option><option value="cyan-light">سماوي فاتح</option>' +
             '</select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎵 تخصيص رنين المكالمات</h4>' +
-            '<select id="nileRingtoneSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">نغمة النظام الأصلية</option><option value="classic">رنين كلاسيكي</option><option value="silent">وضع صامت</option></select>' +
+            '<h4 style="margin:15px 0 5px 0;">🎵 نغمات المكالمات</h4>' +
+            '<select id="nileRingtoneSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="default">نغمة الواتساب الأصلية</option><option value="classic">رنين كلاسيك</option><option value="silent">صامت</option></select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">🎙️ فلاتر تغيير الصوت برمجياً</h4>' +
-            '<select id="nileVoiceSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="1">الصوت الافتراضي</option><option value="2">مؤثر روبوت</option><option value="3">مؤثر طفل</option></select>' +
+            '<h4 style="margin:15px 0 5px 0;">🎙️ تغيير فلاتر الصوت</h4>' +
+            '<select id="nileVoiceSelect" style="width:100%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;"><option value="1">الصوت الطبيعي</option><option value="2">روبوت</option><option value="3">طفل</option></select>' +
             
-            '<h4 style="margin:15px 0 5px 0;">✍️ تعديل الحالة الشخصية</h4>' +
-            '<input type="text" id="nileStatusInput" placeholder="اكتب حالتك المخصصة هنا..." style="width:95%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;">' +
+            '<h4 style="margin:15px 0 5px 0;">✍️ الحالة الشخصية</h4>' +
+            '<input type="text" id="nileStatusInput" placeholder="اكتب حالتك هنا..." style="width:95%; padding:8px; background:#334155; color:white; border:none; border-radius:6px;">' +
             
             '<div style="margin-top:20px; border-top:1px solid #475569; padding-top:15px; text-align:left;">' +
-                '<button id="nileSaveSettingsBtn" style="background:#10b981; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; margin-right:10px; font-weight:bold;">حفظ الخيارات</button>' +
-                '<button id="nileCloseSettingsBtn" style="background:#ef4444; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer;">إلغلاق</button>' +
+                '<button id="nileSaveSettingsBtn" style="background:#10b981; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; margin-right:10px; font-weight:bold;">حفظ وتطبيق</button>' +
+                '<button id="nileCloseSettingsBtn" style="background:#ef4444; color:white; border:none; padding:10px 18px; border-radius:6px; cursor:pointer;">إغلاق</button>' +
             '</div>' +
         '</div>';
         
@@ -2234,7 +2235,7 @@ localStorage.setItem('saved_login_token', newToken);
         };
     }
 
-    // 4. نظام المراقبة الذكي لالتقاط نقرات الترس وفتح واجهة الإعدادات فوراً
+    // 4. مراقبة الضغط على الترس لفتح الإعدادات
     document.addEventListener('click', function(e) {
         if (e.target.closest('#platformsBtn') || e.target.closest('.fa-cog') || e.target.closest('#openSettingsBtn') || e.target.closest('[data-testid="settings-btn"]')) {
             e.preventDefault();
@@ -2251,16 +2252,16 @@ localStorage.setItem('saved_login_token', newToken);
         }
     });
 
-    // 5. محرك الذكاء الاصطناعي الخاص بالبنية التحتية (Nile AI)
+    // 5. محرك المساعد الذكي (Nile AI)
     window.getNileAiResponse = function(userMessage) {
         var text = userMessage.trim();
         if (/السلام|هلا|مرحبا|ازيك|أهلاً|اهلا/.test(text)) {
-            return 'وعليكم السلام يا غالي! محرك Nile AI المطور جاهز لمساعدتك وإدارة النظام، اطلب أي أمر برمجى وسأقوم بتنفيذه.';
+            return 'وعليكم السلام يا غالي! المساعد الذكي لنظام نايل شات معاك وجاهز لخدمتك فوراً، تؤمرني بإيه؟';
         }
         if (/مين انت|المساعد|ذكاء/.test(text)) {
-            return 'أنا محرك الذكاء الاصطناعي الذكي (Nile AI) المدمج في واجهتك البرمجية للتحكم الفوري بالخيارات والمظهر.';
+            return 'أنا محرك الذكاء الاصطناعي (Nile AI) المدمج لمساعدتك داخل الشات وإدارة خياراتك.';
         }
-        return 'مفهوم تماماً ومتابع معك خطوة بخطوة. جارٍ تفعيل ومعالجة طلبك بخصوص: ' + text;
+        return 'متابع معاك وسامعك بكل وضوح. جارٍ معالجة طلبك بخصوص: ' + text;
     };
 
     window.triggerNilePrivateAiChat = function(userInputText) {
@@ -2292,7 +2293,6 @@ localStorage.setItem('saved_login_token', newToken);
         }
     });
 
-    // الاستدعاء التلقائي للثيم المحفوظ فور تحميل الصفحة
     var savedTheme = localStorage.getItem('nile_theme') || 'dark';
     window.applyNileTheme(savedTheme);
 })();
