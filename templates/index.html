@@ -658,33 +658,43 @@
     }
     restoreNileSessionAndSettings();
 
-    // 4. دالة تشغيل أزرار شريط المنصات العلوي الفعلية
-    function setupTopBarButtons() {
+    // 4. دالة تشغيل أزرار شريط المنصات العلوي الفعلية وضبط الإعدادات
+    function setupTopBarButtons() { 
         var openSettingsBtn = document.getElementById('nileOpenSettingsBtn') || document.getElementById('openSettingsBtn') || document.getElementById('platformsBtn');
-        var modalElement = document.getElementById('nileSettingsModal') || document.getElementById('settingsModal');
-        if (openSettingsBtn && modalElement) { openSettingsBtn.onclick = function() { modalElement.style.display = 'flex'; }; }
-        var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn');
-        if (addPersonBtn) {
-            addPersonBtn.onclick = function() {
+        var modalElement = document.getElementById('nileSettingsModal') || document.getElementById('settingsModal'); 
+        
+        if (openSettingsBtn && modalElement) { 
+            openSettingsBtn.onclick = function() { 
+                modalElement.style.display = 'flex'; 
+            };
+        } 
+        
+        var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn'); 
+        if (addPersonBtn) { 
+            addPersonBtn.onclick = function() { 
                 var phone = prompt("أدخل رقم هاتف الشخص لإضافته:");
-                if (phone && typeof window.nileAddContact === 'function') { window.nileAddContact(phone); }
-            };
-        }
+                if (phone && typeof window.nileAddContact === 'function') { 
+                    window.nileAddContact(phone); 
+                } 
+            }; 
+        } 
+        
         var addGroupBtn = document.getElementById('nileAddGroupBtn') || document.getElementById('addGroupBtn');
-        if (addGroupBtn) {
-            addGroupBtn.onclick = function() {
+        if (addGroupBtn) { 
+            addGroupBtn.onclick = function() { 
                 var groupName = prompt("أدخل اسم المجموعة الجديدة:");
-                if (groupName && typeof window.nileCreateGroup === 'function') { window.nileCreateGroup(groupName); }
+                if (groupName && typeof window.nileCreateGroup === 'function') { 
+                    window.nileCreateGroup(groupName); 
+                } 
             };
-        }
-    }
+        } 
+    } 
 
-    // التعديل الذكي اللي قلته: تشغيل الدالة بتأخير ثانية ونص لضمان التحميل الكامل للواجهة
-    setTimeout(setupTopBarButtons, 1500);
-
-})();    setTimeout(setupTopBarButtons, 1500);
+    // تشغيل الدالة بتأخير لضمان تحميل الواجهة بالكامل
+    setTimeout(setupTopBarButtons, 1500); 
 })();
 </script>
+    
 <script>
 (function() {
     // لمنع تكرار الزرار
