@@ -714,9 +714,11 @@
         body.appendChild(btn);
     }
 })();
-</script>
     
-     function requestNileNotificationPermission() {
+  }
+})();
+
+function requestNileNotificationPermission() {
     if ("Notification" in window) {
         Notification.requestPermission().then(function(permission) {
             if (permission === 'granted') {
@@ -725,7 +727,7 @@
         });
     }
 }
-<script>
+
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(requestNileNotificationPermission, 2000);
 });
