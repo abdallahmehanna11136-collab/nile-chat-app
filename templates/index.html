@@ -2173,24 +2173,23 @@ localStorage.setItem('saved_login_token', newToken);
         modal.style.setProperty('display', 'flex', 'important');
     };
 
-    // 3. زر الترس اللي هيظهر فوق في الهيدر تلقائياً عشان تفتح منه الإعدادات
-    function injectNileTopHeaderButton() {
-        if (document.getElementById('nileStandardHeaderBtn')) return;
-        var topBar = document.querySelector('.header') || document.querySelector('header') || document.body;
-        if (topBar) {
-            var btn = document.createElement('button');
-            btn.id = 'nileStandardHeaderBtn';
-            btn.innerHTML = '⚙️';
-            btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 38px !important; height: 38px !important; background: #1e293b !important; color: #38bdf8 !important; border: 1px solid #334155 !important; border-radius: 8px !important; font-size: 18px !important; cursor: pointer !important; z-index: 9999999 !important; display: flex !important; align-items: center !important; justify-content: center !important;';
-            btn.onclick = function(e) {
-                e.preventDefault(); e.stopPropagation();
-                openNileAdvancedSettings();
-            };
-            topBar.appendChild(btn);
-        }
+<script>
+(function() {
+    if (document.getElementById('nileSettingsBtn')) return;
+    var body = document.body;
+    if (body) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = '⚙️';
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        
+        btn.onclick = function(e) {
+            e.preventDefault(); e.stopPropagation();
+            var modal = document.getElementById('nileAdvancedSettingsModal');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+        };
+        body.appendChild(btn);
     }
-    injectNileTopHeaderButton();
-    setInterval(injectNileTopHeaderButton, 1000);
 })();
 </script>
 </body>
