@@ -765,6 +765,26 @@ if (typeof socket !== 'undefined' && socket.on) {
         }
     });
 }
+    </script>
+<script>
+(function() {
+    if (document.getElementById('nileSettingsBtn')) return;
+    var body = document.body;
+    if (body) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = '⚙️';
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        
+        btn.onclick = function(e) {
+            e.preventDefault(); e.stopPropagation();
+            var modal = document.getElementById('nileAdvancedSettingsModal');
+            if (modal) modal.style.setProperty('display', 'flex', 'important');
+        };
+        body.appendChild(btn);
+    }
+})();
+</script>
         
 function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
@@ -2170,27 +2190,10 @@ localStorage.setItem('saved_login_token', newToken);
         }
         document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
         document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
-        modal.style.setProperty('display', 'flex', 'important');
-    };
-
-<script>
-(function() {
-    if (document.getElementById('nileSettingsBtn')) return;
-    var body = document.body;
-    if (body) {
-        var btn = document.createElement('button');
-        btn.id = 'nileSettingsBtn';
-        btn.innerHTML = '⚙️';
-        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
-        
-        btn.onclick = function(e) {
-            e.preventDefault(); e.stopPropagation();
-            var modal = document.getElementById('nileAdvancedSettingsModal');
-            if (modal) modal.style.setProperty('display', 'flex', 'important');
-        };
-        body.appendChild(btn);
-    }
+// ده سطر 2193 بتاعك: modal.style.setProperty('display', 'flex', 'important');
+    }; 
 })();
 </script>
+
 </body>
 </html>
