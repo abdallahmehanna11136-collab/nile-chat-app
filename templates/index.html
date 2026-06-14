@@ -2405,6 +2405,31 @@ document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_
             if (stream) { stream.style.backgroundImage = "url('" + savedBg + "')"; stream.style.backgroundSize = "cover"; }
         }, 1000);
     }
+}
+})();
+</script>
+
+<script>
+(function() {
+    if (document.getElementById('nileSettingsBtn')) return;
+    var body = document.body;
+    if (body) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = ' ⚙️ ';
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        btn.title = 'إعدادات نايل شات المتقدمة';
+        
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('waAdvancedSettingsModalCustom') || document.getElementById('nileSettingsModal');
+            if (modal) {
+                modal.style.setProperty('display', 'flex', 'important');
+            }
+        };
+        body.appendChild(btn);
+    }
 })();
 </script>
 </body>
