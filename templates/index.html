@@ -2206,181 +2206,177 @@ localStorage.setItem('saved_login_token', newToken);
     .wa-btn-upload { display: block; background: #202c33; color: #00a884; text-align: center; padding: 10px; border-radius: 8px; border: 1px solid #2a3942; cursor: pointer; font-weight: bold; font-size: 13px; margin-top: 6px; width: 100%; border: none; }
     .wa-btn-save { width: 100%; background: #00a884; color: #111b21; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; margin-top: 10px; margin-bottom: 15px; transition: 0.2s; }
     .wa-btn-save:hover { background: #00bf96; }
-</style>
-
 <script>
 (function() {
-    // كود سريع وذكي يربط الميزات بزر الترس الحالي عندك تلقائياً فورا بدون أي تعديل يدوي
-    var setupWhatsAppSystemLive = setInterval(function() {
+    // كود تشغيل سريع ومستقل تماماً لربط ميزات الواتساب المطور
+    var injectWaSystem = setInterval(function() {
         var oldBtn = document.getElementById('nileSettingsBtn');
         if (oldBtn) {
-            clearInterval(setupWhatsAppSystemLive);
-            
-            // تحويل استجابة الترس لتكون طلقة وفورية وبألوان الواتساب الجديدة
-            oldBtn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #202c33 !important; color: #00a884 !important; border: 1px solid #222e35 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important;';
-            
-            // حقن الواجهة المتطورة في الخلفية بشكل آمن ومخفي
-            var container = document.createElement('div');
-            container.innerHTML = `
-                <div id="nileAdvancedSettingsModalNew" class="wa-modal-overlay">
-                    <div class="wa-modal-box">
-                        <div class="wa-modal-header">
-                            <button class="wa-back-btn" id="nileCloseSettingsBtnNew">➔</button>
-                            <h3 class="wa-modal-title">إعدادات نايل شات المتقدمة</h3>
+            clearInterval(injectWaSystem);
+
+            // 1. حقن الـ Style الخاص بالواتساب في الهيد مباشرة عشان الأماكن تظبط بالملي
+            var waStyle = document.createElement('style');
+            waStyle.innerHTML = `
+                .wa-modal-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background: rgba(0,0,0,0.85) !important; display: none; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; direction: rtl !important; }
+                .wa-modal-box { background: #111b21 !important; color: #e9edef !important; width: 90% !important; max-width: 420px !important; border-radius: 14px !important; overflow: hidden !important; box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important; border: 1px solid #222e35 !important; max-height: 80vh !important; display: flex !important; flex-direction: column !important; }
+                .wa-modal-header { background: #202c33 !important; padding: 14px !important; display: flex !important; align-items: center !important; border-bottom: 1px solid #222e35 !important; }
+                .wa-back-btn { background: none !important; border: none !important; color: #00a884 !important; font-size: 20px !important; cursor: pointer !important; margin-left: 12px !important; padding: 0 !important; transform: rotate(180deg) !important; }
+                .wa-modal-title { font-size: 16px !important; font-weight: 500 !important; margin: 0 !important; color: #e9edef !important; }
+                .wa-modal-body { padding: 12px 16px !important; overflow-y: auto !important; flex: 1 !important; }
+                .wa-section-title { font-size: 13px !important; color: #00a884 !important; font-weight: 600 !important; margin: 12px 0 6px !important; border-bottom: 1px solid #222e35 !important; padding-bottom: 4px !important; }
+                .wa-field-group { margin-bottom: 12px !important; }
+                .wa-field-group label { display: block !important; font-size: 12px !important; color: #8696a0 !important; margin-bottom: 4px !important; }
+                .wa-select, .wa-input { width: 100% !important; padding: 10px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; background: #2a3942 !important; color: #e9edef !important; font-size: 13.5px !important; outline: none !important; box-sizing: border-box !important; }
+                .wa-btn-upload { display: block !important; background: #202c33 !important; color: #00a884 !important; text-align: center !important; padding: 9px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; cursor: pointer !important; font-weight: bold !important; font-size: 12.5px !important; margin-top: 6px !important; width: 100% !important; }
+                .wa-btn-save { width: 100% !important; background: #00a884 !important; color: #111b21 !important; border: none !important; padding: 11px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important; font-size: 14px !important; margin-top: 10px !important; margin-bottom: 10px !important; }
+            `;
+            document.head.appendChild(waStyle);
+
+            // 2. تعديل ستايل الترس القديم فوراً عشان يثبت في مكانه الصح ويبقى خفيف وسريع في الضغط
+            oldBtn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #202c33 !important; color: #00a884 !important; border: 1px solid #222e35 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important; padding: 0 !important;';
+
+            // 3. إنشاء نافذة الواتساب الاحترافية المخفية تماماً داخل البودي
+            var waModal = document.createElement('div');
+            waModal.id = 'waAdvancedSettingsModal';
+            waModal.className = 'wa-modal-overlay';
+            waModal.innerHTML = `
+                <div class="wa-modal-box">
+                    <div class="wa-modal-header">
+                        <button class="wa-back-btn" id="waCloseBtn">➔</button>
+                        <h3 class="wa-modal-title">إعدادات نايل شات المتقدمة</h3>
+                    </div>
+                    <div class="wa-modal-body">
+                        <div class="wa-section-title">👤 الحساب والمظهر</div>
+                        <div class="wa-field-group">
+                            <label>تغيير الاسم المستعار الظاهر:</label>
+                            <input type="text" id="waNameInput" class="wa-input" placeholder="اكتب اسمك الجديد">
+                            <button id="waSaveNameAction" class="wa-btn-upload">تحديث وحفظ الاسم الآن</button>
                         </div>
-                        <div class="wa-modal-body">
-                            
-                            <div class="wa-section-title">👤 إعدادات الحساب والمظهر</div>
-                            <div class="wa-field-group">
-                                <label>تغيير الاسم المستعار الظاهر للأبد:</label>
-                                <input type="text" id="setting-change-name-input-new" class="wa-input" placeholder="اكتب اسمك الجديد هنا">
-                                <button id="waSaveNameBtn" class="wa-btn-upload">حفظ الاسم الجديد الآن</button>
-                            </div>
-
-                            <div class="wa-section-title">🗣️ فلتر تغيير الصوت (المكالمات والمسجات الصوتية)</div>
-                            <div class="wa-field-group">
-                                <select id="waVoiceFilterSelect" class="wa-select">
-                                    <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
-                                    <option value="girl">👧 صوت فتاة (بنت)</option>
-                                    <option value="boy">👦 صوت طفل صغير (ولد)</option>
-                                    <option value="mature">👨 صوت رجل عميق</option>
-                                    <option value="ai-robot">🤖 صوت ذكاء اصطناعي آلي</option>
-                                </select>
-                            </div>
-
-                            <div class="wa-section-title">🎵 نغمات رنين وخلفيات المحادثة المخصصة</div>
-                            <div class="wa-field-group">
-                                <label>اختر نغمة رنين الإشعارات والمكالمات:</label>
-                                <select id="waRingtoneSelect" class="wa-select">
-                                    <option value="default">🔔 النغمة الافتراضية</option>
-                                    <option value="iphone">📱 نغمة ايفون ريمكس</option>
-                                    <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
-                                </select>
-                                <label class="wa-btn-upload" style="margin-top: 8px;">
-                                    🎶 رفع نغمة مخصصة من جهازك
-                                    <input type="file" id="waRingtoneFile" accept="audio/*" style="display: none;">
-                                </label>
-                            </div>
-
-                            <div class="wa-field-group">
-                                <label>خلفية غرفة الدردشة المخصصة:</label>
-                                <label class="wa-btn-upload" style="background: #2a3942; color: #38bdf8;">
-                                    🖼️ رفع صورة خلفية مخصصة للشات
-                                    <input type="file" id="waBgFile" accept="image/*" style="display: none;">
-                                </label>
-                            </div>
-
-                            <button id="nileSaveSettingsBtnNew" class="wa-btn-save">حفظ وتطبيق التغييرات الحالية</button>
+                        <div class="wa-section-title">🗣️ فلتر تغيير الصوت المطور</div>
+                        <div class="wa-field-group">
+                            <select id="waVoiceSelect" class="wa-select">
+                                <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
+                                <option value="girl">👧 صوت فتاة (بنت)</option>
+                                <option value="boy">👦 صوت طفل صغير</option>
+                                <option value="mature">👨 صوت رجل عميق</option>
+                                <option value="ai-robot">🤖 صوت ذكاء اصطناعي</option>
+                            </select>
                         </div>
+                        <div class="wa-section-title">🎵 نغمات الرنين والخلفيات</div>
+                        <div class="wa-field-group">
+                            <select id="waRingtoneSelect" class="wa-select">
+                                <option value="default">🔔 النغمة الافتراضية</option>
+                                <option value="iphone">📱 نغمة ايفون ريمكس</option>
+                                <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
+                            </select>
+                            <label class="wa-btn-upload" style="margin-top: 6px;">
+                                🎶 رفع نغمة مخصصة من جهازك
+                                <input type="file" id="waAudioFile" accept="audio/*" style="display: none;">
+                            </label>
+                        </div>
+                        <div class="wa-field-group">
+                            <label class="wa-btn-upload" style="background: #2a3942; color: #38bdf8;">
+                                🖼️ رفع صورة خلفية مخصصة للشات
+                                <input type="file" id="waImageFile" accept="image/*" style="display: none;">
+                            </label>
+                        </div>
+                        <button id="waSubmitFinalBtn" class="wa-btn-save">حفظ وإغلاق</button>
                     </div>
                 </div>
             `;
-            document.body.appendChild(container);
+            document.body.appendChild(waModal);
 
-            var modal = document.getElementById('nileAdvancedSettingsModalNew');
-
-            // فتح الواجهة بشكل سريع وفوري عند ضغط الترس
+            // إعداد استجابة الأزرار السريعة الطائرة (فورية بدون ثقل)
             oldBtn.onclick = function(e) {
                 e.preventDefault(); e.stopPropagation();
-                modal.style.display = 'flex';
-                document.getElementById('setting-change-name-input-new').value = (typeof myProfile !== 'undefined' && myProfile.name) || localStorage.getItem('nile_name') || '';
+                waModal.style.display = 'flex';
+                document.getElementById('waNameInput').value = (typeof myProfile !== 'undefined' && myProfile.name) || localStorage.getItem('nile_name') || '';
             };
 
-            // زر الإغلاق السريع
-            document.getElementById('nileCloseSettingsBtnNew').onclick = function() {
-                modal.style.display = 'none';
-            };
+            document.getElementById('waCloseBtn').onclick = function() { waModal.style.display = 'none'; };
+            document.getElementById('waSubmitFinalBtn').onclick = function() { waModal.style.display = 'none'; };
 
-            // حفظ الاسم بشكل سريع وفوري
-            document.getElementById('waSaveNameBtn').onclick = function() {
-                var newName = document.getElementById('setting-change-name-input-new').value.trim();
-                if (newName) {
-                    localStorage.setItem('nile_name', newName);
-                    if(typeof myProfile !== 'undefined') myProfile.name = newName;
-                    if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = newName;
+            // ميزة حفظ الاسم السريع
+            document.getElementById('waSaveNameAction').onclick = function() {
+                var val = document.getElementById('waNameInput').value.trim();
+                if(val) {
+                    localStorage.setItem('nile_name', val);
+                    if(typeof myProfile !== 'undefined') myProfile.name = val;
+                    if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = val;
                     if(typeof socket !== 'undefined' && socket.emit) {
-                        socket.emit('register_user', { phone: myProfile.phone, name: newName, avatar: myProfile.avatar });
+                        socket.emit('register_user', { phone: myProfile.phone, name: val, avatar: myProfile.avatar });
                     }
-                    alert("تم تحديث وحفظ الاسم بنجاح!");
+                    alert("تم حفظ الاسم الجديد بنجاح!");
                 }
             };
 
-            // تشغيل مغير الصوت السريع
-            document.getElementById('waVoiceFilterSelect').onchange = function() {
+            // مغير الصوت السريع
+            document.getElementById('waVoiceSelect').onchange = function() {
                 localStorage.setItem('nile_voice_filter', this.value);
             };
 
-            // تجربة وتشغيل نغمات الرنين فوراً عند اختيارها
+            // تشغيل نغمات الرنين فوراً
             document.getElementById('waRingtoneSelect').onchange = function() {
                 localStorage.setItem('nile_ringtone_type', this.value);
-                var urls = {
+                var ringtoneUrls = {
                     'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
                     'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3'
                 };
-                if(urls[this.value]) {
-                    var audio = new Audio(urls[this.value]);
-                    audio.volume = 0.4;
-                    audio.play().catch(function(err){});
+                if (ringtoneUrls[this.value]) {
+                    var au = new Audio(ringtoneUrls[this.value]);
+                    au.volume = 0.4;
+                    au.play().catch(function(){});
                 }
             };
 
-            // رفع نغمة مخصصة وحفظها في الجلسة فوراً
-            document.getElementById('waRingtoneFile').onchange = function(e) {
+            // رفع نغمة مخصصة
+            document.getElementById('waAudioFile').onchange = function(e) {
                 var file = e.target.files[0];
                 if (file) {
                     var reader = new FileReader();
                     reader.onload = function(evt) {
                         localStorage.setItem('nile_custom_ringtone_file', evt.target.result);
                         localStorage.setItem('nile_ringtone_type', 'custom');
-                        alert("تم حفظ نغمة الرنين المخصصة بنجاح!");
+                        alert("تم حفظ نغمة الرنين بنجاح!");
                     };
                     reader.readAsDataURL(file);
                 }
             };
 
-            // رفع وتطبيق خلفية المحادثة فوراً بدون ريفريش الصفحة
-            document.getElementById('waBgFile').onchange = function(e) {
+            // تغيير الخلفية فوراً بدون تقل
+            document.getElementById('waImageFile').onchange = function(e) {
                 var file = e.target.files[0];
                 if (file) {
                     var reader = new FileReader();
                     reader.onload = function(evt) {
-                        var base64Img = evt.target.result;
+                        var bgBase64 = evt.target.result;
                         var stream = document.getElementById('chat-messages-stream-anchor');
                         if (stream) {
-                            stream.style.backgroundImage = "url('" + base64Img + "')";
+                            stream.style.backgroundImage = "url('" + bgBase64 + "')";
                             stream.style.backgroundSize = "cover";
                             stream.style.backgroundPosition = "center";
                         }
-                        localStorage.setItem('nile_custom_bg', base64Img);
-                        alert("تم تطبيق خلفية الدردشة المخصصة بنجاح!");
+                        localStorage.setItem('nile_custom_bg', bgBase64);
+                        alert("تم تطبيق الخلفية الجديدة بنجاح!");
                     };
                     reader.readAsDataURL(file);
                 }
             };
-
-            // زر الحفظ النهائي والإغلاق
-            document.getElementById('nileSaveSettingsBtnNew').onclick = function() {
-                modal.style.display = 'none';
-            };
         }
-    }, 400);
+    }, 300);
 
-    // استعادة وضبط فلاتر الخلفيات والصوت المخزنة عند فتح البرنامج تلقائياً وبسرعة طلقة
-    document.addEventListener('DOMContentLoaded', function() {
-        var savedBg = localStorage.getItem('nile_custom_bg');
-        if (savedBg) {
+    // استعادة البيانات المخزنة عند فتح البرنامج فوراً
+    var savedBg = localStorage.getItem('nile_custom_bg');
+    if (savedBg) {
+        setTimeout(function() {
             var stream = document.getElementById('chat-messages-stream-anchor');
             if (stream) {
                 stream.style.backgroundImage = "url('" + savedBg + "')";
                 stream.style.backgroundSize = "cover";
                 stream.style.backgroundPosition = "center";
             }
-        }
-        var savedFilter = localStorage.getItem('nile_voice_filter');
-        if (savedFilter && document.getElementById('waVoiceFilterSelect')) {
-            document.getElementById('waVoiceFilterSelect').value = savedFilter;
-        }
-    });
+        }, 800);
+    }
 })();
 </script>
 </body>
