@@ -19,7 +19,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
 DB_PATH = 'nile_chat_database.db'
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_XbW76VymhF0yJp9uS7NnWGdyb3FYM3Yp5vR9kL8mJq2bN4oP3qR")
+GROQ_API_KEY = "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"
+OPENROUTER_MODEL = "meta-llama/llama-3-8b-instruct:free"
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
