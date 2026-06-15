@@ -2143,215 +2143,171 @@ localStorage.setItem('saved_login_token', newToken);
                 reactBadge.innerText = data.emoji;
             }
         });
-</script>
-<script>
-(function() {
-    var socket = typeof socket !== 'undefined' ? socket : (typeof io !== 'undefined' ? io() : null);
+<style>
+    .wa-modal-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background: rgba(0,0,0,0.85) !important; display: none; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; direction: rtl !important; }
+    .wa-modal-box { background: #111b21 !important; color: #e9edef !important; width: 92% !important; max-width: 410px !important; border-radius: 14px !important; overflow: hidden !important; box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important; border: 1px solid #222e35 !important; max-height: 85vh !important; display: flex !important; flex-direction: column !important; }
+    .wa-modal-header { background: #202c33 !important; padding: 14px !important; display: flex !important; align-items: center !important; border-bottom: 1px solid #222e35 !important; }
+    .wa-back-btn { background: none !important; border: none !important; color: #00a884 !important; font-size: 20px !important; cursor: pointer !important; margin-left: 12px !important; padding: 0 !important; }
+    .wa-modal-title { font-size: 16px !important; font-weight: 500 !important; margin: 0 !important; color: #e9edef !important; }
+    .wa-modal-body { padding: 12px 16px !important; overflow-y: auto !important; flex: 1 !important; }
+    .wa-section-title { font-size: 13px !important; color: #00a884 !important; font-weight: 600 !important; margin: 12px 0 6px !important; border-bottom: 1px solid #222e35 !important; padding-bottom: 4px !important; }
+    .wa-field-group { margin-bottom: 12px !important; }
+    .wa-field-group label { display: block !important; font-size: 12px !important; color: #8696a0 !important; margin-bottom: 4px !important; }
+    .wa-select, .wa-input { width: 100% !important; padding: 10px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; background: #2a3942 !important; color: #e9edef !important; font-size: 13.5px !important; outline: none !important; box-sizing: border-box !important; }
+    .wa-btn-upload { display: block !important; background: #202c33 !important; color: #00a884 !important; text-align: center !important; padding: 9px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; cursor: pointer !important; font-weight: bold !important; font-size: 12.5px !important; margin-top: 6px !important; width: 100% !important; }
+    .wa-btn-save { width: 100% !important; background: #00a884 !important; color: #111b21 !important; border: none !important; padding: 11px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important; font-size: 14px !important; margin-top: 10px !important; margin-bottom: 10px !important; }
     
-    // 1. تثبيت واسترجاع وضع الثيم دايماً عشان يتنه محفوظ في المتصفح
-    var savedTheme = localStorage.getItem('nile_theme') || 'dark';
-    document.body.className = 'nile-theme-' + savedTheme;
+    /* 🎨 مصفوفة الـ 18 ثيم المتقدمة */
+    .nile-theme-1 { --bg-chat: #0b141a; --text-color: #e9edef; }
+    .nile-theme-2 { --bg-chat: #182533; --text-color: #ffffff; }
+    .nile-theme-3 { --bg-chat: #2e2a3a; --text-color: #f3e8ff; }
+    .nile-theme-4 { --bg-chat: #0c2340; --text-color: #e0f2fe; }
+    .nile-theme-5 { --bg-chat: #062f21; --text-color: #ecfdf5; }
+    .nile-theme-6 { --bg-chat: #3b0712; --text-color: #ffe4e6; }
+    .nile-theme-7 { --bg-chat: #451a03; --text-color: #fef3c7; }
+    .nile-theme-8 { --bg-chat: #020617; --text-color: #f1f5f9; }
+    .nile-theme-9 { --bg-chat: #501d2a; --text-color: #fce7f3; }
+    .nile-theme-10 { --bg-chat: #2c1d11; --text-color: #f5f5dc; }
+    .nile-theme-11 { --bg-chat: #1a0033; --text-color: #00ffff; }
+    .nile-theme-12 { --bg-chat: #142210; --text-color: #f0fdf4; }
+    .nile-theme-13 { --bg-chat: #3c153b; --text-color: #ffedd5; }
+    .nile-theme-14 { --bg-chat: #2b262d; --text-color: #fdf6e3; }
+    .nile-theme-15 { --bg-chat: #000000; --text-color: #39ff14; }
+    .nile-theme-16 { --bg-chat: #1e1b4b; --text-color: #e0e7ff; }
+    .nile-theme-17 { --bg-chat: #3e2723; --text-color: #efebe9; }
+    .nile-theme-18 { --bg-chat: #27272a; --text-color: #f4f4f5; }
+    .nile-theme-active-mode, .nile-theme-active-mode #chat-messages-stream-anchor { background-color: var(--bg-chat) !important; color: var(--text-color) !important; }
+</style>
 
-    // 2. كود واجهة الإعدادات المتطورة اللي بتفتح لما تضغط على الترس
-    window.openNileAdvancedSettings = function() {
-        var modal = document.getElementById('nileAdvancedSettingsModal');
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'nileAdvancedSettingsModal';
-            modal.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: #0f172a !important; color: #f8fafc !important; z-index: 2147483647 !important; direction: rtl !important; display: flex !important; flex-direction: column !important; box-sizing: border-box !important;';
-            
-            modal.innerHTML = `
-                <div style="background: #1e293b !important; padding: 16px !important; display: flex !important; align-items: center !important; gap: 16px !important; border-bottom: 1px solid #334155 !important; height: 60px !important;">
-                    <button id="nileCloseSettingsBtn" style="background: transparent !important; border: none !important; color: #38bdf8 !important; font-size: 22px !important; cursor: pointer !important;">➡️</button>
-                    <h2 style="margin: 0 !important; font-size: 18px !important; color: #f8fafc !important;">إعدادات المنظومة المطورة</h2>
-                </div>
-                <div style="flex: 1 !important; padding: 20px !important; display: flex !important; flex-direction: column !important; gap: 20px !important;">
-                    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important;">
-                        <span>🔒 مستوى الخصوصية</span>
-                        <select id="nilePrivacySelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 8px !important; border-radius: 6px !important;">
-                            <option value="everyone">الجميع</option>
-                            <option value="contacts">جهات الاتصال</option>
-                            <option value="nobody">إخفاء تماماً</option>
-                        </select>
-                    </div>
-                    <div style="display: flex !important; align-items: center !important; justify-content: space-between !important;">
-                        <span>🎨 واجهة الشات</span>
-                        <select id="nileThemeSelect" style="background: #1e293b !important; color: white !important; border: 1px solid #475569 !important; padding: 8px !important; border-radius: 6px !important;">
-                            <option value="dark">مظلم قياسي</option>
-                            <option value="light">وضع فاتح</option>
-                        </select>
-                    </div>
-                    <button id="nileSaveSettingsBtn" style="width: 100% !important; background: #22c55e !important; color: white !important; border: none !important; padding: 12px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important;">حفظ وتطبيق التغييرات</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            document.getElementById('nileCloseSettingsBtn').onclick = function() {
-                modal.style.setProperty('display', 'none', 'important');
-            };
-
-            document.getElementById('nileSaveSettingsBtn').onclick = function() {
-                var chosenTheme = document.getElementById('nileThemeSelect').value;
-                localStorage.setItem('nile_privacy', document.getElementById('nilePrivacySelect').value);
-                localStorage.setItem('nile_theme', chosenTheme);
-                document.body.className = 'nile-theme-' + chosenTheme;
-                modal.style.setProperty('display', 'none', 'important');
-            };
-        }
-        document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
-        document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
-// ده سطر 2193 بتاعك: modal.style.setProperty('display', 'flex', 'important');
-    }; 
-})();
-document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone';
-        document.getElementById('nileThemeSelect').value = localStorage.getItem('nile_theme') || 'dark';
-    }; // نهاية الدالة الأصلية للحفظ والتخصيص
-
-    // ==========================================
-    // 🟢 نظام واجهة نايل شات المتكاملة (بدون أخطاء كونسول)
-    // ==========================================
-
-    // 1. حقن ستايلات الـ 18 ثيم المتقدمة لترتيب الزراير وحمايتها من الاختفاء
-    var waStyle = document.createElement('style');
-    waStyle.innerHTML = `
-        .wa-modal-overlay { position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; background: rgba(0,0,0,0.85) !important; display: none; justify-content: center !important; align-items: center !important; z-index: 2147483647 !important; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; direction: rtl !important; }
-        .wa-modal-box { background: #111b21 !important; color: #e9edef !important; width: 92% !important; max-width: 410px !important; border-radius: 14px !important; overflow: hidden !important; box-shadow: 0 10px 40px rgba(0,0,0,0.6) !important; border: 1px solid #222e35 !important; max-height: 82vh !important; display: flex !important; flex-direction: column !important; }
-        .wa-modal-header { background: #202c33 !important; padding: 14px !important; display: flex !important; align-items: center !important; border-bottom: 1px solid #222e35 !important; }
-        .wa-back-btn { background: none !important; border: none !important; color: #00a884 !important; font-size: 20px !important; cursor: pointer !important; margin-left: 12px !important; padding: 0 !important; transform: rotate(180deg) !important; }
-        .wa-modal-title { font-size: 16px !important; font-weight: 500 !important; margin: 0 !important; color: #e9edef !important; }
-        .wa-modal-body { padding: 12px 16px !important; overflow-y: auto !important; flex: 1 !important; }
-        .wa-section-title { font-size: 13px !important; color: #00a884 !important; font-weight: 600 !important; margin: 12px 0 6px !important; border-bottom: 1px solid #222e35 !important; padding-bottom: 4px !important; }
-        .wa-field-group { margin-bottom: 12px !important; }
-        .wa-field-group label { display: block !important; font-size: 12px !important; color: #8696a0 !important; margin-bottom: 4px !important; }
-        .wa-select, .wa-input { width: 100% !important; padding: 10px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; background: #2a3942 !important; color: #e9edef !important; font-size: 13.5px !important; outline: none !important; box-sizing: border-box !important; }
-        .wa-btn-upload { display: block !important; background: #202c33 !important; color: #00a884 !important; text-align: center !important; padding: 9px !important; border-radius: 8px !important; border: 1px solid #2a3942 !important; cursor: pointer !important; font-weight: bold !important; font-size: 12.5px !important; margin-top: 6px !important; width: 100% !important; }
-        .wa-btn-save { width: 100% !important; background: #00a884 !important; color: #111b21 !important; border: none !important; padding: 11px !important; border-radius: 8px !important; cursor: pointer !important; font-weight: bold !important; font-size: 14px !important; margin-top: 10px !important; margin-bottom: 10px !important; }
+<div id="waAdvancedSettingsModalCustom" class="wa-modal-overlay">
+    <div class="wa-modal-box">
+        <div class="wa-modal-header">
+            <button class="wa-back-btn" id="waCloseBtnCustom">➡️</button>
+            <h3 class="wa-modal-title">إعدادات نايل شات المتقدمة</h3>
+        </div>
         
-        /* 🎨 مصفوفة الـ 18 ثيم لغرفة الدردشة */
-        .nile-theme-1 { --bg-chat: #0b141a; --text-color: #e9edef; }
-        .nile-theme-2 { --bg-chat: #182533; --text-color: #ffffff; }
-        .nile-theme-3 { --bg-chat: #2e2a3a; --text-color: #f3e8ff; }
-        .nile-theme-4 { --bg-chat: #0c2340; --text-color: #e0f2fe; }
-        .nile-theme-5 { --bg-chat: #062f21; --text-color: #ecfdf5; }
-        .nile-theme-6 { --bg-chat: #3b0712; --text-color: #ffe4e6; }
-        .nile-theme-7 { --bg-chat: #451a03; --text-color: #fef3c7; }
-        .nile-theme-8 { --bg-chat: #020617; --text-color: #f1f5f9; }
-        .nile-theme-9 { --bg-chat: #501d2a; --text-color: #fce7f3; }
-        .nile-theme-10 { --bg-chat: #2c1d11; --text-color: #f5f5dc; }
-        .nile-theme-11 { --bg-chat: #1a0033; --text-color: #00ffff; }
-        .nile-theme-12 { --bg-chat: #142210; --text-color: #f0fdf4; }
-        .nile-theme-13 { --bg-chat: #3c153b; --text-color: #ffedd5; }
-        .nile-theme-14 { --bg-chat: #2b262d; --text-color: #fdf6e3; }
-        .nile-theme-15 { --bg-chat: #000000; --text-color: #39ff14; }
-        .nile-theme-16 { --bg-chat: #1e1b4b; --text-color: #e0e7ff; }
-        .nile-theme-17 { --bg-chat: #3e2723; --text-color: #efebe9; }
-        .nile-theme-18 { --bg-chat: #27272a; --text-color: #f4f4f5; }
-        .nile-theme-active-mode, .nile-theme-active-mode #chat-messages-stream-anchor { background-color: var(--bg-chat) !important; color: var(--text-color) !important; }
-    `;
-    document.head.appendChild(waStyle);
-
-    // 2. بناء واجهة الإعدادات المتقدمة برمجياً
-    var waModal = document.createElement('div');
-    waModal.id = 'waAdvancedSettingsModalCustom';
-    waModal.className = 'wa-modal-overlay';
-    waModal.innerHTML = `
-        <div class="wa-modal-box">
-            <div class="wa-modal-header">
-                <button class="wa-back-btn" id="waCloseBtnCustom">➔</button>
-                <h3 class="wa-modal-title">إعدادات نايل شات المتقدمة</h3>
-            </div>
-            <div class="wa-modal-body">
-                <div class="wa-section-title">👤 إعدادات الحساب والمظهر</div>
-                <div class="wa-field-group">
-                    <label>تغيير الاسم المستعار الظاهر:</label>
-                    <input type="text" id="waNameInputCustom" class="wa-input" placeholder="اكتب اسمك الجديد هنا">
-                    <button id="waSaveNameActionCustom" class="wa-btn-upload" style="margin-top: 6px;">حفظ الاسم الجديد الآن</button>
-                </div>
-                <div class="wa-section-title">🗣️ فلتر تغيير الصوت المطور</div>
-                <div class="wa-field-group">
-                    <select id="waVoiceSelectCustom" class="wa-select">
-                        <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
-                        <option value="girl">👧 صوت فتاة (بنت)</option>
-                        <option value="boy">👦 صوت طفل صغير</option>
-                        <option value="mature">👨 صوت رجل عميق</option>
-                        <option value="ai-robot">🤖 صوت ذكاء اصطناعي</option>
-                    </select>
-                </div>
-                <div class="wa-section-title">🎨 مظهر التطبيق الملون (18 ثيم)</div>
-                <div class="wa-field-group">
-                    <select id="waThemeSelectCustom" class="wa-select">
-                        <option value="1">🟢 الثيم الزيتي الهادئ</option>
-                        <option value="2">🔵 الثيم الأزرق السحابي</option>
-                        <option value="3">🔮 الثيم اللافندر البنفسجي</option>
-                        <option value="4">🌊 الثيم البحري العميق</option>
-                        <option value="5">✳️ الثيم الزمردي الراقي</option>
-                        <option value="6">❤️ الثيم الياقوتي الدافئ</option>
-                        <option value="7">💛 الثيم الكهرماني العسلي</option>
-                        <option value="8">🌌 ثيم العتمة شديد السواد</option>
-                        <option value="9">🌸 الثيم الوردي الهادئ</option>
-                        <option value="10">☕ ثيم ألوان القهوة</option>
-                        <option value="11">⚡ ثيم النيون المتوهج</option>
-                        <option value="12">🌲 الثيم العشبي الطبيعي</option>
-                        <option value="13">🌇 ثيم ألوان الغروب</option>
-                        <option value="14">⏳ الثيم الكلاسيكي العتيق</option>
-                        <option value="15">🔋 الثيم الفسفوري المشع</option>
-                        <option value="16">👑 الثيم الأزرق الملكي</option>
-                        <option value="17">🍫 ثيم ألوان الشوكولاتة</option>
-                        <option value="18">🪙 الثيم الفضا البلاتيني</option>
-                    </select>
-                </div>
-                <div class="wa-section-title">🎵 نغمات رنين وخلفيات مخصصة</div>
-                <div class="wa-field-group">
-                    <select id="waRingtoneSelectCustom" class="wa-select">
-                        <option value="default">🔔 النغمة الافتراضية</option>
-                        <option value="iphone">📱 نغمة ايفون ريمكس</option>
-                        <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
-                    </select>
-                    <label class="wa-btn-upload" style="margin-top: 8px; cursor: pointer;">
-                        🎶 رفع نغمة مخصصة من جهازك
-                        <input type="file" id="waAudioFileCustom" accept="audio/*" style="display: none;">
-                    </label>
-                </div>
-                <div class="wa-field-group">
-                    <label class="wa-btn-upload" style="background: #2a3942; color: #38bdf8; cursor: pointer;">
-                        🖼️ رفع صورة خلفية مخصصة للشات
-                        <input type="file" id="waImageFileCustom" accept="image/*" style="display: none;">
-                    </label>
-                </div>
-                <button id="waSubmitFinalBtnCustom" class="wa-btn-save">حفظ وتطبيق التغييرات</button>
+        <div style="display: flex; align-items: center; gap: 12px; background: #202c33; padding: 12px; margin: 8px; border-radius: 10px;">
+            <div style="width: 45px; height: 45px; background: #00a884; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; color: #111b21;">ع</div>
+            <div>
+                <h4 style="margin: 0; font-size: 14px; color: #e9edef;">المهندس عبد الله محمد شعبان</h4>
+                <p style="margin: 3px 0 0 0; font-size: 11px; color: #8696a0;">مطور ومبرمج المنظومة</p>
             </div>
         </div>
-    `;
-    document.body.appendChild(waModal);
 
-    // 3. ربط برمي صحيح بالترس الأصلي عشان الزراير ما تتبهدلش
-    function setupSettingsButton() {
-        var oldBtn = document.getElementById('nileSettingsBtn');
-        if (oldBtn) {
-            oldBtn.onclick = function(e) {
-                e.preventDefault(); e.stopPropagation();
-                waModal.style.display = 'flex';
-                var nameInput = document.getElementById('waNameInputCustom');
-                if (nameInput) {
-                    nameInput.value = (typeof myProfile !== 'undefined' && myProfile.name) || localStorage.getItem('nile_name') || '';
-                }
-            };
-            oldBtn.style.setProperty('display', 'flex', 'important');
-        } else {
-            setTimeout(setupSettingsButton, 300);
-        }
-    }
-    setupSettingsButton();
+        <div class="wa-modal-body">
+            <div class="wa-section-title">👤 الحساب والخصوصية</div>
+            <div class="wa-field-group">
+                <label>تغيير الاسم المستعار الظاهر:</label>
+                <input type="text" id="waNameInputCustom" class="wa-input" placeholder="اكتب اسمك الجديد هنا">
+                <button id="waSaveNameActionCustom" class="wa-btn-upload">حفظ الاسم الجديد الآن</button>
+            </div>
+            
+            <div class="wa-field-group">
+                <label>مستوى الخصوصية:</label>
+                <select id="waPrivacySelectCustom" class="wa-select">
+                    <option value="everyone">الجميع</option>
+                    <option value="contacts">جهات الاتصال فقط</option>
+                    <option value="nobody">إخفاء تماماً</option>
+                </select>
+            </div>
 
-    document.getElementById('waCloseBtnCustom').onclick = function() { waModal.style.display = 'none'; };
-    document.getElementById('waSubmitFinalBtnCustom').onclick = function() { waModal.style.display = 'none'; };
+            <div class="wa-section-title">🎙️ فلتر تغيير الصوت المطور</div>
+            <div class="wa-field-group">
+                <select id="waVoiceSelectCustom" class="wa-select">
+                    <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
+                    <option value="girl">👧 صوت فتاة (بنت)</option>
+                    <option value="boy">👦 صوت طفل صغير</option>
+                    <option value="mature">👨 صوت رجل عميق</option>
+                    <option value="ai-robot">🤖 صوت ذكاء اصطناعي</option>
+                </select>
+            </div>
 
-    // 4. تشغيل وتطبيق الثيمات الـ 18 فورياً
-    var themeSelect = document.getElementById('waThemeSelectCustom');
+            <div class="wa-section-title">🎨 مظهر الشات (18 ثيم مخصص)</div>
+            <div class="wa-field-group">
+                <select id="waThemeSelectCustom" class="wa-select">
+                    <option value="1">🟢 الثيم الزيتي الهادئ</option>
+                    <option value="2">🔵 الثيم الأزرق السحابي</option>
+                    <option value="3">🔮 الثيم اللافندر البنفسجي</option>
+                    <option value="4">🌊 الثيم البحري العميق</option>
+                    <option value="5">✳️ الثيم الزمردي الراقي</option>
+                    <option value="6">❤️ الثيم الياقوتي الدافئ</option>
+                    <option value="7">💛 الثيم الكهرماني العسلي</option>
+                    <option value="8">🌌 ثيم العتمة شديد السواد</option>
+                    <option value="9">🌸 الثيم الوردي الهادئ</option>
+                    <option value="10">☕ ثيم ألوان القهوة</option>
+                    <option value="11">⚡ ثيم النيون المتوهج</option>
+                    <option value="12">🌲 الثيم العشبي الطبيعي</option>
+                    <option value="13">🌇 ثيم ألوان الغروب</option>
+                    <option value="14">⏳ الثيم الكلاسيكي العتيق</option>
+                    <option value="15">🔋 الثيم الفسفوري المشع</option>
+                    <option value="16">👑 الثيم الأزرق الملكي</option>
+                    <option value="17">🍫 ثيم ألوان الشوكولاتة</option>
+                    <option value="18">🪙 الثيم الفضا البلاتيني</option>
+                </select>
+            </div>
+
+            <div class="wa-section-title">🎵 نغمات رنين وخلفيات مخصصة</div>
+            <div class="wa-field-group">
+                <select id="waRingtoneSelectCustom" class="wa-select">
+                    <option value="default">🔔 النغمة الافتراضية</option>
+                    <option value="iphone">📱 نغمة ايفون ريمكس</option>
+                    <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
+                </select>
+                <label class="wa-btn-upload">
+                    🎶 رفع نغمة مخصصة من جهازك
+                    <input type="file" id="waAudioFileCustom" accept="audio/*" style="display: none;">
+                </label>
+            </div>
+            
+            <div class="wa-field-group">
+                <label class="wa-btn-upload" style="background: #2a3942; color: #38bdf8;">
+                    🖼️ رفع صورة خلفية مخصصة للشات
+                    <input type="file" id="waImageFileCustom" accept="image/*" style="display: none;">
+                </label>
+            </div>
+
+            <button id="waSubmitFinalBtnCustom" class="wa-btn-save">حفظ وتطبيق التغييرات</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
     var savedTheme = localStorage.getItem('nile_mega_theme') || '1';
+    applyThemeClasses(savedTheme);
+
+    if (!document.getElementById('nileSettingsBtn')) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = '⚙️';
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        btn.title = 'إعدادات نايل شات المتقدمة';
+        
+        btn.onclick = function(e) {
+            e.preventDefault(); e.stopPropagation();
+            var modal = document.getElementById('waAdvancedSettingsModalCustom');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.getElementById('waNameInputCustom').value = localStorage.getItem('nile_name') || '';
+                document.getElementById('waPrivacySelectCustom').value = localStorage.getItem('nile_privacy') || 'everyone';
+                document.getElementById('waVoiceSelectCustom').value = localStorage.getItem('nile_voice_filter') || 'normal';
+                document.getElementById('waThemeSelectCustom').value = localStorage.getItem('nile_mega_theme') || '1';
+                document.getElementById('waRingtoneSelectCustom').value = localStorage.getItem('nile_ringtone') || 'default';
+            }
+        };
+        document.body.appendChild(btn);
+    }
+
+    document.getElementById('waCloseBtnCustom').onclick = function() { document.getElementById('waAdvancedSettingsModalCustom').style.display = 'none'; };
+    document.getElementById('waSubmitFinalBtnCustom').onclick = function() { 
+        localStorage.setItem('nile_privacy', document.getElementById('waPrivacySelectCustom').value);
+        localStorage.setItem('nile_ringtone', document.getElementById('waRingtoneSelectCustom').value);
+        document.getElementById('waAdvancedSettingsModalCustom').style.display = 'none'; 
+        alert("تم حفظ كل الإعدادات بنجاح!");
+    };
+
+    var themeSelect = document.getElementById('waThemeSelectCustom');
     if(themeSelect) {
-        themeSelect.value = savedTheme;
-        applyThemeClasses(savedTheme);
         themeSelect.onchange = function() {
             localStorage.setItem('nile_mega_theme', this.value);
             applyThemeClasses(this.value);
@@ -2365,7 +2321,6 @@ document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_
         document.body.classList.add('nile-theme-active-mode');
     }
 
-    // 5. ربط تفعيل حفظ الاسم المستعار، الفلاتر، الصوت والخلفيات
     document.getElementById('waSaveNameActionCustom').onclick = function() {
         var val = document.getElementById('waNameInputCustom').value.trim();
         if(val) {
@@ -2376,6 +2331,7 @@ document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_
     };
 
     document.getElementById('waVoiceSelectCustom').onchange = function() { localStorage.setItem('nile_voice_filter', this.value); };
+    
     document.getElementById('waAudioFileCustom').onchange = function(e) {
         var file = e.target.files[0];
         if (file) {
@@ -2404,31 +2360,6 @@ document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_
             var stream = document.getElementById('chat-messages-stream-anchor');
             if (stream) { stream.style.backgroundImage = "url('" + savedBg + "')"; stream.style.backgroundSize = "cover"; }
         }, 1000);
-    }
-}
-})();
-</script>
-
-<script>
-(function() {
-    if (document.getElementById('nileSettingsBtn')) return;
-    var body = document.body;
-    if (body) {
-        var btn = document.createElement('button');
-        btn.id = 'nileSettingsBtn';
-        btn.innerHTML = ' ⚙️ ';
-        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
-        btn.title = 'إعدادات نايل شات المتقدمة';
-        
-        btn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var modal = document.getElementById('nileAdvancedSettingsModal') || document.getElementById('waAdvancedSettingsModalCustom') || document.getElementById('nileSettingsModal');
-            if (modal) {
-                modal.style.setProperty('display', 'flex', 'important');
-            }
-        };
-        body.appendChild(btn);
     }
 })();
 </script>
