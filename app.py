@@ -78,10 +78,10 @@ def init_db():
 
 def get_groq_ai_response(user_message):
     try:
-        url = "https://api.groq.com/openai/v1/chat/completions"
+        url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
         payload = {
-            "model": "llama3-8b-8192",
+            "model": "meta-llama/llama-3-8b-instruct:free",
             "messages": [
                 {"role": "system", "content": "أنت Nile AI الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
                 {"role": "user", "content": user_message}
