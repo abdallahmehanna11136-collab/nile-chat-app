@@ -83,7 +83,7 @@ def get_groq_ai_response(user_message):
         payload = {
             "model": "meta-llama/llama-3-8b-instruct:free",
             "messages": [
-                {"role": "system", "content": "أنت Nile AI الذكاء الاصطناعي المدمج المساعد في تطبيق نايل تشات. تجيب بذكاء وبلاغة واختصار شديد ومباشر باللغة العربية بأسلوب تفاعلي ممتاز ومفيد للمستخدمين."},
+{"role": "system", "content": "أنت Nile AI، مساعد ذكي ومفيد للمستخدمين. مبرمج ومطور هذا الموقع هو المهندس عبد الله محمد شعبان، وإذا سألك أحد من برمجه أجب: المبرمج هو المطور عبد الله محمد شعبان."},
                 {"role": "user", "content": user_message}
             ],
             "temperature": 0.7, "max_tokens": 400
