@@ -64,7 +64,7 @@
             height: 100%;
             position: relative;
         }
-        .sidebar {
+.sidebar {
             width: 380px;
             background-color: var(--bg-side);
             border-left: 1px solid var(--border-color);
@@ -100,10 +100,12 @@
         .user-avatar:hover {
             transform: scale(1.05);
         }
+        /* التعديل الهندسي للأزرار الثلاثة: الإعدادات، الذكاء الاصطناعي، والمنصات */
         .header-actions {
             display: flex;
-            gap: 18px;
-            font-size: 22px;
+            align-items: center;
+            gap: 16px;
+            font-size: 20px;
             color: var(--text-muted);
         }
         .header-actions i {
@@ -113,6 +115,10 @@
         .header-actions i:hover {
             color: var(--primary-color);
             transform: scale(1.1);
+        }
+        /* إخفاء القائمة السوداء الجانبية وأي زوائد مسببة للعك تماماً */
+        .sidebar-social-links, .right-platforms-bar, .extra-sidebar-buttons {
+            display: none !important;
         }
         .tabs-nav {
             display: flex;
