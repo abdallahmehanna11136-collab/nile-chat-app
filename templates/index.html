@@ -100,7 +100,6 @@
         .user-avatar:hover {
             transform: scale(1.05);
         }
-        /* التعديل الهندسي للأزرار الثلاثة: الإعدادات، الذكاء الاصطناعي، والمنصات */
         .header-actions {
             display: flex;
             align-items: center;
@@ -116,7 +115,6 @@
             color: var(--primary-color);
             transform: scale(1.1);
         }
-        /* إخفاء القائمة السوداء الجانبية وأي زوائد مسببة للعك تماماً */
         .sidebar-social-links, .right-platforms-bar, .extra-sidebar-buttons {
             display: none !important;
         }
@@ -270,6 +268,52 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             word-wrap: break-word;
             animation: fadeInMsg 0.25s ease-out;
+        }
+        .chat-input-area {
+            padding: 10px 16px;
+            background-color: var(--header-bg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .chat-input-area form, .input-form-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 12px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 11px 16px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input-area input:focus {
+            border-color: var(--primary-color);
+        }
+        .chat-input-icons-left, .chat-input-icons-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 22px;
+            color: var(--text-muted);
+        }
+        .chat-input-area i {
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .chat-input-area i:hover {
+            color: var(--primary-color);
+            transform: scale(1.15);
+        }
+        #send-msg-btn-icon {
+            color: var(--primary-color);
         }
         @keyframes fadeInMsg {
             from { opacity: 0; transform: translateY(8px); }
