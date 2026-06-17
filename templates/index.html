@@ -1209,18 +1209,23 @@ function openMyPrivateAIChat() {
 
     <div class="app-container">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="profile-container" onclick="openProfileSettingsModal()">
-                    <img id="my-global-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" class="user-avatar">
-                    <span id="my-global-name" style="font-weight:700; font-size:14px; color: var(--text-main);">جاري التحميل...</span>
-                </div>
-               <div class="header-actions">
-                    <i class="bi bi-robot" title="المساعد الذكي Nile AI" onclick="joinChatRoomHook('AI_bot', 'Nile AI')" style="color: var(--primary-color);"></i>
-                    <i class="bi bi-moon-stars-fill" onclick="toggleThemeModeLive()" title="تغيير المظهر"></i>
-                    <i class="bi bi-person-plus-fill" onclick="openAddContactModal()" title="إضافة صديق"></i>
-                    <i class="bi bi-plus-circle-dotted" onclick="openCreateGroupModal()" title="مجموعة جديدة"></i>
-                </div>
+<div class="sidebar-header" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
+        <img class="user-avatar" id="my-avatar-display" src="https://i.ibb.co/6NGH0f3/logo.png" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+        <div class="user-meta-header">
+            <div id="loading-bar-mini" style="font-size: 11px; color: var(--primary-color); font-weight: 600; margin-bottom: 2px;">
+                <i class="fas fa-spinner fa-spin"></i> متصل...
             </div>
+            <span id="my-name-display" style="font-weight: 700; font-size: 14px;">جاري التحميل...</span>
+        </div>
+    </div>
+    
+    <div class="header-actions" style="display: flex; align-items: center; gap: 16px; font-size: 18px; color: var(--text-muted);">
+        <i class="fas fa-cog" id="btn-settings" title="الإعدادات" style="cursor: pointer;"></i>
+        <i class="fas fa-robot" id="btn-ai-chat" title="Nile AI" style="cursor: pointer;"></i>
+        <i class="fas fa-layer-group" id="btn-platforms" title="المنصات" style="cursor: pointer; color: #00a884;"></i>
+    </div>
+</div>
             <nav class="tabs-nav">
                 <button class="tab-btn active" onclick="switchSidebarTab('chats-tab')">المحادثات</button>
                 <button class="tab-btn" onclick="switchSidebarTab('contacts-tab'); loadMyContacts();">جهات الاتصال</button>
