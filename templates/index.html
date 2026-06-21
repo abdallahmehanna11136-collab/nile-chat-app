@@ -643,13 +643,16 @@
     };
 
     var aiListBtn = document.getElementById('nileAiListBtn') || document.querySelector('.nile-ai-btn');
-    if (aiListBtn) {
-        aiListBtn.onclick = function() {
-            var chatInput = prompt("اكتب رسالتك للمساعد الذكي:");
-            if (chatInput) { window.triggerNilePrivateAiChat(chatInput, null); }
-        };
-    }
-
+   // فتح وإغلاق قائمة المميزات والمنصات بشكل نظيف وبدون تكرار أو ثيمات زائدة
+if (aiListBtn) {
+    aiListBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var featureList = document.querySelector('.side-features-list');
+        if (featureList) featureList.classList.toggle('dropdown-popup-active');
+        var platformBar = document.querySelector('.right-platforms-bar');
+        if (platformBar) platformBar.classList.remove('dropdown-popup-active');
+    });
+}
     // 2. محرك الـ 18 سيم وتثبيت الواجهة
     window.applyNileTheme = function(themeName) {
         var body = document.body;
