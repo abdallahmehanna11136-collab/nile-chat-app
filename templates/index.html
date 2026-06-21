@@ -2,211 +2,2573 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>نايل شات | Nile Chat</title>
+    <link class="program-app-icon" rel="shortcut icon" href="/static/icon.png" type="image/png">
     <link rel="manifest" href="/static/manifest.json">
-    <link rel="icon" href="/static/icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="/static/icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/6NGH0f3/logo.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/6NGH0f3/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
         :root {
-            --primary: #00a884;
+            --bg-main: #f0f2f5;
+            --bg-side: #ffffff;
+            --bg-chat: #efeae2;
+            --text-main: #111b21;
+            --text-muted: #667781;
+            --border-color: #e9edef;
+            --primary-color: #00a884;
+            --primary-hover: #008f72;
+            --msg-in: #ffffff;
+            --msg-out: #d9fdd3;
+            --header-bg: #f0f2f5;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+        [data-theme="dark"] {
             --bg-main: #0b141a;
             --bg-side: #111b21;
             --bg-chat: #0b141a;
             --text-main: #e9edef;
             --text-muted: #8696a0;
+            --border-color: #222d34;
+            --primary-color: #00a884;
+            --primary-hover: #008f72;
+            --msg-in: #202c33;
+            --msg-out: #005c4b;
+            --header-bg: #202c33;
+            --shadow-color: rgba(0, 0, 0, 0.3);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
-        .app-container { display: flex; height: 100%; width: 100%; }
-        .sidebar { width: 380px; background: var(--bg-side); border-left: 1px solid #222; display: flex; flex-direction: column; }
-        .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .modal-content { background: var(--bg-side); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+.sidebar {
+            width: 380px;
+            background-color: var(--bg-side);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            position: relative;
+            box-shadow: 2px 0 10px var(--shadow-color);
+        }
+        .sidebar-header {
+            padding: 12px 16px;
+            background-color: var(--header-bg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #ccc;
+            border: 2px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+        .user-avatar:hover {
+            transform: scale(1.05);
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+        .header-actions i {
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .header-actions i:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+/* إخفاء اللوحات الجانبية المسببة للزحمة */
+/* إخفاء القوائم الجانبية من الواجهة لعدم حدوث عشوائية وزحمة */
+.right-platforms-bar, .side-features-list {
+    display: none !important;
+}
+
+/* التنسيق الجديد لتظهر القوائم منسدلة بشكل أنيق أسفل زرار الترس من اليسار مباشرة */
+.right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
+    display: flex !important;
+    position: fixed !important;
+    top: 65px !important; /* أسفل زرار الترس مباشرة */
+    left: 16px !important; /* محاذاة لليسار مع الترس */
+    width: 310px !important;
+    max-height: 75vh !important;
+    background-color: #1c2434 !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    z-index: 2147483646 !important; /* لضمان ظهورها تحت الزرار مباشرة وفوق أي عنصر */
+    padding: 15px !important;
+    overflow-y: auto !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}        .tabs-nav {
+            display: flex;
+            background-color: var(--bg-side);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 14px 5px;
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .search-box-container {
+            padding: 8px 14px;
+            background-color: var(--bg-side);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 6px;
+        }
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        .search-input-wrapper i {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        .search-bar {
+            width: 100%;
+            padding: 10px 38px 10px 12px;
+            background-color: var(--bg-main);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+        .list-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            gap: 14px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .list-item:hover {
+            background-color: var(--bg-main);
+        }
+        .list-item-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .list-item-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        .list-item-title {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .list-item-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 3px;
+        }
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-chat);
+            position: relative;
+        }
+        .chat-header {
+            padding: 12px 20px;
+            background-color: var(--header-bg);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 5;
+            box-shadow: 0 1px 3px var(--shadow-color);
+        }
+        .chat-target-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .chat-actions-right {
+            display: flex;
+            gap: 22px;
+            font-size: 20px;
+            color: var(--text-muted);
+        }
+        .chat-actions-right i {
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .chat-actions-right i:hover {
+            color: var(--primary-color);
+            transform: scale(1.15);
+        }
+        .messages-container {
+            flex: 1;
+            padding: 24px 5%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .msg-bubble {
+            max-width: 65%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            word-wrap: break-word;
+            animation: fadeInMsg 0.25s ease-out;
+        }
+        .chat-input-area {
+            padding: 10px 16px;
+            background-color: var(--header-bg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .chat-input-area form, .input-form-wrapper {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 12px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 11px 16px;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .chat-input-area input:focus {
+            border-color: var(--primary-color);
+        }
+        .chat-input-icons-left, .chat-input-icons-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 22px;
+            color: var(--text-muted);
+        }
+        .chat-input-area i {
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .chat-input-area i:hover {
+            color: var(--primary-color);
+            transform: scale(1.15);
+        }
+        #send-msg-btn-icon {
+            color: var(--primary-color);
+        }
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .msg-bubble.incoming {
+            background-color: var(--msg-in);
+            align-self: flex-start;
+            border-top-right-radius: 0;
+        }
+        .msg-bubble.outgoing {
+            background-color: var(--msg-out);
+            align-self: flex-end;
+            border-top-left-radius: 0;
+        }
+        .msg-meta {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        .msg-sender {
+            font-weight: 700;
+            font-size: 12px;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+        .voice-message-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+            min-width: 220px;
+        }
+        .voice-message-player button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .chat-footer {
+            padding: 12px 18px;
+            background-color: var(--header-bg);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-top: 1px solid var(--border-color);
+        }
+        .footer-icon-btn {
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .footer-icon-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        .input-panel-wrapper {
+            flex: 1;
+        }
+        .main-message-input {
+            width: 100%;
+            padding: 12px 18px;
+            background-color: var(--bg-side);
+            border: none;
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .send-action-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+        }
+        .circle-action-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .circle-action-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .circle-action-btn:active {
+            transform: scale(0.95);
+        }
+        .circle-action-btn.recording {
+            background-color: #ea4335;
+            animation: pulse-record 1.5s infinite;
+        }
+        @keyframes pulse-record {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(234, 67, 53, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(234, 67, 53, 0); }
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100; visibility: hidden; opacity: 0; transition: all 0.3s ease;
+        }
+        .modal-overlay.open {
+            visibility: visible; opacity: 1;
+        }
+        .modal-card {
+            background-color: var(--bg-side);
+            color: var(--text-main);
+            padding: 26px;
+            border-radius: 16px;
+            width: 90%; max-width: 460px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-title {
+            font-size: 19px; font-weight: 700; margin-bottom: 18px; color: var(--primary-color);
+            border-bottom: 1.5px solid var(--border-color); padding-bottom: 8px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block; font-size: 13px; margin-bottom: 6px; color: var(--text-muted); font-weight: 600;
+        }
+        .form-control {
+            width: 100%; padding: 11px; border: 1.5px solid var(--border-color); background-color: var(--bg-main); color: var(--text-main); border-radius: 8px; outline: none; font-size: 14px; transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            border-color: var(--primary-color);
+        }
+        .modal-actions {
+            display: flex; justify-content: flex-end; gap: 12px; margin-top: 22px;
+        }
+        .btn-custom {
+            padding: 9px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;
+        }
+        .btn-custom.primary {
+            background-color: var(--primary-color); color: white;
+        }
+        .btn-custom.primary:hover {
+            background-color: var(--primary-hover);
+        }
+        .btn-custom.secondary {
+            background-color: transparent; color: var(--text-muted);
+        }
+        .btn-custom.secondary:hover {
+            background-color: var(--bg-main);
+        }
+        #qr-container-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; padding: 14px; background: white; border-radius: 12px;
+        }
+        .feed-card {
+            background: var(--bg-side); margin: 12px; border-radius: 12px; padding: 16px; box-shadow: 0 2px 8px var(--shadow-color); border: 1px solid var(--border-color);
+        }
+        .feed-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+        }
+        .feed-media {
+            width: 100%; max-height: 280px; object-fit: cover; border-radius: 8px; margin-top: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .feed-actions {
+            display: flex; gap: 18px; margin-top: 12px; color: var(--text-muted); cursor: pointer; font-size: 14px; font-weight: 600;
+        }
+        .webrtc-call-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b141a; z-index: 200; display: none; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .video-streams-box {
+            display: flex; gap: 12px; width: 90%; height: 72%; position: relative;
+        }
+        .video-element {
+            flex: 1; background: #000; border-radius: 12px; object-fit: cover; border: 1px solid #222d34;
+        }
+        .local-small-stream {
+            position: absolute; width: 130px; height: 170px; bottom: 12px; left: 12px; border: 2.5px solid var(--primary-color); z-index: 10; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .call-controls-panel {
+            margin-top: 24px; display: flex; gap: 24px;
+        }
+        .btn-call-action {
+            width: 55px; height: 50px; border-radius: 50%; border: none; color: white; font-size: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.2s;
+        }
+        .btn-call-action:hover {
+            transform: scale(1.1);
+        }
+        .btn-call-action.hangup { background-color: #ea4335; }
+        .btn-call-action.accept { background-color: #00a884; }
+        .welcome-screen {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 14px; text-align: center;
+        }
+        .welcome-screen i { font-size: 70px; color: var(--border-color); }
+        .welcome-screen h2 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+        .welcome-screen p { font-size: 14px; max-width: 320px; line-height: 1.5; }
     </style>
 </head>
-<body data-theme="dark">
-
-<div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <!-- Header -->
-        <div class="sidebar-header" style="padding:15px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #222;">
-            <div onclick="openProfileModal()" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
-                <img id="my-avatar" src="/static/icon.png" width="48" height="48" style="border-radius:50%; border:2px solid var(--primary);">
-                <div>
-                    <strong id="my-name">نايل شات</strong>
-                </div>
+<body>
+    <div id="customStatusModal" style="background: #1e293b; color: white; padding: 22px; border-radius: 16px; max-width: 400px; margin: 20px auto; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.35); display: none;">
+        <h3 style="margin-bottom: 18px; font-size: 18px; font-weight: 700;"> ✨ إضافة حالة جديدة </h3>
+        <form action="/upload_status" method="POST" enctype="multipart/form-data" id="statusDirectForm">
+            <button type="button" onclick="document.getElementById('galleryImageInput').click();" style="background-color: #007bff; color: white; padding: 12px 20px; border: none; border-radius: 8px; margin: 8px 0; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px;">
+                📸 اختر صورة من المعرض
+            </button>
+            <input type="file" name="status_image" id="galleryImageInput" accept="image/*" style="display:none;" onchange="document.getElementById('statusDirectForm').submit()">
+            <button type="button" onclick="document.getElementById('galleryVideoInput').click();" style="background-color: #28a745; color: white; padding: 12px 20px; border: none; border-radius: 8px; margin: 8px 0; cursor: pointer; font-weight: bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px;">
+                🎥 اختر فيديو من المعرض
+            </button>
+            <input type="file" name="status_video" id="galleryVideoInput" accept="video/*" style="display:none;" onchange="document.getElementById('statusDirectForm').submit()">
+        </form>
+        <div style="border-top: 1px solid #334155; margin-top: 18px; padding-top: 15px;">
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">أو شارك حالة من تطبيقاتك المفضلة مباشرة:</p>
+            <div class="social-status-icons" style="display: flex; gap: 14px; justify-content: center; align-items: center;">
+                <a href="intent://tiktok.com/#Intent;scheme=https;package=com.zhiliaoapp.musically;end" title="تيك توك"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="40" height="42"></a>
+                <a href="intent://instagram.com/#Intent;scheme=https;package=com.instagram.android;end" title="إنستغرام"><img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="40" height="42"></a>
+                <a href="intent://youtube.com/#Intent;scheme=https;package=com.google.android.youtube;end" title="يوتيوب"><img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="40" height="42"></a>
+                <a href="intent://snapchat.com/#Intent;scheme=https;package=com.snapchat.android;end" title="سناب شات"><img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="40" height="42"></a>
+                <a href="intent://twitter.com/#Intent;scheme=https;package=com.twitter.android;end" title="X"><img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="40" height="42" style="filter: invert(1);"></a>
             </div>
-            <i class="fas fa-cog fa-2x" onclick="openAdvancedSettings()" style="cursor:pointer; color:var(--text-muted);"></i>
         </div>
-
-        <!-- Tabs -->
-        <nav class="tabs-nav" style="display:flex; background:var(--bg-side);">
-            <button class="tab-btn active" onclick="switchTab(0)">المحادثات</button>
-            <button class="tab-btn" onclick="switchTab(1)">جهات الاتصال</button>
-            <button class="tab-btn" onclick="switchTab(2)">الحالات</button>
-            <button class="tab-btn" onclick="switchTab(3)">المنتدى</button>
-        </nav>
-
-        <!-- Tab Content -->
-        <div id="tab-content" style="flex:1; overflow-y:auto;"></div>
-    </aside>
-
-    <!-- Chat Area -->
-    <main class="chat-window">
-        <!-- Will be populated by JS -->
-    </main>
-</div>
-
-<!-- Modals -->
-<div id="advanced-settings-modal" class="modal-overlay">
-    <div class="modal-content">
-        <h2>الإعدادات المتقدمة</h2>
-        <!-- كل الإعدادات من الملف الأصلي هتكون هنا -->
-        <button onclick="closeModal('advanced-settings-modal')">إغلاق</button>
+        <button class="btn-custom secondary" onclick="document.getElementById('customStatusModal').style.display='none'" style="margin-top: 15px; color: white; border: 1px solid #334155; width: 100%;">إلغاء</button>
+    </div>
+    
+<div class="social-dropdown-container" style="position: relative; display: inline-block;">
+    <button type="button" id="platformsBtn" onclick="toggleSocialMenu(event)" class="control-btn" title="المنصات">
+        <i class="fas fa-globe"></i>
+    </button>
+    <div id="socialDropdownMenu" style="display: none; position: absolute; top: 40px; left: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid var(--border-color); z-index: 9999;">
+        <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
+        </a>
+        <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
+        </a>
+        <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
+        </a>
+        <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
+        </a>
+        <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
+        </a>
+        <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="24" height="24" style="filter: invert(1);"> منصة X
+        </a>
     </div>
 </div>
+    
 <script>
-// ==================== Nile Chat Core - Cleaned Version ====================
-const socket = io();
-let myProfile = { phone: '', name: '', avatar: '' };
-let activeRoomId = null;
-let currentTheme = localStorage.getItem('nile_theme') || 'dark';
-let isRecording = false;
-let mediaRecorder;
-let audioChunks = [];
+(function() {
+    var nileSocket = typeof socket !== 'undefined' ? socket : null;
+    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
+    
+    // 1. محرك المساعد الذكي الخاص بك (Nile AI)
+    window.getNileAiResponse = function(userMessage) {
+        var text = userMessage.trim();
+        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
+            return 'مرحباً بك في نايل شات! أنا مساعدك الذكي الخاص، كيف يمكنني مساعدتك اليوم يا غالي؟';
+        }
+        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
+            return 'أنا مساعدك الذكي الخاص المدمج في منظومة نايل شات وجاهز لخدمتك فوراً!';
+        }
+        return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
+    };
 
-// Apply saved theme
-document.documentElement.setAttribute('data-theme', currentTheme);
+    window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
+        var chatBox = document.querySelector(chatContainerSelector) || document.querySelector('.messages, .chat-box, #chat-messages');
+        if (!chatBox) return;
+        var userBubble = '<div style="text-align: right; margin: 10px; padding: 10px; background: #0284c7; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>أنت:</strong> ' + userInputText + '</div><br>';
+        chatBox.innerHTML += userBubble;
+        setTimeout(function() {
+            var aiReplyText = window.getNileAiResponse(userInputText);
+            var aiBubble = '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>نايل AI:</strong> ' + aiReplyText + '</div><br>';
+            chatBox.innerHTML += aiBubble;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }, 500);
+    };
 
-// ==================== Socket Events ====================
-socket.on('connect', () => {
-    console.log('✅ Connected to Nile Chat Server');
-    const savedPhone = localStorage.getItem('nile_phone');
-    if (savedPhone) {
-        socket.emit('register_user', { phone: savedPhone });
+    var aiListBtn = document.getElementById('nileAiListBtn') || document.querySelector('.nile-ai-btn');
+    if (aiListBtn) {
+        aiListBtn.onclick = function() {
+            var chatInput = prompt("اكتب رسالتك للمساعد الذكي:");
+            if (chatInput) { window.triggerNilePrivateAiChat(chatInput, null); }
+        };
     }
-});
 
-socket.on('login_persist_status', (data) => {
-    if (data.status === 'success') {
-        myProfile = data;
-        document.getElementById('my-name').textContent = data.name || 'نايل شات';
-        document.getElementById('my-avatar').src = data.avatar || '/static/icon.png';
-    }
-});
+    // 2. محرك الـ 18 سيم وتثبيت الواجهة
+    window.applyNileTheme = function(themeName) {
+        var body = document.body;
+        body.className = body.className.replace(/\bnile-theme-\S+/g, '');
+        body.classList.add('nile-theme-' + themeName);
+        var colors = {
+            'light': { bg: '#ffffff', text: '#1e293b' }, 'dark': { bg: '#0f172a', text: '#f8fafc' },
+            'blue-dark': { bg: '#0f172a', text: '#38bdf8' }, 'blue-light': { bg: '#f0f9ff', text: '#0369a1' },
+            'red-dark': { bg: '#450a0a', text: '#fca5a5' }, 'red-light': { bg: '#fff5f5', text: '#b91c1c' },
+            'green-dark': { bg: '#064e3b', text: '#6ee7b7' }, 'green-light': { bg: '#f0fdf4', text: '#15803d' },
+            'purple-dark': { bg: '#581c87', text: '#e9d5ff' }, 'purple-light': { bg: '#faf5ff', text: '#6b21a8' },
+            'orange-dark': { bg: '#7c2d12', text: '#ffedd5' }, 'orange-light': { bg: '#fff7ed', text: '#c2410c' },
+            'yellow-dark': { bg: '#713f12', text: '#fef08a' }, 'yellow-light': { bg: '#fefce8', text: '#a16207' },
+            'pink-dark': { bg: '#831843', text: '#fbcfe8' }, 'pink-light': { bg: '#fff1f2', text: '#be185d' },
+            'cyan-dark': { bg: '#164e63', text: '#a5f3fc' }, 'cyan-light': { bg: '#ecfeff', text: '#0e7490' }
+        };
+        if (colors[themeName]) {
+            body.style.backgroundColor = colors[themeName].bg;
+            body.style.color = colors[themeName].text;
+        }
+    };
 
-socket.on('message', (data) => {
-    renderMessage(data);
-});
-
-socket.on('webrtc_offer', (data) => {
-    handleWebRTCOffer(data);
-});
-
-socket.on('webrtc_answer', (data) => {
-    handleWebRTCAnswer(data);
-});
-
-socket.on('webrtc_ice_candidate', (data) => {
-    handleIceCandidate(data);
-});
-
-// ==================== Main Functions ====================
-function openAdvancedSettings() {
-    document.getElementById('advanced-settings-modal').style.display = 'flex';
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).style.display = 'none';
-}
-
-function openProfileModal() {
-    // Profile modal logic (add your full modal content here)
-    alert('ملف شخصي - سيتم تطويره');
-}
-
-function switchTab(tabIndex) {
-    // Tab switching
-    console.log('Switched to tab:', tabIndex);
-    // Add your tab content logic
-}
-
-function sendMessage() {
-    const input = document.getElementById('message-input');
-    if (input && input.value.trim() !== '') {
-        socket.emit('message', {
-            text: input.value,
-            room: activeRoomId,
-            sender: myProfile.phone
-        });
-        input.value = '';
-    }
-}
-
-// Voice Recording
-function startVoiceRecording() {
-    if (isRecording) return;
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                // Send voice note via socket or upload
-                console.log('Voice note recorded');
+    window.uploadNileChatWallpaper = function(fileInputEvent) {
+        var file = fileInputEvent.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var chatArea = document.querySelector('.chat-area, .messages, #chat-box');
+                if (chatArea) {
+                    chatArea.style.backgroundImage = "url('" + e.target.result + "')";
+                    chatArea.style.backgroundSize = "cover";
+                    localStorage.setItem('nile_custom_wallpaper', e.target.result);
+                }
             };
-            mediaRecorder.start();
-            isRecording = true;
-        })
-        .catch(err => console.error('Voice error:', err));
-}
+            reader.readAsDataURL(file);
+        }
+    };
 
-// WebRTC (basic)
-let peerConnection;
-function initiateWebRTCCall(targetPhone) {
-    // Full WebRTC logic here (STUN, offer, etc.)
-    console.log('Calling:', targetPhone);
-}
+    // 3. حفظ الإعدادات وجلسة الدخول وصورة البروفايل للأبد
+    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn');
+    if (saveBtn) {
+        saveBtn.onclick = function() {
+            var privacy = document.getElementById('nilePrivacySelect') ? document.getElementById('nilePrivacySelect').value : 'everyone';
+            var theme = document.getElementById('nileThemeSelect') ? document.getElementById('nileThemeSelect').value : 'light';
+            var voice = document.getElementById('nileVoiceSelect') ? document.getElementById('nileVoiceSelect').value : '1';
+            var ringtone = document.getElementById('nileRingtoneSelect') ? document.getElementById('nileRingtoneSelect').value : 'default';
+            var statusText = document.getElementById('nileStatusInput') ? document.getElementById('nileStatusInput').value : '';
 
-// Nile AI Response
-function getNileAiResponse(message) {
-    // Hardcoded or API call
-    return "مرحبا! أنا Nile AI، كيف أقدر أساعدك؟";
-}
+            localStorage.setItem('nile_privacy', privacy);
+            localStorage.setItem('nile_theme', theme);
+            localStorage.setItem('nile_voice_pitch', voice);
+            localStorage.setItem('nile_ringtone_type', ringtone);
+            localStorage.setItem('nile_status_text', statusText);
+            localStorage.setItem('nile_profile_avatar', nileProfile.avatar);
+            localStorage.setItem('nile_session_active', 'true');
 
-// QR Code
-function generateQR() {
-    const qrContainer = document.getElementById('qr-container');
-    if (qrContainer) {
-        new QRCode(qrContainer, {
-            text: myProfile.phone || "NileChatUser",
-            width: 256,
-            height: 256
+            if (nileSocket && nileSocket.emit) {
+                nileSocket.emit('update_user_settings', {
+                    phone: nileProfile.phone || '', privacy: privacy, status: statusText, theme: theme, voice: voice, ringtone: ringtone
+                });
+            }
+            window.applyNileTheme(theme);
+            alert('تم حفظ الإعدادات والجلسة بنجاح للأبد!');
+            location.reload();
+        };
+    }
+
+    function restoreNileSessionAndSettings() {
+        var metaViewport = document.querySelector('meta[name="viewport"]');
+        if (metaViewport) { metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); }
+        if (document.getElementById('nilePrivacySelect')) { document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone'; }
+        var savedTheme = localStorage.getItem('nile_theme') || 'light';
+        if (document.getElementById('nileThemeSelect')) { document.getElementById('nileThemeSelect').value = savedTheme; }
+        window.applyNileTheme(savedTheme);
+        if (document.getElementById('nileVoiceSelect')) { document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_pitch') || '1'; }
+        if (document.getElementById('nileRingtoneSelect')) { document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default'; }
+        if (document.getElementById('nileStatusInput')) { document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || ''; }
+        var savedWallpaper = localStorage.getItem('nile_custom_wallpaper');
+        var chatArea = document.querySelector('.chat-area, .messages, #chat-box');
+        if (savedWallpaper && chatArea) { chatArea.style.backgroundImage = "url('" + savedWallpaper + "')"; chatArea.style.backgroundSize = "cover"; }
+    }
+    restoreNileSessionAndSettings();
+
+    // 4. دالة تشغيل أزرار شريط المنصات العلوي الفعلية وضبط الإعدادات
+    function setupTopBarButtons() { 
+        var openSettingsBtn = document.getElementById('nileOpenSettingsBtn') || document.getElementById('openSettingsBtn') || document.getElementById('platformsBtn');
+        var modalElement = document.getElementById('nileSettingsModal') || document.getElementById('settingsModal'); 
+        
+        if (openSettingsBtn && modalElement) { 
+            openSettingsBtn.onclick = function() { 
+                modalElement.style.display = 'flex'; 
+            };
+        } 
+        
+        var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn'); 
+        if (addPersonBtn) { 
+            addPersonBtn.onclick = function() { 
+                var phone = prompt("أدخل رقم هاتف الشخص لإضافته:");
+                if (phone && typeof window.nileAddContact === 'function') { 
+                    window.nileAddContact(phone); 
+                } 
+            }; 
+        } 
+        
+        var addGroupBtn = document.getElementById('nileAddGroupBtn') || document.getElementById('addGroupBtn');
+        if (addGroupBtn) { 
+            addGroupBtn.onclick = function() { 
+                var groupName = prompt("أدخل اسم المجموعة الجديدة:");
+                if (groupName && typeof window.nileCreateGroup === 'function') { 
+                    window.nileCreateGroup(groupName); 
+                } 
+            };
+        } 
+    } 
+
+    // تشغيل الدالة بتأخير لضمان تحميل الواجهة بالكامل
+    setTimeout(setupTopBarButtons, 1500); 
+})();
+</script>
+    
+<script>
+(function() {
+    // لمنع تكرار الزرار
+    if (document.getElementById('nileSettingsBtn')) return;
+    
+    var body = document.body;
+    if (body) {
+        var btn = document.createElement('button');
+        btn.id = 'nileSettingsBtn';
+        btn.innerHTML = '⚙️';
+        
+        // تنسيق الترس وتثبيته فوق على الشمال غصب عن أي حاجة وبشكل مخفي وراء النوافذ بشكل صحيح
+        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
+        btn.title = 'إعدادات نايل شات';
+        
+        btn.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof openNileAdvancedSettings === 'function') {
+                openNileAdvancedSettings();
+            } else {
+                var modal = document.getElementById('nileAdvancedSettingsModal');
+                if (modal) modal.style.setProperty('display', 'flex', 'important');
+            }
+        };
+        
+        body.appendChild(btn);
+    }
+})();
+    
+  }
+})();
+
+function requestNileNotificationPermission() {
+    if ("Notification" in window) {
+        Notification.requestPermission().then(function(permission) {
+            if (permission === 'granted') {
+                console.log('تم تفعيل نظام الإشعارات بنجاح!');
+            }
         });
     }
 }
 
-// Service Worker
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/static/work.js')
-        .then(reg => console.log('✅ SW Registered'))
-        .catch(err => console.log('SW Error:', err));
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(requestNileNotificationPermission, 2000);
+});
+
+function playNileIncomingRingtone() {
+    var savedRingtone = localStorage.getItem('nile_ringtone_type') || 'default';
+    var customFile = localStorage.getItem('nile_custom_ringtone_file');
+    var audio;
+
+    if (savedRingtone === 'custom' && customFile) {
+        audio = new Audio(customFile);
+    } else {
+        var ringtoneUrls = {
+            'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
+            'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3',
+            'guitar': 'https://www.soundjay.com/button/sounds/button-20.mp3',
+            'cyber': 'https://www.soundjay.com/button/sounds/button-10.mp3',
+            'default': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3'
+        };
+        audio = new Audio(ringtoneUrls[savedRingtone] || ringtoneUrls['default']);
+    }
+    audio.volume = 1.0;
+    audio.play().catch(function(e) { console.log("البرنامج محجوب من التشغيل التلقائي للصوت"); });
 }
 
-// Initialize App
-document.addEventListener('DOMContentLoaded', () => {
-    socket.emit('register_user', { 
-        phone: localStorage.getItem('nile_phone'),
-        name: localStorage.getItem('nile_name')
+if (typeof socket !== 'undefined' && socket.on) {
+    socket.on('receive_message', function(msg) {
+        if (document.hidden || (typeof currentRoomId !== 'undefined' && currentRoomId !== msg.room)) {
+            playNileIncomingRingtone();
+            if (Notification.permission === "granted") {
+                new Notification("رسالة جديدة من: " + (msg.senderName || "مستخدم نايل"), {
+                    body: msg.text,
+                    icon: '/icon.png',
+                    tag: 'nile-chat'
+                });
+            }
+        }
     });
+}
+
+// تشغيل القائمة من زرار الترس الحقيقي اللي فوق شريط البحث بالظبط
+document.addEventListener('DOMContentLoaded', function() {
+    var platformsBar = document.querySelector('.right-platforms-bar');
+    var featuresList = document.querySelector('.side-features-list');
+    
+    // هيدور على زرار الترس (الأيقونة ⚙️) اللي متكريت وموجود فوق شريط البحث عندك
+    var searchContainer = document.querySelector('.search-box-container');
+    var realSettingsBtn = document.getElementById('nileSettingsBtn') || document.querySelector('.fa-cog');
+
+    // لو الزرار مش لاقطه، هندور عليه في أي مكان فوق شريط البحث
+    if (!realSettingsBtn && searchContainer) {
+        realSettingsBtn = searchContainer.parentElement.querySelector('#nileSettingsBtn') || document.querySelector('#nileSettingsBtn');
+    }
+
+    if (realSettingsBtn) {
+        realSettingsBtn.style.cursor = 'pointer';
+        realSettingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // تبديل الكلاس لإظهار أو إخفاء القوائم
+            if (platformsBar) platformsBar.classList.toggle('dropdown-popup-active');
+            if (featuresList) featuresList.classList.toggle('dropdown-popup-active');
+        });
+    }
+
+    // إغلاق تلقائي عند الضغط خارج القائمة
+    window.addEventListener('click', function(e) {
+        if (platformsBar && !platformsBar.contains(e.target) && realSettingsBtn && !realSettingsBtn.contains(e.target)) {
+            platformsBar.classList.remove('dropdown-popup-active');
+            featuresList.classList.remove('dropdown-popup-active');
+        }
+    });
+});
+        
+function checkNileAdminPrivileges(roomId, userPhone, callback) {
+    if (typeof socket !== 'undefined' && socket.emit) {
+        socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
+            if (response && response.isAdmin) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        });
+    }
+}
+
+function kickNileGroupMember(roomId, memberPhone) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            if (confirm("هل أنت متأكد من طرد هذا العضو؟")) {
+                socket.emit('kick_group_member', { room: roomId, target: memberPhone });
+                alert("تم طرد العضو بنجاح!");
+            }
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
+
+function promoteNileToAdmin(roomId, memberPhone) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            socket.emit('promote_to_admin', { room: roomId, target: memberPhone });
+            alert("تم تعيين العضو كمسؤول (أدمن) للجروب!");
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
+
+function toggleNileGroupChatLock(roomId, isLocked) {
+    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
+        if (isAdmin) {
+            socket.emit('toggle_room_lock', { room: roomId, locked: isLocked });
+            alert(isLocked ? "تم قفل الجروب، الإرسال للأدمن فقط!" : "تم فتح الجروب للجميع!");
+        } else {
+            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
+        }
+    });
+}
+        (function() {
+    var modalHtml = `
+    <div id="nileAdvancedSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 20000; justify-content: center; align-items: center; font-family: sans-serif;">
+        <div style="background: #1e293b; color: white; width: 90%; max-width: 450px; border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto; direction: rtl;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #00a884;">⚙️ إعدادات نايل شات المتقدمة</h3>
+                <span onclick="document.getElementById('nileAdvancedSettingsModal').style.display='none'" style="cursor: pointer; font-size: 20px; color: #94a3b8;">&times;</span>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🔒 إعدادات الخصوصية والحالة:</label>
+                <select id="nilePrivacySelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 8px;">
+                    <option value="all">الكل يرى حالتي ونشاطي (عام)</option>
+                    <option value="contacts">جهات اتصالي فقط</option>
+                    <option value="nobody">إخفاء حالتي تماماً (مخفي)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px; border-top: 1px solid #334155; padding-top: 15px;">
+                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🗣️ فلتر تغيير الصوت (للمكالمات والرسائل الصوتية):</label>
+                <select id="nileVoiceFilterSelect" onchange="changeNileVoiceFilter(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white;">
+                    <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
+                    <option value="girl">👧 صوت فتاة (بنت)</option>
+                    <option value="boy">👦 صوت طفل صغير (ولد)</option>
+                    <option value="mature">👨 صوت رجل بالغ (عميق)</option>
+                    <option value="old">👴 صوت عجوز مسن</option>
+                    <option value="ai-robot">🤖 صوت ذكاء اصطناعي آلي</option>
+                    <option value="alien">👽 صوت فضائي متحول</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px; border-top: 1px solid #334155; padding-top: 15px;">
+                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🎵 نغمات رنين الإشعارات والمكالمات الجاهزة:</label>
+                <select id="nileRingtoneSelect" onchange="changeNileRingtone(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 8px;">
+                    <option value="default">🔔 النغمة الافتراضية</option>
+                    <option value="iphone">📱 نغمة ايفون ريمكس</option>
+                    <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
+                    <option value="guitar">🎸 رنين جيتار هادئ</option>
+                    <option value="cyber">🛸 نغمة سايبر مستقبلية</option>
+                </select>
+                <label style="display: block; background-color: #475569; color: white; text-align: center; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">
+                    🎶 أو ارفع نغمة مخصصة من جهازك
+                    <input type="file" accept="audio/*" onchange="uploadCustomRingtone(event)" style="display: none;">
+                </label>
+            </div>
+        </div>
+    </div>`;
+    
+    var div = document.createElement('div');
+    div.innerHTML = modalHtml;
+    document.body.appendChild(div.firstElementChild);
+})();
+
+function openNileAdvancedSettings() {
+    var modal = document.getElementById('nileAdvancedSettingsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+var activeVoiceFilter = 'normal';
+function changeNileVoiceFilter(filterValue) {
+    activeVoiceFilter = filterValue;
+    localStorage.setItem('nile_voice_filter', filterValue);
+}
+
+function changeNileRingtone(ringtoneValue) {
+    localStorage.setItem('nile_ringtone_type', ringtoneValue);
+    localStorage.removeItem('nile_custom_ringtone_file');
+    
+    var ringtoneUrls = {
+        'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
+        'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3',
+        'guitar': 'https://www.soundjay.com/button/sounds/button-20.mp3',
+        'cyber': 'https://www.soundjay.com/button/sounds/button-10.mp3'
+    };
+    
+    if (ringtoneUrls[ringtoneValue]) {
+        var audio = new Audio(ringtoneUrls[ringtoneValue]);
+        audio.volume = 0.5;
+        audio.play().catch(function(e){ console.log("Audio test blocked"); });
+    }
+}
+
+function uploadCustomRingtone(event) {
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem('nile_custom_ringtone_file', e.target.result);
+            localStorage.setItem('nile_ringtone_type', 'custom');
+            alert("تم حفظ نغمة الرنين المخصصة بنجاح للأبد!");
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+(function() {
+    var savedFilter = localStorage.getItem('nile_voice_filter');
+    var savedRingtone = localStorage.getItem('nile_ringtone_type');
+    
+    if (savedFilter) {
+        activeVoiceFilter = savedFilter;
+        setTimeout(function() {
+            if(document.getElementById('nileVoiceFilterSelect')) document.getElementById('nileVoiceFilterSelect').value = savedFilter;
+        }, 500);
+    }
+    if (savedRingtone) {
+        setTimeout(function() {
+            if(document.getElementById('nileRingtoneSelect')) document.getElementById('nileRingtoneSelect').value = savedRingtone;
+        }, 500);
+    }
+})();
+        // دالة لتشغيل القائمة عند الضغط المطول على الرسالة
+function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
+    if (!messageElement) return;
+
+    messageElement.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        
+        var menu = document.getElementById('nileMessageContextMenu');
+        if (!menu) return;
+
+        // إظهار القائمة مكان الضغطة
+        menu.style.display = 'block';
+        menu.style.top = e.clientY + 'px';
+        menu.style.left = e.clientX + 'px';
+
+        // تشغيل دالة الرد اللي عندك
+        document.getElementById('context-reply-btn').onclick = function() {
+            if (typeof setNileReplyTarget === 'function') {
+                setNileReplyTarget(messageId, senderName, messageText);
+            } else if (typeof replyMessage === 'function') {
+                replyMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة التحويل اللي عندك
+        document.getElementById('context-forward-btn').onclick = function() {
+            if (typeof forwardNileMessage === 'function') {
+                forwardNileMessage(messageText);
+            } else if (typeof forwardMessage === 'function') {
+                forwardMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة التفاعل
+        document.getElementById('context-react-btn').onclick = function() {
+            var chosenEmoji = prompt("أدخل الإيموجي أو التفاعل النصي:", "👍");
+            if (chosenEmoji && typeof reactToNileMessage === 'function') {
+                reactToNileMessage(messageId, chosenEmoji);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل دالة المسح اللي عندك
+        document.getElementById('context-delete-btn').onclick = function() {
+            if (typeof deleteNileMessage === 'function') {
+                deleteNileMessage(messageId);
+            } else if (typeof deleteMessage === 'function') {
+                deleteMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+    });
+}
+
+// إخفاء القائمة لو ضغطت في أي مكان فاضي بالصفحة
+document.addEventListener('click', function() {
+    var menu = document.getElementById('nileMessageContextMenu');
+    if (menu) menu.style.display = 'none';
+});
+        function openNileAdvancedSettings() {
+    var modal = document.getElementById('nileAdvancedSettingsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        if (document.getElementById('setting-change-name-input')) {
+            document.getElementById('setting-change-name-input').value = myProfile.name || localStorage.getItem('nile_name') || '';
+        }
+    }
+}
+
+function saveNewNileName() {
+    var newName = document.getElementById('setting-change-name-input').value.trim();
+    if (newName) {
+        myProfile.name = newName;
+        localStorage.setItem('nile_name', newName);
+        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = newName;
+        if(typeof socket !== 'undefined' && socket.emit) {
+            socket.emit('register_user', { phone: myProfile.phone, name: newName, avatar: myProfile.avatar });
+        }
+        alert("تم تحديث وحفظ الاسم الجديد بنجاح للأبد!");
+    }
+}
+
+var activeVoiceFilter = 'normal';
+function changeNileVoiceFilter(filterValue) {
+    activeVoiceFilter = filterValue;
+    localStorage.setItem('nile_voice_filter', filterValue);
+}
+
+function changeNileRingtone(ringtoneValue) {
+    localStorage.setItem('nile_ringtone_type', ringtoneValue);
+    localStorage.removeItem('nile_custom_ringtone_file');
+}
+
+function uploadCustomRingtone(event) {
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            localStorage.setItem('nile_custom_ringtone_file', e.target.result);
+            localStorage.setItem('nile_ringtone_type', 'custom');
+            alert("تم حفظ نغمة الرنين المخصصة بنجاح!");
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function applyNileTheme(themeName) {
+    var root = document.documentElement;
+    var themes = {
+        'whatsapp-dark': { bg: '#0b141a', side: '#111b21', text: '#e9edef', chatBg: '#0b141a' },
+        'royal-blue': { bg: '#0f172a', side: '#1e293b', text: '#f8fafc', chatBg: '#0f172a' },
+        'purple-night': { bg: '#1a103c', side: '#2d1b6b', text: '#f3e8ff', chatBg: '#1a103c' },
+        'classic-light': { bg: '#f0f2f5', side: '#ffffff', text: '#111b21', chatBg: '#efeae2' }
+    };
+    var t = themes[themeName];
+    if (t) {
+        root.style.setProperty('--main-bg', t.bg);
+        root.style.setProperty('--sidebar-bg', t.side);
+        root.style.setProperty('--text-color', t.text);
+        var stream = document.getElementById('chat-messages-stream-anchor');
+        if (stream) { stream.style.backgroundColor = t.chatBg; stream.style.backgroundImage = 'none'; }
+        localStorage.setItem('nile_active_theme', themeName);
+        localStorage.removeItem('nile_custom_bg');
+    }
+}
+
+function uploadCustomChatBackground(event) {
+    var file = event.target.files[0];
+    if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var base64Img = e.target.result;
+            var stream = document.getElementById('chat-messages-stream-anchor');
+            if (stream) {
+                stream.style.backgroundImage = "url('" + base64Img + "')";
+                stream.style.backgroundSize = "cover";
+                stream.style.backgroundPosition = "center";
+            }
+            localStorage.setItem('nile_custom_bg', base64Img);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+(function() {
+    var savedName = localStorage.getItem('nile_name');
+    var savedPhone = localStorage.getItem('nile_phone');
+    var savedAvatar = localStorage.getItem('nile_avatar');
+    var savedToken = localStorage.getItem('saved_login_token');
+
+    var authModal = document.getElementById('modal-user-registration-auth');
+
+    if (savedPhone && savedToken) {
+        myProfile.name = savedName || "مستخدم نايل شات";
+        myProfile.phone = savedPhone;
+        myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
+        
+        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = myProfile.name;
+        if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = myProfile.avatar;
+        
+        // التحقق من الحساب المسجل
+        socket.emit('verify_saved_login', { phone: myProfile.phone, token: savedToken });
+        socket.emit('register_user', { phone: myProfile.phone, name: myProfile.name, avatar: myProfile.avatar });
+
+        // 🚀 تعديل الأمان لمنع التعليق: لو السيرفر ما ردش في خلال ثانيتين، افتح نافذة التسجيل فوراً
+        window.nileAuthTimeout = setTimeout(function() {
+            if (!window.nileUserVerified && authModal) {
+                authModal.classList.add('open');
+                authModal.style.display = 'flex';
+                console.log("استجابة السيرفر تأخرت، تم فتح نافذة التسجيل حمايةً من التعليق.");
+            }
+        }, 2000);
+
+    } else {
+        // لو مفيش بيانات مخزنة، افتح شاشة التسجيل فوراً بنظافة
+        if (authModal) {
+            authModal.classList.add('open');
+            authModal.style.display = 'flex';
+        }
+    }
+})();
+
+// 🚀 تكملة التعديل: استقبال رد السيرفر وإلغاء الـ Timeout لمنع التعليق
+socket.on('login_persist_status', function(res) {
+    var authModal = document.getElementById('modal-user-registration-auth');
+    if (res.status === 'success' || res.status === 'verified') {
+        window.nileUserVerified = true;
+        clearTimeout(window.nileAuthTimeout); // إلغاء عداد الأمان لأن السيرفر رد بنجاح
+        
+        if (authModal) {
+            authModal.classList.remove('open');
+            authModal.style.display = 'none';
+        }
+        
+        // تحديث البيانات والتأكيد عليها
+        localStorage.setItem('nile_phone', res.phone);
+        if(res.name) localStorage.setItem('nile_name', res.name);
+        if(res.avatar) localStorage.setItem('nile_avatar', res.avatar);
+    } else {
+        // لو السيرفر رفض التوكن، افتح شاشة التسجيل فوراً
+        clearTimeout(window.nileAuthTimeout);
+        if (authModal) {
+            authModal.classList.add('open');
+            authModal.style.display = 'flex';
+        }
+    }
+});
+
+socket.on('message', function(data) {
+    if (data && data.room) {
+        var storageKey = "nile_history_" + data.room;
+        var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+        
+        var isExist = localHistory.some(function(m) { 
+            return m.id === data.id || (m.text === data.text && m.timestamp === data.timestamp); 
+        });
+        
+        if (!isExist) {
+            localHistory.push(data);
+            if(localHistory.length > 300) localHistory.shift(); 
+            localStorage.setItem(storageKey, JSON.stringify(localHistory));
+        }
+    }
+});
+
+function openMyPrivateAIChat() {
+    if (!myProfile.phone) {
+        alert("برجاء تسجيل الدخول أولاً لتفعيل المساعد الذكي!");
+        return;
+    }
+    
+    var privateAIRoomId = "AI_ROOM_" + myProfile.phone;
+    
+    if (typeof joinChatRoomHook === 'function') {
+        joinChatRoomHook(privateAIRoomId, "المساعد الذكي (Nile AI)");
+    } else if (typeof joinRoom === 'function') {
+        joinRoom(privateAIRoomId, "المساعد الذكي (Nile AI)");
+    }
+    
+    var storageKey = "nile_history_" + privateAIRoomId;
+    var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+    var anchor = document.getElementById('chat-messages-stream-anchor');
+    
+    if (anchor && localHistory.length > 0) {
+        anchor.innerHTML = ''; 
+        localHistory.forEach(function(msgData) {
+            if (typeof renderSingleBubbleLayout === 'function') {
+                renderSingleBubbleLayout(msgData);
+            }
+        });
+        anchor.scrollTop = anchor.scrollHeight;
+    }
+});
+        anchor.scrollTop = anchor.scrollHeight;
+    }
+}
+    function toggleSocialMenu(event) {
+        if(event) event.stopPropagation();
+        var menu = document.getElementById("socialDropdownMenu");
+        if (menu.style.display === "none" || menu.style.display === "") {
+            menu.style.display = "block";
+        } else {
+            menu.style.display = "none";
+        }
+    }
+    window.addEventListener('click', function(event) {
+        var menu = document.getElementById("socialDropdownMenu");
+        var container = document.querySelector(".social-dropdown-container");
+        if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
+            menu.style.display = "none";
+        }
+    });
+        (function() {
+    if (typeof socket !== 'undefined' && socket.on) {
+        socket.on('receive_message', function(data) {
+            if (data.room === 'nile_ai_room' || data.senderName === 'Nile AI') {
+                if (typeof displayMessage === 'function') {
+                    displayMessage(data);
+                } else if (typeof appendMessage === 'function') {
+                    appendMessage(data);
+                }
+                
+                if (typeof playNotificationSound === 'function') {
+                    playNotificationSound();
+                }
+            }
+        });
+    }
+})();
+    </script>
+
+    <div class="app-container">
+        <aside class="sidebar">
+<div class="sidebar-header" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+    <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
+        <img class="user-avatar" id="my-avatar-display" src="https://i.ibb.co/6NGH0f3/logo.png" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+        <div class="user-meta-header">
+            <div id="loading-bar-mini" style="font-size: 11px; color: var(--primary-color); font-weight: 600; margin-bottom: 2px;">
+                <i class="fas fa-spinner fa-spin"></i> متصل...
+            </div>
+            <span id="my-name-display" style="font-weight: 700; font-size: 14px;">جاري التحميل...</span>
+        </div>
+    </div>
+    
+    <div class="header-actions" style="display: flex; align-items: center; gap: 16px; font-size: 18px; color: var(--text-muted);">
+        <i class="fas fa-cog" id="btn-settings" title="الإعدادات" style="cursor: pointer;"></i>
+        <i class="fas fa-robot" id="btn-ai-chat" title="Nile AI" style="cursor: pointer;"></i>
+        <i class="fas fa-layer-group" id="btn-platforms" title="المنصات" style="cursor: pointer; color: #00a884;"></i>
+    </div>
+</div>
+            <nav class="tabs-nav">
+                <button class="tab-btn active" onclick="switchSidebarTab('chats-tab')">المحادثات</button>
+                <button class="tab-btn" onclick="switchSidebarTab('contacts-tab'); loadMyContacts();">جهات الاتصال</button>
+                <button class="tab-btn" onclick="switchSidebarTab('stories-tab'); requestAllStoriesLive();">الحالات</button>
+                <button class="tab-btn" onclick="switchSidebarTab('feed-tab'); requestAllFeedPosts();">المنتدى</button>
+            </nav>
+            <div id="chats-tab" class="tab-content active">
+                <div class="search-box-container">
+                    <div class="search-input-wrapper">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="search-bar" id="search-rooms-input" placeholder="البحث أو بدء دردشة جديدة...">
+                    </div>
+                </div>
+                <div id="active-rooms-list-hook">
+                    <div class="list-item" onclick="joinChatRoomHook('public_room', 'الدردشة العامة للمشتركين')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="list-item-avatar">
+                        <div class="list-item-info">
+                            <div class="list-item-title">الدردشة العامة للمشتركين</div>
+                            <div class="list-item-desc">تواصل مباشرة مع جميع النشطين الآن</div>
+                        </div>
+                    </div>
+                  <div class="list-item" onclick="openMyPrivateAIChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="list-item-avatar">
+    <div class="list-item-info">
+        <div class="list-item-title">Nile AI</div>
+        <div class="list-item-desc">اضغط لبدء محادثتك الذكية الخاصة والمشفرة</div>
+    </div>
+</div>
+                </div>
+                <div id="my-private-groups-list-hook"></div>
+            </div>
+            <div id="contacts-tab" class="tab-content">
+                <div id="my-contacts-render-hook"></div>
+            </div>
+            <div id="stories-tab" class="tab-content">
+                <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreateStoryModal()">+ إضافة حالة جديدة</button>
+                    <button class="btn-custom" style="width:100%; padding:11px; background-color: #475569; color: white;" onclick="document.getElementById('customStatusModal').style.display='block'">📸 معرض الحالات المطور</button>
+                </div>
+                <div id="stories-render-hook"></div>
+            </div>
+            <div id="feed-tab" class="tab-content">
+                <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
+                    <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreatePostModal()">اكتب منشوراً جديداً بالمنتدى</button>
+                    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 11px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-size: 14px;" onclick="console.log('تم ربط حساب نايل شات بالفيسبوك تلقائياً')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="18" height="18"> دخول بحساب فيسبوك
+                    </a>
+                </div>
+                <div id="feed-posts-render-hook"></div>
+            </div>
+        </aside>
+        <main class="chat-window" id="main-chat-window-view">
+            <div class="welcome-screen" id="chat-welcome-placeholder">
+                <i class="bi bi-chat-square-text-fill"></i>
+                <h2>تطبيق نايل تشات المتكامل الإصدار المطور 2026</h2>
+                <p>اختر إحدى غرف المحادثة أو جهات الاتصال لبدء المراسلة والاتصال فوراً.</p>
+            </div>
+            <div id="active-chat-workspace" style="display:none; flex-direction:column; height:100%; width:100%;">
+                <header class="chat-header">
+                    <div class="chat-target-info">
+                        <img id="current-chat-target-avatar" src="https://www.w3schools.com/howto/img_avatar.png" class="list-item-avatar" alt="Avatar">
+                        <div>
+                            <div id="current-chat-target-name" style="font-weight:700; font-size:16px;">اسم الغرفة</div>
+                            <div id="current-chat-target-status" style="font-size:12px; color:var(--text-muted);">نشط الآن</div>
+                        </div>
+                    </div>
+                    <div class="chat-actions-right">
+                        <i class="bi bi-telephone-fill" onclick="initiateWebRTCCall('audio')"></i>
+                        <i class="bi bi-camera-video-fill" onclick="initiateWebRTCCall('video')"></i>
+                        <i class="bi bi-qr-code" onclick="triggerRoomQRCodeGeneration()"></i>
+                    </div>
+                </header>
+                <div class="messages-container" id="chat-messages-stream-anchor"></div>
+                <footer class="chat-footer">
+                    <i class="bi bi-paperclip footer-icon-btn" onclick="triggerFileUploadAction()"></i>
+                    <input type="file" id="hidden-file-input-field" style="display:none;" onchange="handleFileSelectedUpload(this)">
+                    <div class="input-panel-wrapper">
+                        <input type="text" id="chat-inline-text-input" class="main-message-input" placeholder="اكتب رسالتك هنا..." onkeyup="evalInputChangeState(this)">
+                    </div>
+                    <div class="send-action-container">
+                        <button type="button" id="dynamic-action-control-btn" class="circle-action-btn" onclick="executePrimaryActionControl()">
+                            <i class="bi bi-mic-fill" id="dynamic-action-icon"></i>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </main>
+    </div>
+    <div class="modal-overlay" id="modal-user-registration-auth">
+        <div class="modal-card">
+            <div class="modal-title">تسجيل الدخول / إنشاء حساب نايل تشات</div>
+            <div class="form-group">
+                <label>رقم الهاتف (الرقم التعريفي):</label>
+                <input type="text" id="auth-input-phone" class="form-control" placeholder="مثال: 01012345678">
+            </div>
+            <div class="form-group">
+                <label>الاسم المستعار الظاهر:</label>
+                <input type="text" id="auth-input-name" class="form-control" placeholder="اكتب اسمك">
+            </div>
+            <div class="form-group">
+                <label>اختر صورتك الشخصية من المعرض:</label>
+                <input type="file" id="auth-gallery-avatar" class="form-control" accept="image/*" onchange="uploadAvatarFromGallery(this, 'auth-input-avatar', 'auth-upload-status')">
+                <input type="hidden" id="auth-input-avatar" value="">
+                <small id="auth-upload-status" style="color: var(--primary-color); display: none; margin-top: 5px; font-weight: bold;"></small>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom primary" onclick="commitUserRegistrationAuthLive()">دخول وحفظ الجلسة</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-add-contact-view">
+        <div class="modal-card">
+            <div class="modal-title">إضافة جهة اتصال جديدة</div>
+            <div class="form-group">
+                <label>رقم هاتف الصديق المسجل بنايل تشات:</label>
+                <input type="text" id="contact-target-phone-field" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>الاسم المخصص كصديق:</label>
+                <input type="text" id="contact-target-custom-name" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom secondary" onclick="closeModalOverlay('modal-add-contact-view')">إلغاء</button>
+                <button class="btn-custom primary" onclick="submitAddContactRequestToServer()">إضافة حفظ</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-create-group-view">
+        <div class="modal-card">
+            <div class="modal-title">إنشاء مجموعة مخصصة خاصة جديدة</div>
+            <div class="form-group">
+                <label>اسم المجموعة الفريدة:</label>
+                <input type="text" id="group-name-input-field" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom secondary" onclick="closeModalOverlay('modal-create-group-view')">إلغاء</button>
+                <button class="btn-custom primary" onclick="submitCreateGroupFormRequest()">إنشاء المجموعة الآن</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-create-story-view">
+        <div class="modal-card">
+            <div class="modal-title">رفع حالة (Story) جديدة للمشتركين</div>
+            <div class="form-group">
+                <label>نص الحالة أو الرابط المباشر:</label>
+                <input type="text" id="story-content-text" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>أو إرفاق رابط صورة/فيديو مباشر للحالة:</label>
+                <input type="text" id="story-media-url" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom secondary" onclick="closeModalOverlay('modal-create-story-view')">إلغاء</button>
+                <button class="btn-custom primary" onclick="submitPublishStoryLive()">نشر الحالة</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-create-post-view">
+        <div class="modal-card">
+            <div class="modal-title">منشور جديد في المنتدى العام للمنصة</div>
+            <div class="form-group">
+                <label>محتوى المنشور المقروء:</label>
+                <textarea id="feed-post-main-text" class="form-control" style="height:100px; resize:none;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>رابط صورة مدمجة بالمنشور (اختياري):</label>
+                <input type="text" id="feed-post-media-link" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom secondary" onclick="closeModalOverlay('modal-create-post-view')">إلغاء</button>
+                <button class="btn-custom primary" onclick="submitPublishFeedPostLive()">نشر الآن بالمنتدى</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-profile-settings-view">
+        <div class="modal-card">
+            <div class="modal-title">تعديل الملف الشخصي والخصوصية</div>
+            <div class="form-group">
+                <label>الاسم الظاهر الحالي:</label>
+                <input type="text" id="profile-edit-name" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>تغيير الصورة الشخصية من المعرض:</label>
+                <input type="file" id="profile-gallery-avatar" class="form-control" accept="image/*" onchange="uploadAvatarFromGallery(this, 'profile-edit-avatar', 'profile-upload-status')">
+                <input type="hidden" id="profile-edit-avatar">
+                <small id="profile-upload-status" style="color: var(--primary-color); display: none; margin-top: 5px; font-weight: bold;"></small>
+            </div>
+            <div class="form-group">
+                <label>رابط خلفية الشات المستهدفة:</label>
+                <input type="text" id="profile-edit-wallpaper" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>مغير نبرة الصوت المفضل:</label>
+                <select id="profile-edit-voice-setting" class="form-control">
+                    <option value="normal">عادي وبدون فلتر</option>
+                    <option value="robot">روبوت فضائي سميك</option>
+                    <option value="chipmunk">سنجاب سريع حاد</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>الحالة المكتوبة المخصصة:</label>
+                <input type="text" id="profile-edit-status-text" class="form-control">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-custom secondary" onclick="closeModalOverlay('modal-profile-settings-view')">إغلاق</button>
+                <button class="btn-custom primary" onclick="saveProfileSettingsLiveChanges()">حفظ وتحديث مباشر</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal-qr-display-frame">
+        <div class="modal-card" style="text-align:center;">
+            <div class="modal-title">كود الـ باركود QR الخاص بغرفة الدردشة</div>
+            <div id="qr-container-box"></div>
+            <div class="modal-actions">
+                <button class="btn-custom primary" onclick="closeModalOverlay('modal-qr-display-frame')">تم الإغلاق</button>
+            </div>
+        </div>
+    </div>
+    <div class="webrtc-call-overlay" id="webrtc-call-screen-overlay">
+        <h2 id="call-screen-title" style="color:white; margin-bottom:20px; font-weight:300;">مكالمة نايل تشات الجارية...</h2>
+        <div class="video-streams-box">
+            <video id="webrtc-remote-video-stream" class="video-element" autoplay playsinline></video>
+            <video id="webrtc-local-video-stream" class="video-element local-small-stream" autoplay playsinline muted></video>
+        </div>
+        <div class="call-controls-panel">
+            <button class="btn-call-action accept" id="btn-call-accept-node" onclick="answerIncomingCallSignal()"><i class="bi bi-telephone-inbound-fill"></i></button>
+            <button class="btn-call-action hangup" onclick="terminateActiveCallSession()"><i class="bi bi-telephone-x-fill"></i></button>
+        </div>
+    </div>
+
+    <!-- قائمة سياقية تفاعلية مخصصة للتحكم بالرسائل -->
+    <div id="messageContextMenu" style="display: none; position: fixed; background-color: #1e293b; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 10px; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 170px;">
+        <div style="display: flex; gap: 6px; justify-content: space-around; padding-bottom: 8px; border-bottom: 1.5px solid #334155; margin-bottom: 6px;">
+            <span onclick="reactToMsg('👍')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</span>
+            <span onclick="reactToMsg('❤️')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">❤️</span>
+            <span onclick="reactToMsg('😂')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">😂</span>
+            <span onclick="reactToMsg('🔥')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🔥</span>
+        </div>
+        <div onclick="replyToMsg()" style="color: white; padding: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='transparent'"> ↩️ رد بالنص </div>
+        <div onclick="forwardMsg()" style="color: white; padding: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='transparent'"> ➡️ تحويل الرسالة </div>
+        <div onclick="deleteMsg()" style="color: #ef4444; padding: 8px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; font-weight: bold; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.backgroundColor='#451e1e'" onmouseout="this.style.backgroundColor='transparent'"> 🗑️ مسح للطرفين </div>
+    </div>
+
+    <script>
+        let socket = io();
+        let myProfile = { phone: '', name: '', avatar: '', theme_mode: 'light', wallpaper: '', voice_setting: 'normal', status_text: 'Available' };
+        let activeRoomId = '';
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecordingMode = false;
+        let activePeerConnection = null;
+        let localMediaStream = null;
+        let callTargetPhone = '';
+        let currentIncomingCallOffer = null;
+        let selectedMessageId = null;
+        let selectedMessageText = "";
+
+        const iceConfiguration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAndRestoreSavedUserSession();
+        });
+
+        function uploadAvatarFromGallery(fileInput, hiddenInputId, statusId) {
+            if (fileInput.files.length === 0) return;
+            const statusLabel = document.getElementById(statusId);
+            statusLabel.style.display = 'block';
+            statusLabel.innerText = ' ⏳ جاري رفع صورتك ومعالجتها ...';
+            statusLabel.style.color = 'var(--primary-color)';
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.url) {
+                    document.getElementById(hiddenInputId).value = data.url;
+                    statusLabel.innerText = ' ✅ تم رفع الصورة بنجاح وتعيينها كأفاتار !';
+                    statusLabel.style.color = '#00a884';
+                } else {
+                    statusLabel.innerText = ' ❌ فشل الرفع، حاول مرة أخرى .';
+                    statusLabel.style.color = '#ea4335';
+                }
+            }).catch(err => {
+                console.error(err);
+                statusLabel.innerText = ' ❌ خطأ في الاتصال بالسيرفر .';
+                statusLabel.style.color = '#ea4335';
+            });
+        }
+
+        function checkAndRestoreSavedUserSession() {
+            const savedPhone = localStorage.getItem('nile_chat_phone_2026');
+            const savedToken = localStorage.getItem('nile_chat_token_2026');
+            if(savedPhone && savedToken) {
+                socket.emit('verify_saved_login', { phone: savedPhone, token: savedToken });
+            } else {
+                openModalOverlay('modal-user-registration-auth');
+            }
+        }
+
+        socket.on('login_persist_status', (data) => {
+            if(data.status === 'success' || data.status === 'verified') {
+                myProfile.phone = data.phone;
+                myProfile.name = data.name || 'مستخدم نايل';
+                myProfile.avatar = data.avatar || 'https://www.w3schools.com/howto/img_avatar.png';
+                myProfile.theme_mode = data.theme_mode || 'light';
+                document.getElementById('my-global-name').innerText = myProfile.name;
+                document.getElementById('my-global-avatar').src = myProfile.avatar;
+                document.body.setAttribute('data-theme', myProfile.theme_mode);
+                closeModalOverlay('modal-user-registration-auth');
+                
+                if(data.status === 'verified') {
+                    localStorage.setItem('nile_chat_phone_2026', myProfile.phone);
+                    localStorage.setItem('nile_chat_token_2026', 'token_' + Date.now());
+                }
+                
+                // جلب المجموعات فور تسجيل الدخول بنجاح
+                requestMyPrivateGroupsList();
+            } else {
+                openModalOverlay('modal-user-registration-auth');
+            }
+        });
+
+        function switchSidebarTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
+            activeRoomId = roomId;
+            document.getElementById('chat-welcome-placeholder').style.display = 'none';
+            document.getElementById('active-chat-workspace').style.display = 'flex';
+            document.getElementById('current-chat-target-name').innerText = roomTitle;
+            if(targetAvatar) {
+                document.getElementById('current-chat-target-avatar').src = targetAvatar;
+            } else {
+                document.getElementById('current-chat-target-avatar').src = (roomId === 'AI_bot') ? 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png' : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+            }
+            document.getElementById('chat-messages-stream-anchor').innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">جاري تحميل أرشيف المحادثة بشكل آمن...</div>';
+            socket.emit('join_room', { room: activeRoomId });
+        }
+
+        socket.on('chat_history', (data) => {
+            const container = document.getElementById('chat-messages-stream-anchor');
+            container.innerHTML = '';
+            data.messages.forEach(msg => { renderMessageBubble(msg); });
+            scrollMessagesToBottomContainer();
+        });
+
+        socket.on('message', (data) => {
+            if(data.room === activeRoomId) {
+                renderMessageBubble(data);
+                scrollMessagesToBottomContainer();
+            }
+        });
+
+        function renderMessageBubble(msg) {
+            const container = document.getElementById('chat-messages-stream-anchor');
+            const isMe = String(msg.phone) === String(myProfile.phone);
+            const bubble = document.createElement('div');
+            bubble.classList.add('msg-bubble');
+            bubble.classList.add(isMe ? 'outgoing' : 'incoming');
+            bubble.setAttribute('data-id', msg.id || '');
+            bubble.setAttribute('id', `bubble-${msg.id}`);
+            bubble.style.position = 'relative';
+
+            let innerHTML = '';
+            if(!isMe && msg.sender) { 
+                innerHTML += `<div class="msg-sender">${msg.sender}</div>`; 
+            }
+            if(msg.file_type === 'audio') {
+                innerHTML += `
+                    <div class="voice-message-player">
+                        <button onclick="toggleAudioPlaybackNode('${msg.text}', this)"><i class="bi bi-play-fill"></i></button>
+                        <span style="font-size:12px; color:var(--text-muted);">تسجيل صوتي مدمج</span>
+                    </div>
+                `;
+            } else if(msg.file_type === 'image') {
+                innerHTML += `<img src="${msg.text}" style="max-width:100%; border-radius:6px; margin-bottom:5px;"><br>`;
+                if(msg.file_name) innerHTML += `<span style="font-size:13px;">${msg.file_name}</span>`;
+            } else {
+                innerHTML += `<div>${msg.text}</div>`;
+            }
+
+            // عرض علامة الرسالة المحولة
+            if(msg.is_forwarded || msg.is_forward) {
+                innerHTML = `<div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;"><i class="bi bi-arrow-90deg-right"></i> رسالة محولة</div>` + innerHTML;
+            }
+
+            const timestampFormatted = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            innerHTML += `
+                <div class="msg-meta">
+                    <span>${timestampFormatted}</span>
+                    ${isMe ? '<i class="bi bi-check2-all" style="color:var(--primary-color);"></i>' : ''}
+                </div>
+            `;
+            bubble.innerHTML = innerHTML;
+            
+            // ربط القائمة السياقية (Context Menu) عند الضغط بزر الفأرة الأيمن أو الضغط المطول
+            bubble.oncontextmenu = function(e) {
+                e.preventDefault();
+                showCustomContextMenu(e, msg.id, msg.text);
+            };
+
+            container.appendChild(bubble);
+        }
+
+        function toggleAudioPlaybackNode(url, btnNode) {
+            let activeAudio = btnNode.activeAudioInstance;
+            if(!activeAudio) {
+                activeAudio = new Audio(url);
+                btnNode.activeAudioInstance = activeAudio;
+                activeAudio.onended = () => { btnNode.innerHTML = '<i class="bi bi-play-fill"></i>'; };
+            }
+            if(activeAudio.paused) {
+                activeAudio.play();
+                btnNode.innerHTML = '<i class="bi bi-pause-fill"></i>';
+            } else {
+                activeAudio.pause();
+                btnNode.innerHTML = '<i class="bi bi-play-fill"></i>';
+            }
+        }
+
+        function evalInputChangeState(inputField) {
+            const icon = document.getElementById('dynamic-action-icon');
+            if(inputField.value.trim().length > 0) {
+                icon.className = 'bi bi-send-fill';
+                isRecordingMode = false;
+            } else {
+                icon.className = 'bi bi-mic-fill';
+            }
+        }
+
+        function executePrimaryActionControl() {
+            const inputField = document.getElementById('chat-inline-text-input');
+            const textValue = inputField.value.trim();
+            if(textValue.length > 0) {
+                const msgPayload = {
+                    id: 'msg-' + Date.now(), 
+                    room: activeRoomId,
+                    sender: myProfile.name, 
+                    phone: myProfile.phone,
+                    text: textValue, 
+                    file_type: 'text'
+                };
+                if (window.currentReplyId) {
+                    msgPayload.reply_to = window.currentReplyId;
+                    window.currentReplyId = null;
+                }
+                socket.emit('message', msgPayload);
+                inputField.value = '';
+                evalInputChangeState(inputField);
+            } else {
+                toggleVoiceRecordingSessionLive();
+            }
+        }
+
+        function toggleVoiceRecordingSessionLive() {
+            const btn = document.getElementById('dynamic-action-control-btn');
+            const icon = document.getElementById('dynamic-action-icon');
+            if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('عذراً، متصفحك الحالي لا يدعم تسجيل وإرسال الرسائل الصوتية الحية.');
+                return;
+            }
+            if(!isRecordingMode) {
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.ondataavailable = (e) => { if(e.data.size > 0) audioChunks.push(e.data); };
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        const formData = new FormData();
+                        formData.append('file', audioBlob, 'voice_note.mp3');
+                        fetch('/upload', { method: 'POST', body: formData })
+                        .then(res => res.json())
+                        .then(uploadedJson => {
+                            if(uploadedJson.url) {
+                                const voiceMsgPayload = {
+                                    id: 'msg-' + Date.now(), 
+                                    room: activeRoomId,
+                                    sender: myProfile.name, 
+                                    phone: myProfile.phone,
+                                    text: uploadedJson.url, 
+                                    file_type: 'audio',
+                                    voice_filter: myProfile.voice_setting
+                                };
+                                socket.emit('message', voiceMsgPayload);
+                            }
+                        }).catch(err => console.error(err));
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    mediaRecorder.start();
+                    isRecordingMode = true;
+                    btn.classList.add('recording');
+                    icon.className = 'bi bi-stop-fill';
+                }).catch(err => {
+                    console.error(err);
+                    alert('فشل الوصول إلى الميكروفون الحصري، يرجى تفعيل الصلاحيات.');
+                });
+            } else {
+                if(mediaRecorder && mediaRecorder.state !== 'inactive') { mediaRecorder.stop(); }
+                isRecordingMode = false;
+                btn.classList.remove('recording');
+                icon.className = 'bi bi-mic-fill';
+            }
+        }
+
+        function triggerFileUploadAction() { document.getElementById('hidden-file-input-field').click(); }
+        
+        function handleFileSelectedUpload(inputNode) {
+            if(inputNode.files.length === 0) return;
+            const file = inputNode.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if(data.url) {
+                    const payload = {
+                        id: 'msg-' + Date.now(), 
+                        room: activeRoomId,
+                        sender: myProfile.name, 
+                        phone: myProfile.phone,
+                        text: data.url, 
+                        file_type: data.file_type || 'text',
+                        file_name: data.name || 'ملف مرفق'
+                    };
+                    socket.emit('message', payload);
+                }
+            });
+            inputNode.value = '';
+        }
+
+function loadMyContacts() { socket.emit('get_my_contacts', { user_phone: myProfile.phone }); }
+
+        socket.on('my_contacts_list', (data) => {
+            const hook = document.getElementById('my-contacts-render-hook');
+            hook.innerHTML = '';
+            if(data.contacts.length === 0) {
+                hook.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">لا توجد جهات اتصال محفوظة حتى الآن.</div>';
+                return;
+            }
+            data.contacts.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.onclick = () => {
+                    const targetRoom = [myProfile.phone, c.phone].sort().join('_vs_');
+                    joinChatRoomHook(targetRoom, c.name, c.avatar);
+                };
+                item.innerHTML = `
+                    <img src="${c.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="list-item-avatar">
+                    <div class="list-item-info">
+                        <div class="list-item-title">${c.name}</div>
+                        <div class="list-item-desc">${c.status_text || 'Available'}</div>
+                    </div>
+                `;
+                hook.appendChild(item);
+            });
+        });
+
+        function submitAddContactRequestToServer() {
+            const phoneVal = document.getElementById('contact-target-phone-field').value.trim();
+            const nameVal = document.getElementById('contact-target-custom-name').value.trim();
+            if(!phoneVal) return;
+            socket.emit('add_new_contact', { user_phone: myProfile.phone, contact_phone: phoneVal, contact_name: nameVal });
+            closeModalOverlay('modal-add-contact-view');
+            document.getElementById('contact-target-phone-field').value = '';
+            document.getElementById('contact-target-custom-name').value = '';
+        }
+
+        socket.on('contact_added_status', (data) => {
+            if(data.status === 'success') { alert(`تم بنجاح ربط وحفظ جهة الاتصال: ${data.name}`); loadMyContacts(); }
+            else { alert('خطأ: لم يتم العثور على مستخدم مسجل برقم الهاتف هذا.'); }
+        });
+
+        function submitCreateGroupFormRequest() {
+            const gName = document.getElementById('group-name-input-field').value.trim();
+            if(!gName) return;
+            socket.emit('create_private_group', { group_name: gName, creator_phone: myProfile.phone, members: [] });
+            closeModalOverlay('modal-create-group-view');
+            document.getElementById('group-name-input-field').value = '';
+        }
+
+        socket.on('new_private_group_alert', (data) => { requestMyPrivateGroupsList(); });
+
+        function requestMyPrivateGroupsList() { socket.emit('get_my_private_groups', { user_phone: myProfile.phone }); }
+
+        socket.on('my_private_groups_list', (data) => {
+            const hook = document.getElementById('my-private-groups-list-hook');
+            hook.innerHTML = '';
+            data.groups.forEach(g => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.onclick = () => { joinChatRoomHook(g.id, `مجموعة: ${g.name}`); };
+                item.innerHTML = `
+                    <img src="https://cdn-icons-png.flaticon.com/512/681/681494.png" class="list-item-avatar">
+                    <div class="list-item-info">
+                        <div class="list-item-title">${g.name}</div>
+                        <div class="list-item-desc">مجموعة خاصة مشفرة</div>
+                    </div>
+                `;
+                hook.appendChild(item);
+            });
+        });
+
+        function requestAllStoriesLive() { socket.emit('get_stories'); }
+
+        function submitPublishStoryLive() {
+            const txt = document.getElementById('story-content-text').value.trim();
+            const media = document.getElementById('story-media-url').value.trim();
+            if(!txt && !media) return;
+            socket.emit('add_story', {
+                sender: myProfile.name, phone: myProfile.phone,
+                text: media ? media : txt, file_type: media ? 'image' : 'text', caption: media ? txt : ''
+            });
+            closeModalOverlay('modal-create-story-view');
+            document.getElementById('story-content-text').value = '';
+            document.getElementById('story-media-url').value = '';
+        }
+
+        socket.on('stories_list', (data) => {
+            const hook = document.getElementById('stories-render-hook');
+            hook.innerHTML = '';
+            if(data.stories.length === 0) {
+                hook.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">لا توجد حالات منشورة حالياً.</div>';
+                return;
+            }
+            data.stories.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `
+                    <img src="${s.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="list-item-avatar" style="border: 2px solid var(--primary-color);">
+                    <div class="list-item-info">
+                        <div class="list-item-title">${s.sender}</div>
+                        <div class="list-item-desc">${s.caption || s.text}</div>
+                    </div>
+                `;
+                item.onclick = () => {
+                    if (s.file_type === 'image' || s.text.startsWith('http')) {
+                        window.open(s.text);
+                    } else {
+                        alert(s.text);
+                    }
+                };
+                hook.appendChild(item);
+            });
+        });
+
+        socket.on('new_story_alert', () => { if(document.getElementById('stories-tab').classList.contains('active')) requestAllStoriesLive(); });
+
+        function requestAllFeedPosts() { socket.emit('get_feed_posts'); }
+
+        function submitPublishFeedPostLive() {
+            const txt = document.getElementById('feed-post-main-text').value.trim();
+            const link = document.getElementById('feed-post-media-link').value.trim();
+            if(!txt) return;
+            socket.emit('add_feed_post', {
+                sender: myProfile.name, phone: myProfile.phone, avatar: myProfile.avatar,
+                text: txt, media_url: link, file_type: link ? 'image' : 'text'
+            });
+            closeModalOverlay('modal-create-post-view');
+            document.getElementById('feed-post-main-text').value = '';
+            document.getElementById('feed-post-media-link').value = '';
+        }
+
+        socket.on('feed_posts_list', (data) => {
+            const hook = document.getElementById('feed-posts-render-hook');
+            hook.innerHTML = '';
+            data.posts.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'feed-card';
+                let mediaHtml = p.media_url ? `<img src="${p.media_url}" class="feed-media">` : '';
+                const hasLiked = p.likes_json && p.likes_json.includes(myProfile.phone);
+                card.innerHTML = `
+                    <div class="feed-header">
+                        <img src="${p.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" style="width:35px;height:35px;border-radius:50%;">
+                        <div style="font-weight:600; font-size:14px; margin-right: 8px;">${p.sender}</div>
+                    </div>
+                    <div style="font-size:14px; white-space:pre-wrap; margin-top: 6px;">${p.text}</div>
+                    ${mediaHtml}
+                    <div class="feed-actions" onclick="triggerLikeFeedPost('${p.id}')" style="margin-top: 10px;">
+                        <i class="bi ${hasLiked ? 'bi-heart-fill' : 'bi-heart'}" style="${hasLiked ? 'color:red;' : ''}"></i>
+                        <span style="font-size:13px; margin-right: 5px;">${p.likes || 0} إعجاب</span>
+                    </div>
+                `;
+                hook.appendChild(card);
+            });
+        });
+
+function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: postId, phone: myProfile.phone }); }
+
+        socket.on('new_feed_post_alert', () => { if(document.getElementById('feed-tab').classList.contains('active')) requestAllFeedPosts(); });
+
+        function triggerRoomQRCodeGeneration() {
+            if(!activeRoomId) return;
+            document.getElementById('qr-container-box').innerHTML = '';
+            openModalOverlay('modal-qr-display-frame');
+            socket.emit('request_qr_code_link', { room: activeRoomId, phone: myProfile.phone });
+        }
+
+        socket.on('qr_code_generated', (data) => {
+            if(data.room === activeRoomId) {
+                new QRCode(document.getElementById('qr-container-box'), {
+                    text: data.qr_string, width: 200, height: 200,
+                    colorDark : "#111b21", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        });
+
+        function initiateWebRTCCall(mode) {
+            if(!activeRoomId || activeRoomId.indexOf('_vs_') === -1) {
+                alert('المكالمات المباشرة مدعومة فقط داخل غرف المحادثة الثنائية الفردية الخاصة حالياً.');
+                return;
+            }
+            const structuralTokens = activeRoomId.split('_vs_');
+            callTargetPhone = structuralTokens.find(p => String(p) !== String(myProfile.phone));
+            document.getElementById('webrtc-call-screen-overlay').style.display = 'flex';
+            document.getElementById('btn-call-accept-node').style.display = 'none';
+            document.getElementById('call-screen-title').innerText = 'جاري الاتصال والربط عبر مسار روت آمن...';
+            navigator.mediaDevices.getUserMedia({ video: mode === 'video', audio: true })
+            .then(stream => {
+                localMediaStream = stream;
+                document.getElementById('webrtc-local-video-stream').srcObject = stream;
+                activePeerConnection = new RTCPeerConnection(iceConfiguration);
+                stream.getTracks().forEach(track => activePeerConnection.addTrack(track, stream));
+                activePeerConnection.onicecandidate = (event) => {
+                    if(event.candidate) {
+                        socket.emit('webrtc_ice_candidate', { target_phone: callTargetPhone, candidate: event.candidate, sender_phone: myProfile.phone });
+                    }
+                };
+                activePeerConnection.ontrack = (event) => { document.getElementById('webrtc-remote-video-stream').srcObject = event.streams[0]; };
+                activePeerConnection.createOffer().then(offer => {
+                    return activePeerConnection.setLocalDescription(offer).then(() => {
+                        socket.emit('webrtc_offer_answer', { target_phone: callTargetPhone, offer: offer, sender_phone: myProfile.phone, call_type: mode });
+                    });
+                });
+            }).catch(err => { console.error(err); terminateActiveCallSession(); });
+        }
+
+        socket.on('webrtc_offer_answer', (data) => {
+            if(data.offer) {
+                currentIncomingCallOffer = data.offer;
+                callTargetPhone = data.sender_phone;
+                document.getElementById('webrtc-call-screen-overlay').style.display = 'flex';
+                document.getElementById('btn-call-accept-node').style.display = 'flex';
+                document.getElementById('call-screen-title').innerText = `مكالمة واردة من رقم [ ${data.sender_phone} ]`;
+            } else if(data.answer) {
+                if(activePeerConnection) { activePeerConnection.setRemoteDescription(new RTCSessionDescription(data.answer)); }
+            }
+        });
+
+        function answerIncomingCallSignal() {
+            if(!currentIncomingCallOffer) return;
+            document.getElementById('btn-call-accept-node').style.display = 'none';
+            document.getElementById('call-screen-title').innerText = 'جاري ربط تيار البث المشترك...';
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                localMediaStream = stream;
+                document.getElementById('webrtc-local-video-stream').srcObject = stream;
+                activePeerConnection = new RTCPeerConnection(iceConfiguration);
+                stream.getTracks().forEach(track => activePeerConnection.addTrack(track, stream));
+                activePeerConnection.onicecandidate = (event) => {
+                    if(event.candidate) {
+                        socket.emit('webrtc_ice_candidate', { target_phone: callTargetPhone, candidate: event.candidate, sender_phone: myProfile.phone });
+                    }
+                };
+                activePeerConnection.ontrack = (event) => { document.getElementById('webrtc-remote-video-stream').srcObject = event.streams[0]; };
+                return activePeerConnection.setRemoteDescription(new RTCSessionDescription(currentIncomingCallOffer));
+            })
+            .then(() => activePeerConnection.createAnswer())
+            .then(answer => activePeerConnection.setLocalDescription(answer))
+            .then(() => { socket.emit('webrtc_offer_answer', { target_phone: callTargetPhone, answer: activePeerConnection.localDescription, sender_phone: myProfile.phone }); })
+            .catch(err => { console.error(err); terminateActiveCallSession(); });
+        }
+
+        socket.on('webrtc_ice_candidate', (data) => {
+            if(activePeerConnection && data.candidate) {
+                activePeerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(e => console.error(e));
+            }
+        });
+
+        function terminateActiveCallSession() {
+            document.getElementById('webrtc-call-screen-overlay').style.display = 'none';
+            if(localMediaStream) { localMediaStream.getTracks().forEach(track => track.stop()); localMediaStream = null; }
+            if(activePeerConnection) { activePeerConnection.close(); activePeerConnection = null; }
+            currentIncomingCallOffer = null;
+        }
+
+        function toggleThemeModeLive() {
+            const nextTheme = (myProfile.theme_mode === 'dark') ? 'light' : 'dark';
+            myProfile.theme_mode = nextTheme;
+            document.body.setAttribute('data-theme', nextTheme);
+            socket.emit('update_profile_live', myProfile);
+        }
+
+        function openProfileSettingsModal() {
+            document.getElementById('profile-edit-name').value = myProfile.name;
+            document.getElementById('profile-edit-avatar').value = myProfile.avatar;
+            document.getElementById('profile-edit-status-text').value = myProfile.status_text;
+            document.getElementById('profile-upload-status').style.display = 'none';
+            openModalOverlay('modal-profile-settings-view');
+        }
+
+        function saveProfileSettingsLiveChanges() {
+            myProfile.name = document.getElementById('profile-edit-name').value.trim();
+            myProfile.avatar = document.getElementById('profile-edit-avatar').value.trim();
+            myProfile.status_text = document.getElementById('profile-edit-status-text').value.trim();
+            myProfile.voice_setting = document.getElementById('profile-edit-voice-setting').value;
+            myProfile.wallpaper = document.getElementById('profile-edit-wallpaper').value.trim();
+            document.getElementById('my-global-name').innerText = myProfile.name;
+            document.getElementById('my-global-avatar').src = myProfile.avatar;
+            socket.emit('update_profile_live', myProfile);
+            closeModalOverlay('modal-profile-settings-view');
+        }
+
+        function commitUserRegistrationAuthLive() {
+            var nameField = document.getElementById('auth-input-name');
+            var phoneField = document.getElementById('auth-input-phone');
+            var avatarField = document.getElementById('auth-input-avatar');
+
+            var user_name = nameField ? nameField.value.trim() : '';
+            var user_phone = phoneField ? phoneField.value.trim() : '';
+            var user_avatar = avatarField ? avatarField.value.trim() : '';
+
+            if(!user_phone || !user_name) { alert('يرجى ملء خانة رقم الهاتف والاسم المستعار لإتمام الإجراء.'); return; }
+
+            var newToken = 'tk_' + Math.random().toString(36).substring(2) + Date.now();
+            localStorage.setItem('nile_name', user_name);
+            localStorage.setItem('nile_phone', user_phone);
+            localStorage.setItem('nile_avatar', user_avatar);
+            localStorage.setItem('saved_login_token', newToken);
+            
+            socket.emit('register_user', { phone: user_phone, name: user_name, avatar: user_avatar, token: newToken });
+        }
+
+        function openAddContactModal() { openModalOverlay('modal-add-contact-view'); }
+        function openCreateGroupModal() { openModalOverlay('modal-create-group-view'); }
+        function openCreateStoryModal() { openModalOverlay('modal-create-story-view'); }
+        function openCreatePostModal() { openModalOverlay('modal-create-post-view'); }
+        
+        function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
+        function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
+        function scrollMessagesToBottomContainer() { const c = document.getElementById('chat-messages-stream-anchor'); if(c) c.scrollTop = c.scrollHeight; }
+
+        function showCustomContextMenu(e, msgId, msgText) {
+            selectedMessageId = msgId;
+            selectedMessageText = msgText;
+            
+            const menu = document.getElementById('messageContextMenu');
+            menu.style.display = 'block';
+            menu.style.top = e.clientY + 'px';
+            menu.style.left = e.clientX + 'px';
+            
+            const closeMenu = () => {
+                menu.style.display = 'none';
+                document.removeEventListener('click', closeMenu);
+            };
+            setTimeout(() => { document.addEventListener('click', closeMenu); }, 50);
+        }
+
+        function deleteMsg() {
+            if (selectedMessageId) {
+                socket.emit('delete_message', { 'message_id': selectedMessageId, 'room': activeRoomId });
+            }
+        }
+
+        function reactToMsg(emoji) {
+            if (selectedMessageId) {
+                socket.emit('add_reaction', { 'message_id': selectedMessageId, 'emoji': emoji, 'room': activeRoomId });
+            }
+        }
+
+        function replyToMsg() {
+            const chatInput = document.getElementById('chat-inline-text-input');
+            if (chatInput) {
+                chatInput.focus();
+                chatInput.value = `[رد على: ${selectedMessageText}] ` + chatInput.value;
+                window.currentReplyId = selectedMessageId;
+            }
+        }
+
+        function forwardMsg() {
+            if (selectedMessageId) {
+                socket.emit('forward_or_reply', {
+                    'text': selectedMessageText,
+                    'reply_to': null,
+                    'is_forwarded': true,
+                    'room': activeRoomId,
+                    'sender': myProfile.name,
+                    'phone': myProfile.phone
+                });
+            }
+        }
+
+        socket.on('message_deleted', function(data) {
+            const msgEl = document.querySelector(`[data-id="${data.message_id || data.id}"]`);
+            if (msgEl) {
+                msgEl.innerHTML = `<i style="color: #94a3b8;"> 🗑️ تم مسح هذه الرسالة للطرفين </i>`;
+            }
+        });
+
+        socket.on('reaction_added', function(data) {
+            const msgEl = document.querySelector(`[data-id="${data.message_id}"]`);
+            if (msgEl) {
+                let reactBadge = msgEl.querySelector('.react-badge');
+                if (!reactBadge) {
+                    reactBadge = document.createElement('span');
+                    reactBadge.className = 'react-badge';
+                    reactBadge.style = 'position: absolute; bottom: -10px; left: 10px; background: var(--bg-side); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 2px 6px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
+                    msgEl.appendChild(reactBadge);
+                }
+                reactBadge.innerText = data.emoji;
+            }
+        });
+window.openNileAdvancedSettings = function() {
+        var modal = document.getElementById('waAdvancedSettingsModalCustom');
+        if (modal) {
+            modal.style.setProperty('display', 'flex', 'important');
+        }
+    };
+})();
+</script>
+
+<div id="waAdvancedSettingsModalCustom" class="wa-modal-overlay">
+    <div class="wa-modal-box">
+        <div class="wa-modal-header">
+            <button class="wa-back-btn" id="waCloseBtnCustom">✕</button>
+            <h3 class="wa-modal-title">إعدادات نايل شات المتقدمة</h3>
+        </div>
+        <div class="wa-modal-body">
+            <div style="display: flex; align-items: center; gap: 12px; background: #202c33; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                <div style="width: 35px; height: 35px; background: #00a884; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; color: #111b21;">ع</div>
+                <div>
+                    <h4 style="margin: 0; font-size: 13px; color: #e9edef;">المطور عبد الله محمد شعبان</h4>
+                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #8696a0;">مطور ومبرمج المنظومة</p>
+                </div>
+            </div>
+            
+            <div class="wa-section-title">👤 الحساب والمظهر</div>
+            <div class="wa-field-group">
+                <label>تغيير الاسم المستعار:</label>
+                <input type="text" id="waNameInputCustom" class="wa-input" placeholder="اكتب اسمك الجديد">
+                <button id="waSaveNameActionCustom" class="wa-btn-upload">حفظ الاسم</button>
+            </div>
+
+            <div class="wa-section-title">🎙️ فلاتر تغيير الصوت المتقدمة (20 صوت فعّال)</div>
+            <div class="wa-field-group">
+                <select id="waVoiceSelectCustom" class="wa-select">
+                    <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
+                    <option value="girl_1">👧 صوت فتاة هادئ</option>
+                    <option value="girl_2">👩 صوت امرأة رسمي</option>
+                    <option value="boy_1">👦 صوت طفل صغير</option>
+                    <option value="boy_2">👶 صوت بيبي متكلم</option>
+                    <option value="mature_1">👨 صوت رجل عميق</option>
+                    <option value="mature_2">🧔 صوت فخم خشن</option>
+                    <option value="ai_robot_1">🤖 ذكاء اصطناعي معدني</option>
+                    <option value="ai_robot_2">👾 ذكاء اصطناعي فضائي</option>
+                    <option value="echo_room">🏢 صدى صوت قاعة اجتماعات</option>
+                    <option value="radio_am">📻 صوت راديو قديم</option>
+                    <option value="helium">🎈 تأثير غاز الهيليوم</option>
+                    <option value="chipmunk">🐿️ صوت السنجاب السريع</option>
+                    <option value="monster">👹 صوت وحش ضخم</option>
+                    <option value="underwater">🌊 تأثير التحدث تحت الماء</option>
+                    <option value="telephone">📞 صوت مكالمة هاتفية</option>
+                    <option value="reverb_studio">🎵 ريفيرب استوديو احترافي</option>
+                    <option value="slow_motion">⏳ بطيء وضخم جداً</option>
+                    <option value="fast_forward">⚡ سريع وحاد جداً</option>
+                    <option value="cyberpunk">🎛️ صوت مشفر سايبربانك</option>
+                </select>
+            </div>
+
+            <div class="wa-section-title">🎨 مظهر الشات الكامل (18 ثيم حقيقي للواجهة)</div>
+            <div class="wa-field-group">
+                <select id="waThemeSelectCustom" class="wa-select">
+                    <option value="1">🟢 الثيم الزيتي الهادئ</option>
+                    <option value="2">🔵 الثيم الأزرق السحابي</option>
+                    <option value="3">🔮 الثيم اللافندر البنفسجي</option>
+                    <option value="4">🌊 الثيم البحري العميق</option>
+                    <option value="5">✳️ الثيم الزمردي الراقي</option>
+                    <option value="6">❤️ الثيم الياقوتي الدافئ</option>
+                    <option value="7">💛 الثيم الكهرماني العسلي</option>
+                    <option value="8">🌌 ثيم العتمة شديد السواد</option>
+                    <option value="9">🌸 الثيم الوردي الهادئ</option>
+                    <option value="10">☕ ثيم ألوان القهوة</option>
+                    <option value="11">⚡ ثيم النيون المتوهج</option>
+                    <option value="12">🌲 الثيم العشبي الطبيعي</option>
+                    <option value="13">🌇 ثيم ألوان الغروب</option>
+                    <option value="14">⏳ الثيم الكلاسيكي العتيق</option>
+                    <option value="15">🔋 الثيم الفسفوري المشع</option>
+                    <option value="16">👑 الثيم الأزرق الملكي</option>
+                    <option value="17">🍫 ثيم ألوان الشوكولاتة</option>
+                    <option value="18">🪙 الثيم الفضا البلاتيني</option>
+                </select>
+            </div>
+
+            <div class="wa-section-title">🎵 نغمات رنين المنظومة (20 نغمة مدمجة وفعّالة)</div>
+            <div class="wa-field-group">
+                <select id="waSystemRingtoneSelect" class="wa-select">
+                    <option value="ringtone_1">🔔 نغمة نايل كلاسيك</option>
+                    <option value="ringtone_2">📱 رنة آيفون ريمكس</option>
+                    <option value="ringtone_3">🎵 نغمة جالاكسي الهادئة</option>
+                    <option value="ringtone_4">✨ رنة النيون الرقمية</option>
+                    <option value="ringtone_5">🎸 معزوفة جيتار هادئة</option>
+                    <option value="ringtone_6">🎹 بيانو رومانسي</option>
+                    <option value="ringtone_7">🚨 تنبيه حاد وقوي</option>
+                    <option value="ringtone_8">🛸 رنة الخيال العلمي</option>
+                    <option value="ringtone_9">🍃 صوت الطبيعة والعصافير</option>
+                    <option value="ringtone_10">🥁 ريتم طبول حماسي</option>
+                    <option value="ringtone_11">📟 رنة بيجر قديم</option>
+                    <option value="ringtone_12">💎 نغمة الكريستال النقي</option>
+                    <option value="ringtone_13">🌌 رنة الغموض الفضائي</option>
+                    <option value="ringtone_14">🔔 رنين الجرس النحاسي</option>
+                    <option value="ringtone_15">🏹 صوت السهم الرقمي</option>
+                    <option value="ringtone_16">⚡ تنبيه فوري خاطف</option>
+                    <option value="ringtone_17">🌅 نغمة شروق الشمس</option>
+                    <option value="ringtone_18">🎪 رنة الألعاب والبهجة</option>
+                    <option value="ringtone_19">🌊 صوت أمواج البحر</option>
+                    <option value="ringtone_20">🏆 نغمة النجاح والانتصار</option>
+                </select>
+            </div>
+
+            <div class="wa-section-title">🖼️ رفع وسائط مخصصة خارجية</div>
+            <div class="wa-field-group">
+                <label class="wa-btn-upload" style="cursor: pointer;">
+                    🎶 رفع ملف نغمة خارجية خاصة بك
+                    <input type="file" id="waAudioFileCustom" accept="audio/*" style="display: none;">
+                </label>
+                <label class="wa-btn-upload" style="background: #2a3942; color: #38bdf8; cursor: pointer; margin-top: 8px;">
+                    🖼️ رفع وفرش صورة خلفية للشات كاملاً
+                    <input type="file" id="waImageFileCustom" accept="image/*" style="display: none;">
+                </label>
+            </div>
+            <button id="waSubmitFinalBtnCustom" class="wa-btn-save">حفظ وتطبيق التغييرات فوراُ</button>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-control-bar">
+    <div style="position: relative;">
+        <button type="button" onclick="window.openNileAdvancedSettings()" class="control-btn">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+
+    <div style="position: relative;">
+        <button type="button" onclick="toggleUpwardMenu('socialDropdownMenuCustom')" class="control-btn">
+            <i class="fas fa-globe"></i>
+        </button>
+        <div id="socialDropdownMenuCustom" class="upward-dropdown">
+            <a href="https://www.facebook.com" target="_blank" style="display:flex; align-items:center; gap:8px; color:white; text-decoration:none; padding:6px;"><img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="18" height="18"> فيسبوك</a>
+            <a href="https://www.tiktok.com" target="_blank" style="display:flex; align-items:center; gap:8px; color:white; text-decoration:none; padding:6px;"><img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="18" height="18"> تيك توك</a>
+            <a href="https://www.instagram.com" target="_blank" style="display:flex; align-items:center; gap:8px; color:white; text-decoration:none; padding:6px;"><img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="18" height="18"> إنستغرام</a>
+            <a href="https://www.youtube.com" target="_blank" style="display:flex; align-items:center; gap:8px; color:white; text-decoration:none; padding:6px;"><img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="18" height="18"> يوتيوب</a>
+            <a href="https://www.snapchat.com" target="_blank" style="display:flex; align-items:center; gap:8px; color:white; text-decoration:none; padding:6px;"><img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="18" height="18"> سناب شات</a>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    function bindNileSettingsWheel() {
+        var nileBtn = document.getElementById('nileSettingsBtn') || document.querySelector('.settings-btn-class') || document.querySelector('[title*="إعدادات"]');
+        if (nileBtn) {
+            nileBtn.onclick = function(e) {
+                e.preventDefault(); e.stopPropagation();
+                window.openNileAdvancedSettings();
+            };
+        } else {
+            setTimeout(bindNileSettingsWheel, 400);
+        }
+    }
+    window.addEventListener('load', bindNileSettingsWheel);
+
+    var closeBtn = document.getElementById('waCloseBtnCustom');
+    if (closeBtn) {
+        closeBtn.onclick = function() { 
+            var modal = document.getElementById('waAdvancedSettingsModalCustom');
+            if (modal) modal.style.setProperty('display', 'none', 'important');
+        };
+    }
+
+    var submitBtn = document.getElementById('waSubmitFinalBtnCustom');
+    if (submitBtn) {
+        submitBtn.onclick = function() { 
+            var modal = document.getElementById('waAdvancedSettingsModalCustom');
+            if (modal) modal.style.setProperty('display', 'none', 'important');
+        };
+    }
+
+    var themeSelect = document.getElementById('waThemeSelectCustom');
+    var savedTheme = localStorage.getItem('nile_mega_theme') || '1';
+    if(themeSelect) {
+        themeSelect.value = savedTheme;
+        executeThemeChange(savedTheme);
+        themeSelect.onchange = function() {
+            localStorage.setItem('nile_mega_theme', this.value);
+            executeThemeChange(this.value);
+        };
+    }
+
+    function executeThemeChange(themeId) {
+        var cleanClasses = document.body.className.split(' ').filter(function(c) { return !c.startsWith('nile-theme-'); });
+        document.body.className = cleanClasses.join(' ');
+        document.body.classList.add('nile-theme-' + themeId);
+    }
+
+    var voiceSelect = document.getElementById('waVoiceSelectCustom');
+    if (voiceSelect) {
+        voiceSelect.value = localStorage.getItem('nile_voice_filter') || 'normal';
+        voiceSelect.onchange = function() { 
+            localStorage.setItem('nile_voice_filter', this.value); 
+            if (window.NileVoiceEngine) { 
+                window.NileVoiceEngine.activeFilter = this.value; 
+            }
+        };
+    }
+
+    var ringtoneSelect = document.getElementById('waSystemRingtoneSelect');
+    if (ringtoneSelect) {
+        ringtoneSelect.value = localStorage.getItem('nile_sys_ringtone') || 'ringtone_1';
+        ringtoneSelect.onchange = function() {
+            localStorage.setItem('nile_sys_ringtone', this.value);
+            if (window.NileNotificationEngine) {
+                window.NileNotificationEngine.currentRingtone = this.value;
+            }
+        };
+    }
+
+    var saveNameAction = document.getElementById('waSaveNameActionCustom');
+    if (saveNameAction) {
+        saveNameAction.onclick = function() {
+            var val = document.getElementById('waNameInputCustom').value.trim();
+            if(val) {
+                localStorage.setItem('nile_name', val);
+                if(typeof myProfile !== 'undefined') myProfile.name = val;
+                alert("تم حفظ الاسم الفعلي وتحديث المنظومة!");
+            }
+        };
+    }
+
+    var nameInputCustom = document.getElementById('waNameInputCustom');
+    if (nameInputCustom) {
+        nameInputCustom.value = localStorage.getItem('nile_name') || '';
+    }
+
+    var audioFileCustom = document.getElementById('waAudioFileCustom');
+    if (audioFileCustom) {
+        audioFileCustom.onchange = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(evt) { 
+                    localStorage.setItem('nile_custom_ringtone_file', evt.target.result); 
+                    alert("تم رفع وتثبيت نغمة الرنين الخارجية بالسيستم!"); 
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+
+    var imageFileCustom = document.getElementById('waImageFileCustom');
+    if (imageFileCustom) {
+        imageFileCustom.onchange = function(e) {
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(evt) {
+                    applyBgToChat(evt.target.result);
+                    localStorage.setItem('nile_custom_bg', evt.target.result); alert("تم فرش وتحديث خلفية المنظومة كاملة!");
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+
+    function applyBgToChat(base64Data) {
+        var targets = ['body', '#app', '.main-inside', '#chat-messages-stream-anchor', '.message-list', '.chat-container'];
+        targets.forEach(function(selector) {
+            var el = document.getElementById(selector.replace('#','')) || document.querySelector(selector);
+            if (el) {
+                el.style.setProperty('background-image', "url('" + base64Data + "')", 'important');
+                el.style.setProperty('background-size', 'cover', 'important');
+                el.style.setProperty('background-position', 'center', 'important');
+            }
+        });
+    }
+
+    window.addEventListener('load', function() {
+        var savedBg = localStorage.getItem('nile_custom_bg');
+        if (savedBg) { setTimeout(function() { applyBgToChat(savedBg); }, 800); }
+    });
+})();
+
+function toggleUpwardMenu(id) {
+    var menu = document.getElementById(id);
+    if (!menu) return;
+    var isVisible = menu.style.display === 'block';
+    document.querySelectorAll('.upward-dropdown').forEach(function(el) {
+        el.style.display = 'none';
+    });
+    if (!isVisible) {
+        menu.style.display = 'block';
+    } else {
+        menu.style.display = 'none';
+    }
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.bottom-control-bar')) {
+        document.querySelectorAll('.upward-dropdown').forEach(function(el) {
+            el.style.display = 'none';
+        });
+    }
 });
 </script>
 </body>
