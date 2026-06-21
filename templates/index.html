@@ -115,30 +115,30 @@
             color: var(--primary-color);
             transform: scale(1.1);
         }
-/* إخفاء اللوحات الجانبية المسببة للزحمة */
-/* إخفاء القوائم الجانبية من الواجهة لعدم حدوث عشوائية وزحمة */
+/* تنسيق نظيف وبدون تكرار للقوائم المنسدلة */
 .right-platforms-bar, .side-features-list {
     display: none !important;
 }
 
-/* التنسيق الجديد لتظهر القوائم منسدلة بشكل أنيق أسفل زرار الترس من اليسار مباشرة */
 .right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
     display: flex !important;
-    position: fixed !important;
-    top: 65px !important; /* أسفل زرار الترس مباشرة */
-    left: 16px !important; /* محاذاة لليسار مع الترس */
-    width: 310px !important;
-    max-height: 75vh !important;
-    background-color: #1c2434 !important; 
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    position: absolute !important;
+    top: 55px !important; /* أسفل الترس وفوق شريط البحث بالملي */
+    left: 10px !important;
+    right: 10px !important;
+    width: auto !important;
+    max-height: 65vh !important;
+    background-color: #111b21 !important; /* لون داكن متناسق مع شات نايل */
+    border: 1px solid #222d34 !important;
     border-radius: 12px !important;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-    z-index: 2147483646 !important; /* لضمان ظهورها تحت الزرار مباشرة وفوق أي عنصر */
+    z-index: 999999 !important;
     padding: 15px !important;
     overflow-y: auto !important;
     flex-direction: column !important;
     gap: 12px !important;
-}        .tabs-nav {
+}
+        .tabs-nav {
             display: flex;
             background-color: var(--bg-side);
             border-bottom: 1px solid var(--border-color);
