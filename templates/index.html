@@ -847,45 +847,41 @@ if (typeof socket !== 'undefined' && socket.on) {
         }
     });
 }
-    
-(function() {
-    if (document.getElementById('nileSettingsBtn')) return;
-    var body = document.body;
-    if (body) {
-        var btn = document.createElement('button');
-        btn.id = 'nileSettingsBtn';
-        btn.innerHTML = '⚙️';
-        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
-        
-        btn.onclick = function(e) {
-            e.preventDefault(); 
-            e.stopPropagation();
-            
-            // تحديد القوائم الجانبية الحقيقية لمشروعك دغري
-            var platformsBar = document.querySelector('.right-platforms-bar');
-            var featuresList = document.querySelector('.side-features-list');
-            
-            // عمل إظهار وإخفاء (Toggle) للقوائم المنسدلة من زرار الترس مباشرة
-            if (platformsBar) platformsBar.classList.toggle('dropdown-popup-active');
-            if (featuresList) featuresList.classList.toggle('dropdown-popup-active');
-        };
-        body.appendChild(btn);
-    }
-})();
 
-// إغلاق القوائم المنسدلة تلقائياً عند الضغط في أي مكان خارجي فاضي
-window.onclick = function(event) {
+// تشغيل القائمة من زرار الترس الحقيقي اللي فوق شريط البحث بالظبط
+document.addEventListener('DOMContentLoaded', function() {
     var platformsBar = document.querySelector('.right-platforms-bar');
     var featuresList = document.querySelector('.side-features-list');
-    var btn = document.getElementById('nileSettingsBtn');
     
-    if (platformsBar && !platformsBar.contains(event.target) && btn && !btn.contains(event.target)) {
-        platformsBar.classList.remove('dropdown-popup-active');
+    // هيدور على زرار الترس (الأيقونة ⚙️) اللي متكريت وموجود فوق شريط البحث عندك
+    var searchContainer = document.querySelector('.search-box-container');
+    var realSettingsBtn = document.getElementById('nileSettingsBtn') || document.querySelector('.fa-cog');
+
+    // لو الزرار مش لاقطه، هندور عليه في أي مكان فوق شريط البحث
+    if (!realSettingsBtn && searchContainer) {
+        realSettingsBtn = searchContainer.parentElement.querySelector('#nileSettingsBtn') || document.querySelector('#nileSettingsBtn');
     }
-    if (featuresList && !featuresList.contains(event.target) && btn && !btn.contains(event.target)) {
-        featuresList.classList.remove('dropdown-popup-active');
+
+    if (realSettingsBtn) {
+        realSettingsBtn.style.cursor = 'pointer';
+        realSettingsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // تبديل الكلاس لإظهار أو إخفاء القوائم
+            if (platformsBar) platformsBar.classList.toggle('dropdown-popup-active');
+            if (featuresList) featuresList.classList.toggle('dropdown-popup-active');
+        });
     }
-};
+
+    // إغلاق تلقائي عند الضغط خارج القائمة
+    window.addEventListener('click', function(e) {
+        if (platformsBar && !platformsBar.contains(e.target) && realSettingsBtn && !realSettingsBtn.contains(e.target)) {
+            platformsBar.classList.remove('dropdown-popup-active');
+            featuresList.classList.remove('dropdown-popup-active');
+        }
+    });
+});
         
 function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
