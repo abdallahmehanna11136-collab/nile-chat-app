@@ -115,28 +115,33 @@
             color: var(--primary-color);
             transform: scale(1.1);
         }
-/* تنسيق نظيف وبدون تكرار للقوائم المنسدلة */
+/* إخفاء القوائم في الوضع الطبيعي */
 .right-platforms-bar, .side-features-list {
     display: none !important;
 }
 
+/* التنسيق المنبثق الصحيح: يطير فوق العناصر وبحجم صغير متناسق */
 .right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
     display: flex !important;
-    position: absolute !important;
-    top: 55px !important; /* أسفل الترس وفوق شريط البحث بالملي */
-    left: 10px !important;
-    right: 10px !important;
-    width: auto !important;
-    max-height: 65vh !important;
-    background-color: #111b21 !important; /* لون داكن متناسق مع شات نايل */
+    position: absolute !important; /* يجعلها طايرة فوق المحادثات ولا تزق العناصر لأسفل */
+    top: 60px !important; /* أسفل الترس مباشرة */
+    left: 15px !important;
+    width: 280px !important; /* تحديد عرض صغير عشان ما تفرشش بكامل الشاشة زي الصورة */
+    max-height: 50vh !important;
+    background-color: #111b21 !important; /* لون داكن متناسق */
     border: 1px solid #222d34 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
-    z-index: 999999 !important;
-    padding: 15px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    z-index: 999999 !important; /* تظهر فوق كل شيء */
+    padding: 10px !important;
     overflow-y: auto !important;
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 8px !important;
+}
+
+/* تأمين الحاوية لتكون نقطة الارتكاز للقائمة الطايرة */
+.sidebar {
+    position: relative !important;
 }
         .tabs-nav {
             display: flex;
