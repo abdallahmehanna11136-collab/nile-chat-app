@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>نايل شات | Nile Chat</title>
     <link rel="manifest" href="/static/manifest.json">
     <link rel="icon" href="/static/icon.png" type="image/png">
@@ -15,34 +15,199 @@
     <style>
         :root {
             --primary: #00a884;
-            --bg-main: #f0f2f5;
-            --bg-side: #ffffff;
-            --bg-chat: #efeae2;
-            --text-main: #111b21;
-            --text-muted: #667781;
-        }
-        [data-theme="dark"] {
             --bg-main: #0b141a;
             --bg-side: #111b21;
             --bg-chat: #0b141a;
             --text-main: #e9edef;
             --text-muted: #8696a0;
         }
-        * { box-sizing: border-box; margin:0; padding:0; font-family: 'Cairo', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
-        .app-container { display: flex; height: 100%; }
-        /* ... (الـ CSS كامل منقح) */
+        .app-container { display: flex; height: 100%; width: 100%; }
+        .sidebar { width: 380px; background: var(--bg-side); border-left: 1px solid #222; display: flex; flex-direction: column; }
+        .chat-window { flex: 1; display: flex; flex-direction: column; background: var(--bg-chat); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000; }
+        .modal-content { background: var(--bg-side); padding: 20px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
     </style>
 </head>
 <body data-theme="dark">
 
-<!-- Sidebar, Chat Area, Modals (منظمة) -->
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Header -->
+        <div class="sidebar-header" style="padding:15px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #222;">
+            <div onclick="openProfileModal()" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+                <img id="my-avatar" src="/static/icon.png" width="48" height="48" style="border-radius:50%; border:2px solid var(--primary);">
+                <div>
+                    <strong id="my-name">نايل شات</strong>
+                </div>
+            </div>
+            <i class="fas fa-cog fa-2x" onclick="openAdvancedSettings()" style="cursor:pointer; color:var(--text-muted);"></i>
+        </div>
 
+        <!-- Tabs -->
+        <nav class="tabs-nav" style="display:flex; background:var(--bg-side);">
+            <button class="tab-btn active" onclick="switchTab(0)">المحادثات</button>
+            <button class="tab-btn" onclick="switchTab(1)">جهات الاتصال</button>
+            <button class="tab-btn" onclick="switchTab(2)">الحالات</button>
+            <button class="tab-btn" onclick="switchTab(3)">المنتدى</button>
+        </nav>
+
+        <!-- Tab Content -->
+        <div id="tab-content" style="flex:1; overflow-y:auto;"></div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main class="chat-window">
+        <!-- Will be populated by JS -->
+    </main>
+</div>
+
+<!-- Modals -->
+<div id="advanced-settings-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h2>الإعدادات المتقدمة</h2>
+        <!-- كل الإعدادات من الملف الأصلي هتكون هنا -->
+        <button onclick="closeModal('advanced-settings-modal')">إغلاق</button>
+    </div>
+</div>
 <script>
-// Nile Chat Core - Cleaned (كل الدوال محفوظة)
+// ==================== Nile Chat Core - Cleaned Version ====================
 const socket = io();
-let myProfile = {};
-// ... (كل الـ socket events, functions, voice, webrtc, ai, qr, etc.)
+let myProfile = { phone: '', name: '', avatar: '' };
+let activeRoomId = null;
+let currentTheme = localStorage.getItem('nile_theme') || 'dark';
+let isRecording = false;
+let mediaRecorder;
+let audioChunks = [];
+
+// Apply saved theme
+document.documentElement.setAttribute('data-theme', currentTheme);
+
+// ==================== Socket Events ====================
+socket.on('connect', () => {
+    console.log('✅ Connected to Nile Chat Server');
+    const savedPhone = localStorage.getItem('nile_phone');
+    if (savedPhone) {
+        socket.emit('register_user', { phone: savedPhone });
+    }
+});
+
+socket.on('login_persist_status', (data) => {
+    if (data.status === 'success') {
+        myProfile = data;
+        document.getElementById('my-name').textContent = data.name || 'نايل شات';
+        document.getElementById('my-avatar').src = data.avatar || '/static/icon.png';
+    }
+});
+
+socket.on('message', (data) => {
+    renderMessage(data);
+});
+
+socket.on('webrtc_offer', (data) => {
+    handleWebRTCOffer(data);
+});
+
+socket.on('webrtc_answer', (data) => {
+    handleWebRTCAnswer(data);
+});
+
+socket.on('webrtc_ice_candidate', (data) => {
+    handleIceCandidate(data);
+});
+
+// ==================== Main Functions ====================
+function openAdvancedSettings() {
+    document.getElementById('advanced-settings-modal').style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function openProfileModal() {
+    // Profile modal logic (add your full modal content here)
+    alert('ملف شخصي - سيتم تطويره');
+}
+
+function switchTab(tabIndex) {
+    // Tab switching
+    console.log('Switched to tab:', tabIndex);
+    // Add your tab content logic
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    if (input && input.value.trim() !== '') {
+        socket.emit('message', {
+            text: input.value,
+            room: activeRoomId,
+            sender: myProfile.phone
+        });
+        input.value = '';
+    }
+}
+
+// Voice Recording
+function startVoiceRecording() {
+    if (isRecording) return;
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                // Send voice note via socket or upload
+                console.log('Voice note recorded');
+            };
+            mediaRecorder.start();
+            isRecording = true;
+        })
+        .catch(err => console.error('Voice error:', err));
+}
+
+// WebRTC (basic)
+let peerConnection;
+function initiateWebRTCCall(targetPhone) {
+    // Full WebRTC logic here (STUN, offer, etc.)
+    console.log('Calling:', targetPhone);
+}
+
+// Nile AI Response
+function getNileAiResponse(message) {
+    // Hardcoded or API call
+    return "مرحبا! أنا Nile AI، كيف أقدر أساعدك؟";
+}
+
+// QR Code
+function generateQR() {
+    const qrContainer = document.getElementById('qr-container');
+    if (qrContainer) {
+        new QRCode(qrContainer, {
+            text: myProfile.phone || "NileChatUser",
+            width: 256,
+            height: 256
+        });
+    }
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/work.js')
+        .then(reg => console.log('✅ SW Registered'))
+        .catch(err => console.log('SW Error:', err));
+}
+
+// Initialize App
+document.addEventListener('DOMContentLoaded', () => {
+    socket.emit('register_user', { 
+        phone: localStorage.getItem('nile_phone'),
+        name: localStorage.getItem('nile_name')
+    });
+});
 </script>
 </body>
 </html>
