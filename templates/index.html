@@ -845,6 +845,8 @@ if (typeof socket !== 'undefined' && socket.on) {
                 });
             }
         }
+    });
+}
     
 (function() {
     if (document.getElementById('nileSettingsBtn')) return;
@@ -856,13 +858,34 @@ if (typeof socket !== 'undefined' && socket.on) {
         btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 42px !important; height: 42px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
         
         btn.onclick = function(e) {
-            e.preventDefault(); e.stopPropagation();
-            var modal = document.getElementById('nileAdvancedSettingsModal');
-            if (modal) modal.style.setProperty('display', 'flex', 'important');
+            e.preventDefault(); 
+            e.stopPropagation();
+            
+            // تحديد القوائم الجانبية الحقيقية لمشروعك دغري
+            var platformsBar = document.querySelector('.right-platforms-bar');
+            var featuresList = document.querySelector('.side-features-list');
+            
+            // عمل إظهار وإخفاء (Toggle) للقوائم المنسدلة من زرار الترس مباشرة
+            if (platformsBar) platformsBar.classList.toggle('dropdown-popup-active');
+            if (featuresList) featuresList.classList.toggle('dropdown-popup-active');
         };
         body.appendChild(btn);
     }
 })();
+
+// إغلاق القوائم المنسدلة تلقائياً عند الضغط في أي مكان خارجي فاضي
+window.onclick = function(event) {
+    var platformsBar = document.querySelector('.right-platforms-bar');
+    var featuresList = document.querySelector('.side-features-list');
+    var btn = document.getElementById('nileSettingsBtn');
+    
+    if (platformsBar && !platformsBar.contains(event.target) && btn && !btn.contains(event.target)) {
+        platformsBar.classList.remove('dropdown-popup-active');
+    }
+    if (featuresList && !featuresList.contains(event.target) && btn && !btn.contains(event.target)) {
+        featuresList.classList.remove('dropdown-popup-active');
+    }
+};
         
 function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
