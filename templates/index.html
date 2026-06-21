@@ -115,30 +115,29 @@
             color: var(--primary-color);
             transform: scale(1.1);
         }
-/* إخفاء القوائم الجانبية من مكانها القديم لمنع العك والزحمة */
-        .sidebar-social-links, .right-platforms-bar, .extra-sidebar-buttons, .side-features-list {
-            display: none !important;
-        }
+/* إخفاء اللوحات الجانبية المسببة للزحمة */
+.right-platforms-bar, .side-features-list {
+    display: none !important;
+}
 
-        /* تنسيق القائمة المنسدلة عند تفعيلها لتظهر بشكل أنيق مثل التليجرام */
-        .right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
-            display: flex !important;
-            position: absolute;
-            top: 60px; 
-            left: 20px; 
-            width: 310px;
-            max-height: 75vh;
-            background-color: #1c2434; 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            z-index: 99999;
-            padding: 15px;
-            overflow-y: auto;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+/* التنسيق الجديد لما تفتح القائمة */
+.right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
+    display: flex !important;
+    position: absolute;
+    top: 60px; 
+    left: 20px; 
+    width: 310px;
+    max-height: 75vh;
+    background-color: #1c2434; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 99999;
+    padding: 15px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 12px;
+}
         .tabs-nav {
             display: flex;
             background-color: var(--bg-side);
