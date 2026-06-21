@@ -116,29 +116,29 @@
             transform: scale(1.1);
         }
 /* إخفاء اللوحات الجانبية المسببة للزحمة */
+/* إخفاء القوائم الجانبية من الواجهة لعدم حدوث عشوائية وزحمة */
 .right-platforms-bar, .side-features-list {
     display: none !important;
 }
 
-/* التنسيق الجديد لما تفتح القائمة */
+/* التنسيق الجديد لتظهر القوائم منسدلة بشكل أنيق أسفل زرار الترس من اليسار مباشرة */
 .right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
     display: flex !important;
-    position: absolute;
-    top: 60px; 
-    left: 20px; 
-    width: 310px;
-    max-height: 75vh;
-    background-color: #1c2434; 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    z-index: 99999;
-    padding: 15px;
-    overflow-y: auto;
-    flex-direction: column;
-    gap: 12px;
-}
-        .tabs-nav {
+    position: fixed !important;
+    top: 65px !important; /* أسفل زرار الترس مباشرة */
+    left: 16px !important; /* محاذاة لليسار مع الترس */
+    width: 310px !important;
+    max-height: 75vh !important;
+    background-color: #1c2434 !important; 
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+    z-index: 2147483646 !important; /* لضمان ظهورها تحت الزرار مباشرة وفوق أي عنصر */
+    padding: 15px !important;
+    overflow-y: auto !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}        .tabs-nav {
             display: flex;
             background-color: var(--bg-side);
             border-bottom: 1px solid var(--border-color);
