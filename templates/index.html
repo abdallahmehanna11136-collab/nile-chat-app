@@ -1042,58 +1042,62 @@ function openMyPrivateAIChat() {
     });
 } // تأكد إن القوس ده بيقفل الـ function الأساسية اللي فوقه بنظافة
 
-function toggleSocialMenu(event) {
-    if(event) event.stopPropagation();
-        var menu = document.getElementById("socialDropdownMenu");
-        if (menu.style.display === "none" || menu.style.display === "") {
-            menu.style.display = "block";
-        } else {
-            menu.style.display = "none";
-        }
-    }
-    window.addEventListener('click', function(event) {
-        var menu = document.getElementById("socialDropdownMenu");
-        var container = document.querySelector(".social-dropdown-container");
-        if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
-            menu.style.display = "none";
-        }
-    });
-        (function() {
-    if (typeof socket !== 'undefined' && socket.on) {
-        socket.on('receive_message', function(data) {
-            if (data.room === 'nile_ai_room' || data.senderName === 'Nile AI') {
-                if (typeof displayMessage === 'function') {
-                    displayMessage(data);
-                } else if (typeof appendMessage === 'function') {
-                    appendMessage(data);
-                }
-                
-                if (typeof playNotificationSound === 'function') {
-                    playNotificationSound();
+<script>
+        function toggleSocialMenu(event) {
+            if(event) event.stopPropagation();
+            var menu = document.getElementById("socialDropdownMenu");
+            if (menu) {
+                if (menu.style.display === "none" || menu.style.display === "") {
+                    menu.style.display = "block";
+                } else {
+                    menu.style.display = "none";
                 }
             }
+        }
+
+        window.addEventListener('click', function(event) {
+            var menu = document.getElementById("socialDropdownMenu");
+            var container = document.querySelector(".social-dropdown-container");
+            if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
+                menu.style.display = "none";
+            }
         });
-    }
-})();
+
+        (function() {
+            if (typeof socket !== 'undefined' && socket.on) {
+                socket.on('receive_message', function(data) {
+                    if (data.room === 'nile_ai_room' || data.senderName === 'Nile AI') {
+                        if (typeof displayMessage === 'function') {
+                            displayMessage(data);
+                        } else if (typeof appendMessage === 'function') {
+                            appendMessage(data);
+                        }
+                        
+                        if (typeof playNotificationSound === 'function') {
+                            playNotificationSound();
+                        }
+                    }
+                });
+            }
+        })();
     </script>
 
     <div class="app-container">
         <aside class="sidebar">
-<div class="sidebar-header" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
-    <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
-        <img class="user-avatar" id="my-avatar-display" src="https://i.ibb.co/6NGH0f3/logo.png" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
-        <div class="user-meta-header">
-            <div id="loading-bar-mini" style="font-size: 11px; color: var(--primary-color); font-weight: 600; margin-bottom: 2px;">
-                <i class="fas fa-spinner fa-spin"></i> متصل...
+            <div class="sidebar-header" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+                <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
+                    <img class="user-avatar" id="my-avatar-display" src="https://i.ibb.co/6NGH0f3/logo.png" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <div class="user-meta-header">
+                        <div id="loading-bar-mini" style="font-size: 11px; color: var(--primary-color); font-weight: 600; margin-bottom: 2px;">
+                            <i class="fas fa-spinner fa-spin"></i> متصل...
+                        </div>
+                        <span id="my-name-display" style="font-weight: 700; font-size: 14px;">جاري التحميل...</span>
+                    </div>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 16px; font-size: 18px; color: var(--text-muted);">
+                    <i class="fas fa-robot" id="btn-ai-chat" title="Nile AI" style="cursor: pointer;"></i>
+                </div>
             </div>
-            <span id="my-name-display" style="font-weight: 700; font-size: 14px;">جاري التحميل...</span>
-        </div>
-    </div>
-    
-<div class="header-actions" style="display: flex; align-items: center; gap: 16px; font-size: 18px; color: var(--text-muted);">
-        <i class="fas fa-robot" id="btn-ai-chat" title="Nile AI" style="cursor: pointer;"></i>
-    </div>
-</div>
             <nav class="tabs-nav">
                 <button class="tab-btn active" onclick="switchSidebarTab('chats-tab')">المحادثات</button>
                 <button class="tab-btn" onclick="switchSidebarTab('contacts-tab'); loadMyContacts();">جهات الاتصال</button>
@@ -1115,30 +1119,30 @@ function toggleSocialMenu(event) {
                             <div class="list-item-desc">تواصل مباشرة مع جميع النشطين الآن</div>
                         </div>
                     </div>
-                  <div class="list-item" onclick="openMyPrivateAIChat()">
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="list-item-avatar">
-    <div class="list-item-info">
-        <div class="list-item-title">Nile AI</div>
-        <div class="list-item-desc">اضغط لبدء محادثتك الذكية الخاصة والمشفرة</div>
-    </div>
-</div>
+                    <div class="list-item" onclick="openMyPrivateAIChat()">
+                        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="list-item-avatar">
+                        <div class="list-item-info">
+                            <div class="list-item-title">Nile AI</div>
+                            <div class="list-item-desc">اضغط لبدء محادثتك الذكية الخاصة والمشفرة</div>
+                        </div>
+                    </div>
                 </div>
                 <div id="my-private-groups-list-hook"></div>
             </div>
-            <div id="contacts-tab" class="tab-content">
+            <div id="contacts-tab" class="tab-content" style="display:none;">
                 <div id="my-contacts-render-hook"></div>
             </div>
-            <div id="stories-tab" class="tab-content">
+            <div id="stories-tab" class="tab-content" style="display:none;">
                 <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreateStoryModal()">+ إضافة حالة جديدة</button>
                     <button class="btn-custom" style="width:100%; padding:11px; background-color: #475569; color: white;" onclick="document.getElementById('customStatusModal').style.display='block'">📸 معرض الحالات المطور</button>
                 </div>
                 <div id="stories-render-hook"></div>
             </div>
-            <div id="feed-tab" class="tab-content">
+            <div id="feed-tab" class="tab-content" style="display:none;">
                 <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreatePostModal()">اكتب منشوراً جديداً بالمنتدى</button>
-                    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 11px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-size: 14px;" onclick="console.log('تم ربط حساب نايل شات بالفيسبوك تلقائياً')">
+                    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 11px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-size: 14px;">
                         <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="18" height="18"> دخول بحساب فيسبوك
                     </a>
                 </div>
@@ -1171,7 +1175,7 @@ function toggleSocialMenu(event) {
                     <i class="bi bi-paperclip footer-icon-btn" onclick="triggerFileUploadAction()"></i>
                     <input type="file" id="hidden-file-input-field" style="display:none;" onchange="handleFileSelectedUpload(this)">
                     <div class="input-panel-wrapper">
-                        <input type="text" id="chat-inline-text-input" class="main-message-input" placeholder="اكتب رسالتك هنا..." onkeyup="evalInputChangeState(this)">
+                        <input type="text" id="chat-inline-text-input" class="main-message-input" placeholder="اكتب رسالتك هنا..." onkeyup="if(typeof evalInputChangeState === 'function') evalInputChangeState(this)">
                     </div>
                     <div class="send-action-container">
                         <button type="button" id="dynamic-action-control-btn" class="circle-action-btn" onclick="executePrimaryActionControl()">
@@ -1182,6 +1186,7 @@ function toggleSocialMenu(event) {
             </div>
         </main>
     </div>
+
     <div class="modal-overlay" id="modal-user-registration-auth">
         <div class="modal-card">
             <div class="modal-title">تسجيل الدخول / إنشاء حساب نايل تشات</div>
@@ -1204,6 +1209,7 @@ function toggleSocialMenu(event) {
             </div>
         </div>
     </div>
+
     <div class="modal-overlay" id="modal-add-contact-view">
         <div class="modal-card">
             <div class="modal-title">إضافة جهة اتصال جديدة</div>
@@ -1221,6 +1227,7 @@ function toggleSocialMenu(event) {
             </div>
         </div>
     </div>
+
     <div class="modal-overlay" id="modal-create-group-view">
         <div class="modal-card">
             <div class="modal-title">إنشاء مجموعة مخصصة خاصة جديدة</div>
@@ -1234,6 +1241,7 @@ function toggleSocialMenu(event) {
             </div>
         </div>
     </div>
+
     <div class="modal-overlay" id="modal-create-story-view">
         <div class="modal-card">
             <div class="modal-title">رفع حالة (Story) جديدة للمشتركين</div>
@@ -1251,7 +1259,8 @@ function toggleSocialMenu(event) {
             </div>
         </div>
     </div>
-<div class="modal-overlay" id="modal-create-post-view">
+
+    <div class="modal-overlay" id="modal-create-post-view">
         <div class="modal-card">
             <div class="modal-title">منشور جديد في المنتدى العام للمنصة</div>
             <div class="form-group">
@@ -1303,7 +1312,7 @@ function toggleSocialMenu(event) {
         </div>
     </div>
     
-    <div class="webrtc-call-overlay" id="webrtc-call-screen-overlay">
+    <div class="webrtc-call-overlay" id="webrtc-call-screen-overlay" style="display:none;">
         <h2 id="call-screen-title" style="color:white; margin-bottom:20px; font-weight:300;">مكالمة نايل تشات الجارية...</h2>
         <div class="video-streams-box">
             <video id="webrtc-remote-video-stream" class="video-element" autoplay playsinline></video>
@@ -1315,7 +1324,6 @@ function toggleSocialMenu(event) {
         </div>
     </div>
 
-    <!-- قائمة سياقية تفاعلية مخصصة للتحكم بالرسائل -->
     <div id="messageContextMenu" style="display: none; position: fixed; background-color: #1e293b; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 10px; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 170px;">
         <div style="display: flex; gap: 6px; justify-content: space-around; padding-bottom: 8px; border-bottom: 1.5px solid #334155; margin-bottom: 6px;">
             <span onclick="reactToMsg('👍')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</span>
