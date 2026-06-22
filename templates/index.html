@@ -1123,86 +1123,107 @@ function uploadCustomChatBackground(event) {
 }
 
 (function() {
+    // تأمين وجود كائن البروفايل لمنع توقف الكود (ReferenceError)
+    if (typeof myProfile === 'undefined') {
+        window.myProfile = { name: '', phone: '', avatar: '' };
+    }
+
     var savedName = localStorage.getItem('nile_name');
     var savedPhone = localStorage.getItem('nile_phone');
     var savedAvatar = localStorage.getItem('nile_avatar');
     var savedToken = localStorage.getItem('saved_login_token');
 
-    var authModal = document.getElementById('modal-user-registration-auth');
+    // تشغيل الكود بأمان للتأكد من تحميل عناصر الواجهة (DOM)
+    function initNileAuth() {
+        var authModal = document.getElementById('modal-user-registration-auth');
 
-    if (savedPhone && savedToken) {
-        myProfile.name = savedName || "مستخدم نايل شات";
-        myProfile.phone = savedPhone;
-        myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
-        
-        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = myProfile.name;
-        if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = myProfile.avatar;
-        
-        // التحقق من الحساب المسجل
-        socket.emit('verify_saved_login', { phone: myProfile.phone, token: savedToken });
-        socket.emit('register_user', { phone: myProfile.phone, name: myProfile.name, avatar: myProfile.avatar });
+        if (savedPhone && savedToken) {
+            myProfile.name = savedName || "مستخدم نايل شات";
+            myProfile.phone = savedPhone;
+            myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
+            
+            if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = myProfile.name;
+            if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = myProfile.avatar;
+            
+            // التحقق من الحساب المسجل عبر السوكيت بأمان
+            if (typeof socket !== 'undefined' && socket.emit) {
+                socket.emit('verify_saved_login', { phone: myProfile.phone, token: savedToken });
+                socket.emit('register_user', { phone: myProfile.phone, name: myProfile.name, avatar: myProfile.avatar });
+            }
 
-        // 🚀 تعديل الأمان لمنع التعليق: لو السيرفر ما ردش في خلال ثانيتين، افتح نافذة التسجيل فوراً
-        window.nileAuthTimeout = setTimeout(function() {
-            if (!window.nileUserVerified && authModal) {
+            // تعديل الأمان لمنع التعليق: لو السيرفر ما ردش في خلال ثانيتين، افتح نافذة التسجيل فوراً
+            window.nileAuthTimeout = setTimeout(function() {
+                if (!window.nileUserVerified && authModal) {
+                    authModal.classList.add('open');
+                    authModal.style.display = 'flex';
+                    console.log("استجابة السيرفر تأخرت، تم فتح نافذة التسجيل حمايةً من التعليق.");
+                }
+            }, 2000);
+
+        } else {
+            // للمستخدم الجديد: فتح شاشة التسجيل فوراً وبدون أي تأخير
+            if (authModal) {
                 authModal.classList.add('open');
                 authModal.style.display = 'flex';
-                console.log("استجابة السيرفر تأخرت، تم فتح نافذة التسجيل حمايةً من التعليق.");
+            } else {
+                console.log("خطأ: لم يتم العثور على عنصر modal-user-registration-auth في الـ HTML");
             }
-        }, 2000);
-
-    } else {
-        // لو مفيش بيانات مخزنة، افتح شاشة التسجيل فوراً بنظافة
-        if (authModal) {
-            authModal.classList.add('open');
-            authModal.style.display = 'flex';
         }
+    }
+
+    // انتظر حتى يتم تحميل الصفحة بالكامل ثم نفذ دالة الفحص
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initNileAuth);
+    } else {
+        initNileAuth();
     }
 })();
 
-// 🚀 تكملة التعديل: استقبال رد السيرفر وإلغاء الـ Timeout لمنع التعليق
-socket.on('login_persist_status', function(res) {
-    var authModal = document.getElementById('modal-user-registration-auth');
-    if (res.status === 'success' || res.status === 'verified') {
-        window.nileUserVerified = true;
-        clearTimeout(window.nileAuthTimeout); // إلغاء عداد الأمان لأن السيرفر رد بنجاح
-        
-        if (authModal) {
-            authModal.classList.remove('open');
-            authModal.style.display = 'none';
+// استقبال رد السيرفر وإلغاء الـ Timeout لمنع التعليق
+if (typeof socket !== 'undefined' && socket.on) {
+    socket.on('login_persist_status', function(res) {
+        var authModal = document.getElementById('modal-user-registration-auth');
+        if (res && (res.status === 'success' || res.status === 'verified')) {
+            window.nileUserVerified = true;
+            clearTimeout(window.nileAuthTimeout); // إلغاء عداد الأمان
+            
+            if (authModal) {
+                authModal.classList.remove('open');
+                authModal.style.display = 'none';
+            }
+            
+            // تحديث البيانات والتأكيد عليها
+            localStorage.setItem('nile_phone', res.phone);
+            if(res.name) localStorage.setItem('nile_name', res.name);
+            if(res.avatar) localStorage.setItem('nile_avatar', res.avatar);
+        } else {
+            // لو السيرفر رفض التوكن، افتح شاشة التسجيل فوراً
+            clearTimeout(window.nileAuthTimeout);
+            if (authModal) {
+                authModal.classList.add('open');
+                authModal.style.add('display', 'flex');
+                authModal.style.display = 'flex';
+            }
         }
-        
-        // تحديث البيانات والتأكيد عليها
-        localStorage.setItem('nile_phone', res.phone);
-        if(res.name) localStorage.setItem('nile_name', res.name);
-        if(res.avatar) localStorage.setItem('nile_avatar', res.avatar);
-    } else {
-        // لو السيرفر رفض التوكن، افتح شاشة التسجيل فوراً
-        clearTimeout(window.nileAuthTimeout);
-        if (authModal) {
-            authModal.classList.add('open');
-            authModal.style.display = 'flex';
-        }
-    }
-});
+    });
 
-socket.on('message', function(data) {
-    if (data && data.room) {
-        var storageKey = "nile_history_" + data.room;
-        var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
-        
-        var isExist = localHistory.some(function(m) { 
-            return m.id === data.id || (m.text === data.text && m.timestamp === data.timestamp); 
-        });
-        
-        if (!isExist) {
-            localHistory.push(data);
-            if(localHistory.length > 300) localHistory.shift(); 
-            localStorage.setItem(storageKey, JSON.stringify(localHistory));
+    socket.on('message', function(data) {
+        if (data && data.room) {
+            var storageKey = "nile_history_" + data.room;
+            var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
+            var isExist = localHistory.some(function(m) { 
+                return m.id === data.id || (m.text === data.text && m.timestamp === data.timestamp); 
+            });
+            
+            if (!isExist) {
+                localHistory.push(data);
+                if(localHistory.length > 300) localHistory.shift(); 
+                localStorage.setItem(storageKey, JSON.stringify(localHistory));
+            }
         }
-    }
-});
-
+    });
+}
 function openMyPrivateAIChat() {
     if (!myProfile.phone) {
         alert("برجاء تسجيل الدخول أولاً لتفعيل المساعد الذكي!");
