@@ -629,6 +629,23 @@
         return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
     };
 
+<script>
+(function() {
+    var nileSocket = typeof socket !== 'undefined' ? socket : null;
+    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
+    
+    // 1. محرك المساعد الذكي الخاص بك (Nile AI) - شغال تمام
+    window.getNileAiResponse = function(userMessage) {
+        var text = userMessage.trim();
+        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
+            return 'مرحباً بك في نايل شات! أنا مساعدك الذكي الخاص، كيف يمكنني مساعدتك اليوم يا غالي؟';
+        }
+        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
+            return 'أنا مساعدك الذكي الخاص المدمج في منظومة نايل شات وجاهز لخدمتك فوراً!';
+        }
+        return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
+    };
+
     window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
         var chatBox = document.querySelector(chatContainerSelector) || document.querySelector('.messages, .chat-box, #chat-messages');
         if (!chatBox) return;
@@ -642,27 +659,7 @@
         }, 500);
     };
 
-    // 2. تشغيل الأزرار والقوائم الأساسية بتوجل نظيف
-    var aiListBtn = document.getElementById('nileAiListBtn') || document.querySelector('.nile-ai-btn');
-    if (aiListBtn) {
-        aiListBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            var featureList = document.querySelector('.side-features-list');
-            if (featureList) featureList.classList.toggle('dropdown-popup-active');
-            var platformBar = document.querySelector('.right-platforms-bar');
-            if (platformBar) platformBar.classList.remove('dropdown-popup-active');
-        });
-    }
-
-    // إغلاق القوائم عند الضغط في أي مكان خارجي لتأمين الشاشة
-    document.addEventListener('click', function() {
-        var featureList = document.querySelector('.side-features-list');
-        var platformBar = document.querySelector('.right-platforms-bar');
-        if (featureList) featureList.remove('dropdown-popup-active');
-        if (platformBar) platformBar.remove('dropdown-popup-active');
-    });
-
-    // 3. تثبيت أبعاد الشاشة ومنع التكبير العشوائي في الموبايل
+    // 2. تثبيت أبعاد الشاشة ومنع التكبير العشوائي في الموبايل
     function restoreNileSessionAndSettings() {
         var metaViewport = document.querySelector('meta[name="viewport"]');
         if (metaViewport) { 
@@ -671,7 +668,7 @@
     }
     restoreNileSessionAndSettings();
 
-    // 4. تشغيل أزرار الإضافة والمجموعات الأساسية لشريط الأدوات
+    // 3. تشغيل أزرار الإضافة والمجموعات الأساسية لشريط الأدوات
     function setupTopBarButtons() { 
         var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn'); 
         if (addPersonBtn) { 
