@@ -2237,139 +2237,11 @@ window.openNileAdvancedSettings = function() {
 
 <script>
 (function() {
-    function bindNileSettingsWheel() {
-        var nileBtn = document.getElementById('nileSettingsBtn') || document.querySelector('.settings-btn-class') || document.querySelector('[title*="إعدادات"]');
-        if (nileBtn) {
-            nileBtn.onclick = function(e) {
-                e.preventDefault(); e.stopPropagation();
-                window.openNileAdvancedSettings();
-            };
-        } else {
-            setTimeout(bindNileSettingsWheel, 400);
-        }
-    }
-    window.addEventListener('load', bindNileSettingsWheel);
-
-    var closeBtn = document.getElementById('waCloseBtnCustom');
-    if (closeBtn) {
-        closeBtn.onclick = function() { 
-            var modal = document.getElementById('waAdvancedSettingsModalCustom');
-            if (modal) modal.style.setProperty('display', 'none', 'important');
-        };
-    }
-
-    var submitBtn = document.getElementById('waSubmitFinalBtnCustom');
-    if (submitBtn) {
-        submitBtn.onclick = function() { 
-            var modal = document.getElementById('waAdvancedSettingsModalCustom');
-            if (modal) modal.style.setProperty('display', 'none', 'important');
-        };
-    }
-
-    var themeSelect = document.getElementById('waThemeSelectCustom');
-    var savedTheme = localStorage.getItem('nile_mega_theme') || '1';
-    if(themeSelect) {
-        themeSelect.value = savedTheme;
-        executeThemeChange(savedTheme);
-        themeSelect.onchange = function() {
-            localStorage.setItem('nile_mega_theme', this.value);
-            executeThemeChange(this.value);
-        };
-    }
-
-    function executeThemeChange(themeId) {
-        var cleanClasses = document.body.className.split(' ').filter(function(c) { return !c.startsWith('nile-theme-'); });
-        document.body.className = cleanClasses.join(' ');
-        document.body.classList.add('nile-theme-' + themeId);
-    }
-
-    var voiceSelect = document.getElementById('waVoiceSelectCustom');
-    if (voiceSelect) {
-        voiceSelect.value = localStorage.getItem('nile_voice_filter') || 'normal';
-        voiceSelect.onchange = function() { 
-            localStorage.setItem('nile_voice_filter', this.value); 
-            if (window.NileVoiceEngine) { 
-                window.NileVoiceEngine.activeFilter = this.value; 
-            }
-        };
-    }
-
-    var ringtoneSelect = document.getElementById('waSystemRingtoneSelect');
-    if (ringtoneSelect) {
-        ringtoneSelect.value = localStorage.getItem('nile_sys_ringtone') || 'ringtone_1';
-        ringtoneSelect.onchange = function() {
-            localStorage.setItem('nile_sys_ringtone', this.value);
-            if (window.NileNotificationEngine) {
-                window.NileNotificationEngine.currentRingtone = this.value;
-            }
-        };
-    }
-
-    var saveNameAction = document.getElementById('waSaveNameActionCustom');
-    if (saveNameAction) {
-        saveNameAction.onclick = function() {
-            var val = document.getElementById('waNameInputCustom').value.trim();
-            if(val) {
-                localStorage.setItem('nile_name', val);
-                if(typeof myProfile !== 'undefined') myProfile.name = val;
-                alert("تم حفظ الاسم الفعلي وتحديث المنظومة!");
-            }
-        };
-    }
-
-    var nameInputCustom = document.getElementById('waNameInputCustom');
-    if (nameInputCustom) {
-        nameInputCustom.value = localStorage.getItem('nile_name') || '';
-    }
-
-    var audioFileCustom = document.getElementById('waAudioFileCustom');
-    if (audioFileCustom) {
-        audioFileCustom.onchange = function(e) {
-            var file = e.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(evt) { 
-                    localStorage.setItem('nile_custom_ringtone_file', evt.target.result); 
-                    alert("تم رفع وتثبيت نغمة الرنين الخارجية بالسيستم!"); 
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-    }
-
-    var imageFileCustom = document.getElementById('waImageFileCustom');
-    if (imageFileCustom) {
-        imageFileCustom.onchange = function(e) {
-            var file = e.target.files[0];
-            if (file) {
-                var reader = new FileReader();
-                reader.onload = function(evt) {
-                    applyBgToChat(evt.target.result);
-                    localStorage.setItem('nile_custom_bg', evt.target.result); alert("تم فرش وتحديث خلفية المنظومة كاملة!");
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-    }
-
-    function applyBgToChat(base64Data) {
-        var targets = ['body', '#app', '.main-inside', '#chat-messages-stream-anchor', '.message-list', '.chat-container'];
-        targets.forEach(function(selector) {
-            var el = document.getElementById(selector.replace('#','')) || document.querySelector(selector);
-            if (el) {
-                el.style.setProperty('background-image', "url('" + base64Data + "')", 'important');
-                el.style.setProperty('background-size', 'cover', 'important');
-                el.style.setProperty('background-position', 'center', 'important');
-            }
-        });
-    }
-
-    window.addEventListener('load', function() {
-        var savedBg = localStorage.getItem('nile_custom_bg');
-        if (savedBg) { setTimeout(function() { applyBgToChat(savedBg); }, 800); }
-    });
+    // تم تصفية وحذف كافة مستمعي أحداث أزرار الإعدادات المتقدمة، فلاتر الصوت، والنغمات.
+    // تم التخلص تمامًا من دوال رفع الخلفيات المسببة للبطء والتنبيهات المزعجة.
 })();
 
+// دالة تشغيل القوائم المنسدلة السفلى للشات (تم الإبقاء عليها بأمان)
 function toggleUpwardMenu(id) {
     var menu = document.getElementById(id);
     if (!menu) return;
@@ -2384,6 +2256,7 @@ function toggleUpwardMenu(id) {
     }
 }
 
+// إغلاق القوائم عند الضغط في أي مكان خارج شريط التحكم السفلي لتأمين الواجهة
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.bottom-control-bar')) {
         document.querySelectorAll('.upward-dropdown').forEach(function(el) {
