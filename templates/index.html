@@ -597,7 +597,7 @@
         <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
             <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
         </a>
-        <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+<a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
             <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
         </a>
         <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
@@ -627,25 +627,7 @@
             return 'أنا مساعدك الذكي الخاص المدمج في منظومة نايل شات وجاهز لخدمتك فوراً!';
         }
         return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
-};
-</script>
-
-<script>
-(function() {
-    var nileSocket = typeof socket !== 'undefined' ? socket : null;
-    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
-    
-    // 1. محرك المساعد الذكي الخاص بك (Nile AI) - شغال تمام
-    window.getNileAiResponse = function(userMessage) {
-        var text = userMessage.trim();
-        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
-            return 'مرحباً بك في نايل شات! أنا مساعدك الذكي الخاص، كيف يمكنني مساعدتك اليوم يا غالي؟';
-        }
-        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
-            return 'أنا مساعدك الذكي الخاص المدمج في منظومة نايل شات وجاهز لخدمتك فوراً!';
-        }
-        return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
-    };
+    }; // تم إصلاح القفلة هنا بنجاح
 
     window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
         var chatBox = document.querySelector(chatContainerSelector) || document.querySelector('.messages, .chat-box, #chat-messages');
@@ -708,7 +690,7 @@ function requestNileNotificationPermission() {
         });
     }
 }
-
+</script>
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(requestNileNotificationPermission, 2000);
 });
