@@ -736,7 +736,8 @@ if (typeof socket !== 'undefined' && socket.on) {
     });
 }
 </script>
-        
+    
+<script>        
 function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
         socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
