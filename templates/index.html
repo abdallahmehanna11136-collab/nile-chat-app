@@ -1037,14 +1037,13 @@ function openMyPrivateAIChat() {
                 renderSingleBubbleLayout(msgData);
             }
         });
-        anchor.scrollTop = anchor.scrollHeight;
-    }
-});
-        anchor.scrollTop = anchor.scrollHeight;
-    }
-}
-    function toggleSocialMenu(event) {
-        if(event) event.stopPropagation();
+ anchor.scrollTop = anchor.scrollHeight;
+        }
+    });
+} // تأكد إن القوس ده بيقفل الـ function الأساسية اللي فوقه بنظافة
+
+function toggleSocialMenu(event) {
+    if(event) event.stopPropagation();
         var menu = document.getElementById("socialDropdownMenu");
         if (menu.style.display === "none" || menu.style.display === "") {
             menu.style.display = "block";
