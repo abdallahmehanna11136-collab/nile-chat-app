@@ -1868,7 +1868,7 @@ function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: 
             }
         });
 
-        function terminateActiveCallSession() {
+function terminateActiveCallSession() {
             document.getElementById('webrtc-call-screen-overlay').style.display = 'none';
             if(localMediaStream) { localMediaStream.getTracks().forEach(track => track.stop()); localMediaStream = null; }
             if(activePeerConnection) { activePeerConnection.close(); activePeerConnection = null; }
@@ -1894,8 +1894,8 @@ function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: 
             myProfile.name = document.getElementById('profile-edit-name').value.trim();
             myProfile.avatar = document.getElementById('profile-edit-avatar').value.trim();
             myProfile.status_text = document.getElementById('profile-edit-status-text').value.trim();
-            myProfile.voice_setting = document.getElementById('profile-edit-voice-setting').value;
-            myProfile.wallpaper = document.getElementById('profile-edit-wallpaper').value.trim();
+            
+            // تم تنظيف السطور القديمة الخاصة بنبرة الصوت والخلفية لمنع تعليق الصفحة
             document.getElementById('my-global-name').innerText = myProfile.name;
             document.getElementById('my-global-avatar').src = myProfile.avatar;
             socket.emit('update_profile_live', myProfile);
@@ -1927,8 +1927,14 @@ function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: 
         function openCreateStoryModal() { openModalOverlay('modal-create-story-view'); }
         function openCreatePostModal() { openModalOverlay('modal-create-post-view'); }
         
-        function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
-        function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
+        function openModalOverlay(id) { 
+            var modal = document.getElementById(id);
+            if(modal) { modal.classList.add('open'); modal.style.display = 'flex'; } 
+        }
+        function closeModalOverlay(id) { 
+            var modal = document.getElementById(id);
+            if(modal) { modal.classList.remove('open'); modal.style.display = 'none'; } 
+        }
         function scrollMessagesToBottomContainer() { const c = document.getElementById('chat-messages-stream-anchor'); if(c) c.scrollTop = c.scrollHeight; }
 
         function showCustomContextMenu(e, msgId, msgText) {
@@ -1936,15 +1942,17 @@ function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: 
             selectedMessageText = msgText;
             
             const menu = document.getElementById('messageContextMenu');
-            menu.style.display = 'block';
-            menu.style.top = e.clientY + 'px';
-            menu.style.left = e.clientX + 'px';
-            
-            const closeMenu = () => {
-                menu.style.display = 'none';
-                document.removeEventListener('click', closeMenu);
-            };
-            setTimeout(() => { document.addEventListener('click', closeMenu); }, 50);
+            if(menu) {
+                menu.style.display = 'block';
+                menu.style.top = e.clientY + 'px';
+                menu.style.left = e.clientX + 'px';
+                
+                const closeMenu = () => {
+                    menu.style.display = 'none';
+                    document.removeEventListener('click', closeMenu);
+                };
+                setTimeout(() => { document.addEventListener('click', closeMenu); }, 50);
+            }
         }
 
         function deleteMsg() {
