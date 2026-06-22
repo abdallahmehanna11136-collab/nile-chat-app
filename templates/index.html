@@ -698,40 +698,9 @@
     setTimeout(setupTopBarButtons, 1500); 
 })();
 </script>
-    
-<script>
-(function() {
-    // لمنع تكرار الزرار
-    if (document.getElementById('nileSettingsBtn')) return;
-    
-    var body = document.body;
-    if (body) {
-        var btn = document.createElement('button');
-        btn.id = 'nileSettingsBtn';
-        btn.innerHTML = '⚙️';
-        
-        // تنسيق الترس وتثبيته فوق على الشمال غصب عن أي حاجة وبشكل مخفي وراء النوافذ بشكل صحيح
-        btn.style.cssText = 'position: fixed !important; top: 14px !important; left: 16px !important; width: 40px !important; height: 40px !important; background: #1e293b !important; color: #38bdf8 !important; border: 2px solid #334155 !important; border-radius: 50% !important; font-size: 20px !important; cursor: pointer !important; z-index: 9999 !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5) !important; padding: 0 !important; margin: 0 !important;';
-        btn.title = 'إعدادات نايل شات';
-        
-        btn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            if (typeof openNileAdvancedSettings === 'function') {
-                openNileAdvancedSettings();
-            } else {
-                var modal = document.getElementById('nileAdvancedSettingsModal');
-                if (modal) modal.style.setProperty('display', 'flex', 'important');
-            }
-        };
-        
-        body.appendChild(btn);
-    }
-})();
-    
-  }
-})();
 
+<script>
+// 5. نظام الإشعارات والرسائل الواردة النظيف
 function requestNileNotificationPermission() {
     if ("Notification" in window) {
         Notification.requestPermission().then(function(permission) {
@@ -747,22 +716,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function playNileIncomingRingtone() {
-    var savedRingtone = localStorage.getItem('nile_ringtone_type') || 'default';
-    var customFile = localStorage.getItem('nile_custom_ringtone_file');
-    var audio;
-
-    if (savedRingtone === 'custom' && customFile) {
-        audio = new Audio(customFile);
-    } else {
-        var ringtoneUrls = {
-            'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
-            'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3',
-            'guitar': 'https://www.soundjay.com/button/sounds/button-20.mp3',
-            'cyber': 'https://www.soundjay.com/button/sounds/button-10.mp3',
-            'default': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3'
-        };
-        audio = new Audio(ringtoneUrls[savedRingtone] || ringtoneUrls['default']);
-    }
+    var ringtoneUrls = {
+        'default': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3'
+    };
+    var audio = new Audio(ringtoneUrls['default']);
     audio.volume = 1.0;
     audio.play().catch(function(e) { console.log("البرنامج محجوب من التشغيل التلقائي للصوت"); });
 }
@@ -781,41 +738,7 @@ if (typeof socket !== 'undefined' && socket.on) {
         }
     });
 }
-
-// تشغيل القائمة من زرار الترس الحقيقي اللي فوق شريط البحث بالظبط
-document.addEventListener('DOMContentLoaded', function() {
-    var platformsBar = document.querySelector('.right-platforms-bar');
-    var featuresList = document.querySelector('.side-features-list');
-    
-    // هيدور على زرار الترس (الأيقونة ⚙️) اللي متكريت وموجود فوق شريط البحث عندك
-    var searchContainer = document.querySelector('.search-box-container');
-    var realSettingsBtn = document.getElementById('nileSettingsBtn') || document.querySelector('.fa-cog');
-
-    // لو الزرار مش لاقطه، هندور عليه في أي مكان فوق شريط البحث
-    if (!realSettingsBtn && searchContainer) {
-        realSettingsBtn = searchContainer.parentElement.querySelector('#nileSettingsBtn') || document.querySelector('#nileSettingsBtn');
-    }
-
-    if (realSettingsBtn) {
-        realSettingsBtn.style.cursor = 'pointer';
-        realSettingsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // تبديل الكلاس لإظهار أو إخفاء القوائم
-            if (platformsBar) platformsBar.classList.toggle('dropdown-popup-active');
-            if (featuresList) featuresList.classList.toggle('dropdown-popup-active');
-        });
-    }
-
-    // إغلاق تلقائي عند الضغط خارج القائمة
-    window.addEventListener('click', function(e) {
-        if (platformsBar && !platformsBar.contains(e.target) && realSettingsBtn && !realSettingsBtn.contains(e.target)) {
-            platformsBar.classList.remove('dropdown-popup-active');
-            featuresList.classList.remove('dropdown-popup-active');
-        }
-    });
-});
+</script>
         
 function checkNileAdminPrivileges(roomId, userPhone, callback) {
     if (typeof socket !== 'undefined' && socket.emit) {
