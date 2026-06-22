@@ -642,111 +642,37 @@
         }, 500);
     };
 
+    // 2. تشغيل الأزرار والقوائم الأساسية بتوجل نظيف
     var aiListBtn = document.getElementById('nileAiListBtn') || document.querySelector('.nile-ai-btn');
-   // فتح وإغلاق قائمة المميزات والمنصات بشكل نظيف وبدون تكرار أو ثيمات زائدة
-if (aiListBtn) {
-    aiListBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var featureList = document.querySelector('.side-features-list');
-        if (featureList) featureList.classList.toggle('dropdown-popup-active');
-        var platformBar = document.querySelector('.right-platforms-bar');
-        if (platformBar) platformBar.classList.remove('dropdown-popup-active');
-    });
-}
-    // 2. محرك الـ 18 سيم وتثبيت الواجهة
-    window.applyNileTheme = function(themeName) {
-        var body = document.body;
-        body.className = body.className.replace(/\bnile-theme-\S+/g, '');
-        body.classList.add('nile-theme-' + themeName);
-        var colors = {
-            'light': { bg: '#ffffff', text: '#1e293b' }, 'dark': { bg: '#0f172a', text: '#f8fafc' },
-            'blue-dark': { bg: '#0f172a', text: '#38bdf8' }, 'blue-light': { bg: '#f0f9ff', text: '#0369a1' },
-            'red-dark': { bg: '#450a0a', text: '#fca5a5' }, 'red-light': { bg: '#fff5f5', text: '#b91c1c' },
-            'green-dark': { bg: '#064e3b', text: '#6ee7b7' }, 'green-light': { bg: '#f0fdf4', text: '#15803d' },
-            'purple-dark': { bg: '#581c87', text: '#e9d5ff' }, 'purple-light': { bg: '#faf5ff', text: '#6b21a8' },
-            'orange-dark': { bg: '#7c2d12', text: '#ffedd5' }, 'orange-light': { bg: '#fff7ed', text: '#c2410c' },
-            'yellow-dark': { bg: '#713f12', text: '#fef08a' }, 'yellow-light': { bg: '#fefce8', text: '#a16207' },
-            'pink-dark': { bg: '#831843', text: '#fbcfe8' }, 'pink-light': { bg: '#fff1f2', text: '#be185d' },
-            'cyan-dark': { bg: '#164e63', text: '#a5f3fc' }, 'cyan-light': { bg: '#ecfeff', text: '#0e7490' }
-        };
-        if (colors[themeName]) {
-            body.style.backgroundColor = colors[themeName].bg;
-            body.style.color = colors[themeName].text;
-        }
-    };
-
-    window.uploadNileChatWallpaper = function(fileInputEvent) {
-        var file = fileInputEvent.target.files[0];
-        if (file) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                var chatArea = document.querySelector('.chat-area, .messages, #chat-box');
-                if (chatArea) {
-                    chatArea.style.backgroundImage = "url('" + e.target.result + "')";
-                    chatArea.style.backgroundSize = "cover";
-                    localStorage.setItem('nile_custom_wallpaper', e.target.result);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    // 3. حفظ الإعدادات وجلسة الدخول وصورة البروفايل للأبد
-    var saveBtn = document.getElementById('nileSaveSettingsBtn') || document.getElementById('saveSettingsBtn');
-    if (saveBtn) {
-        saveBtn.onclick = function() {
-            var privacy = document.getElementById('nilePrivacySelect') ? document.getElementById('nilePrivacySelect').value : 'everyone';
-            var theme = document.getElementById('nileThemeSelect') ? document.getElementById('nileThemeSelect').value : 'light';
-            var voice = document.getElementById('nileVoiceSelect') ? document.getElementById('nileVoiceSelect').value : '1';
-            var ringtone = document.getElementById('nileRingtoneSelect') ? document.getElementById('nileRingtoneSelect').value : 'default';
-            var statusText = document.getElementById('nileStatusInput') ? document.getElementById('nileStatusInput').value : '';
-
-            localStorage.setItem('nile_privacy', privacy);
-            localStorage.setItem('nile_theme', theme);
-            localStorage.setItem('nile_voice_pitch', voice);
-            localStorage.setItem('nile_ringtone_type', ringtone);
-            localStorage.setItem('nile_status_text', statusText);
-            localStorage.setItem('nile_profile_avatar', nileProfile.avatar);
-            localStorage.setItem('nile_session_active', 'true');
-
-            if (nileSocket && nileSocket.emit) {
-                nileSocket.emit('update_user_settings', {
-                    phone: nileProfile.phone || '', privacy: privacy, status: statusText, theme: theme, voice: voice, ringtone: ringtone
-                });
-            }
-            window.applyNileTheme(theme);
-            alert('تم حفظ الإعدادات والجلسة بنجاح للأبد!');
-            location.reload();
-        };
+    if (aiListBtn) {
+        aiListBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var featureList = document.querySelector('.side-features-list');
+            if (featureList) featureList.classList.toggle('dropdown-popup-active');
+            var platformBar = document.querySelector('.right-platforms-bar');
+            if (platformBar) platformBar.classList.remove('dropdown-popup-active');
+        });
     }
 
+    // إغلاق القوائم عند الضغط في أي مكان خارجي لتأمين الشاشة
+    document.addEventListener('click', function() {
+        var featureList = document.querySelector('.side-features-list');
+        var platformBar = document.querySelector('.right-platforms-bar');
+        if (featureList) featureList.remove('dropdown-popup-active');
+        if (platformBar) platformBar.remove('dropdown-popup-active');
+    });
+
+    // 3. تثبيت أبعاد الشاشة ومنع التكبير العشوائي في الموبايل
     function restoreNileSessionAndSettings() {
         var metaViewport = document.querySelector('meta[name="viewport"]');
-        if (metaViewport) { metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); }
-        if (document.getElementById('nilePrivacySelect')) { document.getElementById('nilePrivacySelect').value = localStorage.getItem('nile_privacy') || 'everyone'; }
-        var savedTheme = localStorage.getItem('nile_theme') || 'light';
-        if (document.getElementById('nileThemeSelect')) { document.getElementById('nileThemeSelect').value = savedTheme; }
-        window.applyNileTheme(savedTheme);
-        if (document.getElementById('nileVoiceSelect')) { document.getElementById('nileVoiceSelect').value = localStorage.getItem('nile_voice_pitch') || '1'; }
-        if (document.getElementById('nileRingtoneSelect')) { document.getElementById('nileRingtoneSelect').value = localStorage.getItem('nile_ringtone_type') || 'default'; }
-        if (document.getElementById('nileStatusInput')) { document.getElementById('nileStatusInput').value = localStorage.getItem('nile_status_text') || ''; }
-        var savedWallpaper = localStorage.getItem('nile_custom_wallpaper');
-        var chatArea = document.querySelector('.chat-area, .messages, #chat-box');
-        if (savedWallpaper && chatArea) { chatArea.style.backgroundImage = "url('" + savedWallpaper + "')"; chatArea.style.backgroundSize = "cover"; }
+        if (metaViewport) { 
+            metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); 
+        }
     }
     restoreNileSessionAndSettings();
 
-    // 4. دالة تشغيل أزرار شريط المنصات العلوي الفعلية وضبط الإعدادات
+    // 4. تشغيل أزرار الإضافة والمجموعات الأساسية لشريط الأدوات
     function setupTopBarButtons() { 
-        var openSettingsBtn = document.getElementById('nileOpenSettingsBtn') || document.getElementById('openSettingsBtn') || document.getElementById('platformsBtn');
-        var modalElement = document.getElementById('nileSettingsModal') || document.getElementById('settingsModal'); 
-        
-        if (openSettingsBtn && modalElement) { 
-            openSettingsBtn.onclick = function() { 
-                modalElement.style.display = 'flex'; 
-            };
-        } 
-        
         var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn'); 
         if (addPersonBtn) { 
             addPersonBtn.onclick = function() { 
@@ -768,7 +694,7 @@ if (aiListBtn) {
         } 
     } 
 
-    // تشغيل الدالة بتأخير لضمان تحميل الواجهة بالكامل
+    // تشغيل الأزرار بعد التأكد من تحميل واجهة الشات تماماً
     setTimeout(setupTopBarButtons, 1500); 
 })();
 </script>
