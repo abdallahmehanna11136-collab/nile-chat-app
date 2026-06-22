@@ -863,120 +863,7 @@ function toggleNileGroupChatLock(roomId, isLocked) {
         }
     });
 }
-        (function() {
-    var modalHtml = `
-    <div id="nileAdvancedSettingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 20000; justify-content: center; align-items: center; font-family: sans-serif;">
-        <div style="background: #1e293b; color: white; width: 90%; max-width: 450px; border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto; direction: rtl;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 10px; margin-bottom: 15px;">
-                <h3 style="margin: 0; font-size: 18px; font-weight: bold; color: #00a884;">⚙️ إعدادات نايل شات المتقدمة</h3>
-                <span onclick="document.getElementById('nileAdvancedSettingsModal').style.display='none'" style="cursor: pointer; font-size: 20px; color: #94a3b8;">&times;</span>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🔒 إعدادات الخصوصية والحالة:</label>
-                <select id="nilePrivacySelect" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 8px;">
-                    <option value="all">الكل يرى حالتي ونشاطي (عام)</option>
-                    <option value="contacts">جهات اتصالي فقط</option>
-                    <option value="nobody">إخفاء حالتي تماماً (مخفي)</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 20px; border-top: 1px solid #334155; padding-top: 15px;">
-                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🗣️ فلتر تغيير الصوت (للمكالمات والرسائل الصوتية):</label>
-                <select id="nileVoiceFilterSelect" onchange="changeNileVoiceFilter(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white;">
-                    <option value="normal">🎙️ الصوت الأصلي الطبيعي</option>
-                    <option value="girl">👧 صوت فتاة (بنت)</option>
-                    <option value="boy">👦 صوت طفل صغير (ولد)</option>
-                    <option value="mature">👨 صوت رجل بالغ (عميق)</option>
-                    <option value="old">👴 صوت عجوز مسن</option>
-                    <option value="ai-robot">🤖 صوت ذكاء اصطناعي آلي</option>
-                    <option value="alien">👽 صوت فضائي متحول</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px; border-top: 1px solid #334155; padding-top: 15px;">
-                <label style="display: block; font-size: 14px; margin-bottom: 6px; color: #94a3b8;">🎵 نغمات رنين الإشعارات والمكالمات الجاهزة:</label>
-                <select id="nileRingtoneSelect" onchange="changeNileRingtone(this.value)" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 8px;">
-                    <option value="default">🔔 النغمة الافتراضية</option>
-                    <option value="iphone">📱 نغمة ايفون ريمكس</option>
-                    <option value="galaxy">✨ تنبيه سامسونج الرقمي</option>
-                    <option value="guitar">🎸 رنين جيتار هادئ</option>
-                    <option value="cyber">🛸 نغمة سايبر مستقبلية</option>
-                </select>
-                <label style="display: block; background-color: #475569; color: white; text-align: center; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px;">
-                    🎶 أو ارفع نغمة مخصصة من جهازك
-                    <input type="file" accept="audio/*" onchange="uploadCustomRingtone(event)" style="display: none;">
-                </label>
-            </div>
-        </div>
-    </div>`;
-    
-    var div = document.createElement('div');
-    div.innerHTML = modalHtml;
-    document.body.appendChild(div.firstElementChild);
-})();
-
-function openNileAdvancedSettings() {
-    var modal = document.getElementById('nileAdvancedSettingsModal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
-}
-
-var activeVoiceFilter = 'normal';
-function changeNileVoiceFilter(filterValue) {
-    activeVoiceFilter = filterValue;
-    localStorage.setItem('nile_voice_filter', filterValue);
-}
-
-function changeNileRingtone(ringtoneValue) {
-    localStorage.setItem('nile_ringtone_type', ringtoneValue);
-    localStorage.removeItem('nile_custom_ringtone_file');
-    
-    var ringtoneUrls = {
-        'iphone': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3',
-        'galaxy': 'https://www.soundjay.com/phone/sounds/cell-phone-1-1.mp3',
-        'guitar': 'https://www.soundjay.com/button/sounds/button-20.mp3',
-        'cyber': 'https://www.soundjay.com/button/sounds/button-10.mp3'
-    };
-    
-    if (ringtoneUrls[ringtoneValue]) {
-        var audio = new Audio(ringtoneUrls[ringtoneValue]);
-        audio.volume = 0.5;
-        audio.play().catch(function(e){ console.log("Audio test blocked"); });
-    }
-}
-
-function uploadCustomRingtone(event) {
-    var file = event.target.files[0];
-    if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            localStorage.setItem('nile_custom_ringtone_file', e.target.result);
-            localStorage.setItem('nile_ringtone_type', 'custom');
-            alert("تم حفظ نغمة الرنين المخصصة بنجاح للأبد!");
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-(function() {
-    var savedFilter = localStorage.getItem('nile_voice_filter');
-    var savedRingtone = localStorage.getItem('nile_ringtone_type');
-    
-    if (savedFilter) {
-        activeVoiceFilter = savedFilter;
-        setTimeout(function() {
-            if(document.getElementById('nileVoiceFilterSelect')) document.getElementById('nileVoiceFilterSelect').value = savedFilter;
-        }, 500);
-    }
-    if (savedRingtone) {
-        setTimeout(function() {
-            if(document.getElementById('nileRingtoneSelect')) document.getElementById('nileRingtoneSelect').value = savedRingtone;
-        }, 500);
-    }
-})();
-        // دالة لتشغيل القائمة عند الضغط المطول على الرسالة
+  // دالة تشغيل القائمة عند الضغط المطول على الرسالة (تم الإبقاء عليها بأمان)
 function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
     if (!messageElement) return;
 
@@ -991,7 +878,7 @@ function attachLongPressToMessage(messageElement, messageId, senderName, message
         menu.style.top = e.clientY + 'px';
         menu.style.left = e.clientX + 'px';
 
-        // تشغيل دالة الرد اللي عندك
+        // تشغيل دالة الرد
         document.getElementById('context-reply-btn').onclick = function() {
             if (typeof setNileReplyTarget === 'function') {
                 setNileReplyTarget(messageId, senderName, messageText);
@@ -1001,7 +888,7 @@ function attachLongPressToMessage(messageElement, messageId, senderName, message
             menu.style.display = 'none';
         };
 
-        // تشغيل دالة التحويل اللي عندك
+        // تشغيل دالة التحويل
         document.getElementById('context-forward-btn').onclick = function() {
             if (typeof forwardNileMessage === 'function') {
                 forwardNileMessage(messageText);
@@ -1020,7 +907,7 @@ function attachLongPressToMessage(messageElement, messageId, senderName, message
             menu.style.display = 'none';
         };
 
-        // تشغيل دالة المسح اللي عندك
+        // تشغيل دالة المسح
         document.getElementById('context-delete-btn').onclick = function() {
             if (typeof deleteNileMessage === 'function') {
                 deleteNileMessage(messageId);
@@ -1032,98 +919,18 @@ function attachLongPressToMessage(messageElement, messageId, senderName, message
     });
 }
 
+// إغلاق قائمة الرسائل المنبثقة عند الضغط في أي مكان خارجي بالصفحة
+document.addEventListener('click', function() {
+    var menu = document.getElementById('nileMessageContextMenu');
+    if (menu) menu.style.display = 'none';
+});
 // إخفاء القائمة لو ضغطت في أي مكان فاضي بالصفحة
 document.addEventListener('click', function() {
     var menu = document.getElementById('nileMessageContextMenu');
     if (menu) menu.style.display = 'none';
 });
-        function openNileAdvancedSettings() {
-    var modal = document.getElementById('nileAdvancedSettingsModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        if (document.getElementById('setting-change-name-input')) {
-            document.getElementById('setting-change-name-input').value = myProfile.name || localStorage.getItem('nile_name') || '';
-        }
-    }
-}
-
-function saveNewNileName() {
-    var newName = document.getElementById('setting-change-name-input').value.trim();
-    if (newName) {
-        myProfile.name = newName;
-        localStorage.setItem('nile_name', newName);
-        if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = newName;
-        if(typeof socket !== 'undefined' && socket.emit) {
-            socket.emit('register_user', { phone: myProfile.phone, name: newName, avatar: myProfile.avatar });
-        }
-        alert("تم تحديث وحفظ الاسم الجديد بنجاح للأبد!");
-    }
-}
-
-var activeVoiceFilter = 'normal';
-function changeNileVoiceFilter(filterValue) {
-    activeVoiceFilter = filterValue;
-    localStorage.setItem('nile_voice_filter', filterValue);
-}
-
-function changeNileRingtone(ringtoneValue) {
-    localStorage.setItem('nile_ringtone_type', ringtoneValue);
-    localStorage.removeItem('nile_custom_ringtone_file');
-}
-
-function uploadCustomRingtone(event) {
-    var file = event.target.files[0];
-    if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            localStorage.setItem('nile_custom_ringtone_file', e.target.result);
-            localStorage.setItem('nile_ringtone_type', 'custom');
-            alert("تم حفظ نغمة الرنين المخصصة بنجاح!");
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
-function applyNileTheme(themeName) {
-    var root = document.documentElement;
-    var themes = {
-        'whatsapp-dark': { bg: '#0b141a', side: '#111b21', text: '#e9edef', chatBg: '#0b141a' },
-        'royal-blue': { bg: '#0f172a', side: '#1e293b', text: '#f8fafc', chatBg: '#0f172a' },
-        'purple-night': { bg: '#1a103c', side: '#2d1b6b', text: '#f3e8ff', chatBg: '#1a103c' },
-        'classic-light': { bg: '#f0f2f5', side: '#ffffff', text: '#111b21', chatBg: '#efeae2' }
-    };
-    var t = themes[themeName];
-    if (t) {
-        root.style.setProperty('--main-bg', t.bg);
-        root.style.setProperty('--sidebar-bg', t.side);
-        root.style.setProperty('--text-color', t.text);
-        var stream = document.getElementById('chat-messages-stream-anchor');
-        if (stream) { stream.style.backgroundColor = t.chatBg; stream.style.backgroundImage = 'none'; }
-        localStorage.setItem('nile_active_theme', themeName);
-        localStorage.removeItem('nile_custom_bg');
-    }
-}
-
-function uploadCustomChatBackground(event) {
-    var file = event.target.files[0];
-    if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var base64Img = e.target.result;
-            var stream = document.getElementById('chat-messages-stream-anchor');
-            if (stream) {
-                stream.style.backgroundImage = "url('" + base64Img + "')";
-                stream.style.backgroundSize = "cover";
-                stream.style.backgroundPosition = "center";
-            }
-            localStorage.setItem('nile_custom_bg', base64Img);
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
 (function() {
-    // تأمين وجود كائن البروفايل لمنع توقف الكود (ReferenceError)
+    // 1. تأمين وجود كائن البروفايل لمنع توقف الكود (ReferenceError)
     if (typeof myProfile === 'undefined') {
         window.myProfile = { name: '', phone: '', avatar: '' };
     }
@@ -1133,7 +940,7 @@ function uploadCustomChatBackground(event) {
     var savedAvatar = localStorage.getItem('nile_avatar');
     var savedToken = localStorage.getItem('saved_login_token');
 
-    // تشغيل الكود بأمان للتأكد من تحميل عناصر الواجهة (DOM)
+    // 2. تشغيل الكود بأمان للتأكد من تحميل عناصر الواجهة (DOM) لشاشة الدخول
     function initNileAuth() {
         var authModal = document.getElementById('modal-user-registration-auth');
 
@@ -1165,8 +972,6 @@ function uploadCustomChatBackground(event) {
             if (authModal) {
                 authModal.classList.add('open');
                 authModal.style.display = 'flex';
-            } else {
-                console.log("خطأ: لم يتم العثور على عنصر modal-user-registration-auth في الـ HTML");
             }
         }
     }
@@ -1179,6 +984,67 @@ function uploadCustomChatBackground(event) {
     }
 })();
 
+// 3. دالة تشغيل كافة أزرار الشات الأساسية (الرد، التحويل، التفاعل، الحذف) بدون تداخل
+function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
+    if (!messageElement) return;
+
+    messageElement.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        
+        var menu = document.getElementById('nileMessageContextMenu');
+        if (!menu) return;
+
+        // إظهار القائمة مكان الضغطة
+        menu.style.display = 'block';
+        menu.style.top = e.clientY + 'px';
+        menu.style.left = e.clientX + 'px';
+
+        // تشغيل زر الرد
+        document.getElementById('context-reply-btn').onclick = function() {
+            if (typeof setNileReplyTarget === 'function') {
+                setNileReplyTarget(messageId, senderName, messageText);
+            } else if (typeof replyMessage === 'function') {
+                replyMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل زر التحويل
+        document.getElementById('context-forward-btn').onclick = function() {
+            if (typeof forwardNileMessage === 'function') {
+                forwardNileMessage(messageText);
+            } else if (typeof forwardMessage === 'function') {
+                forwardMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل زر التفاعل
+        document.getElementById('context-react-btn').onclick = function() {
+            var chosenEmoji = prompt("أدخل الإيموجي أو التفاعل النصي:", "👍");
+            if (chosenEmoji && typeof reactToNileMessage === 'function') {
+                reactToNileMessage(messageId, chosenEmoji);
+            }
+            menu.style.display = 'none';
+        };
+
+        // تشغيل زر الحذف
+        document.getElementById('context-delete-btn').onclick = function() {
+            if (typeof deleteNileMessage === 'function') {
+                deleteNileMessage(messageId);
+            } else if (typeof deleteMessage === 'function') {
+                deleteMessage(messageId);
+            }
+            menu.style.display = 'none';
+        };
+    });
+}
+
+// إغلاق أي قوائم منبثقة للرسائل عند الضغط خارجها لتأمين نظافة الواجهة
+document.addEventListener('click', function() {
+    var menu = document.getElementById('nileMessageContextMenu');
+    if (menu) menu.style.display = 'none';
+});
 // استقبال رد السيرفر وإلغاء الـ Timeout لمنع التعليق
 if (typeof socket !== 'undefined' && socket.on) {
     socket.on('login_persist_status', function(res) {
