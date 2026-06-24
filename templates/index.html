@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نايل شات | Nile Chat</title>
     <link class="program-app-icon" rel="shortcut icon" href="/static/icon.png" type="image/png">
     <link rel="manifest" href="/static/manifest.json">
@@ -64,7 +64,7 @@
             height: 100%;
             position: relative;
         }
-.sidebar {
+        .sidebar {
             width: 380px;
             background-color: var(--bg-side);
             border-left: 1px solid var(--border-color);
@@ -102,9 +102,8 @@
         }
         .header-actions {
             display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 20px;
+            gap: 18px;
+            font-size: 22px;
             color: var(--text-muted);
         }
         .header-actions i {
@@ -115,34 +114,6 @@
             color: var(--primary-color);
             transform: scale(1.1);
         }
-/* إخفاء القوائم في الوضع الطبيعي */
-.right-platforms-bar, .side-features-list {
-    display: none !important;
-}
-
-/* التنسيق المنبثق الصحيح: يطير فوق العناصر وبحجم صغير متناسق */
-.right-platforms-bar.dropdown-popup-active, .side-features-list.dropdown-popup-active {
-    display: flex !important;
-    position: absolute !important; /* يجعلها طايرة فوق المحادثات ولا تزق العناصر لأسفل */
-    top: 60px !important; /* أسفل الترس مباشرة */
-    left: 15px !important;
-    width: 280px !important; /* تحديد عرض صغير عشان ما تفرشش بكامل الشاشة زي الصورة */
-    max-height: 50vh !important;
-    background-color: #111b21 !important; /* لون داكن متناسق */
-    border: 1px solid #222d34 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    z-index: 999999 !important; /* تظهر فوق كل شيء */
-    padding: 10px !important;
-    overflow-y: auto !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-}
-
-/* تأمين الحاوية لتكون نقطة الارتكاز للقائمة الطايرة */
-.sidebar {
-    position: relative !important;
-}
         .tabs-nav {
             display: flex;
             background-color: var(--bg-side);
@@ -293,52 +264,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             word-wrap: break-word;
             animation: fadeInMsg 0.25s ease-out;
-        }
-        .chat-input-area {
-            padding: 10px 16px;
-            background-color: var(--header-bg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-top: 1px solid var(--border-color);
-        }
-        .chat-input-area form, .input-form-wrapper {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            gap: 12px;
-        }
-        .chat-input-area input {
-            flex: 1;
-            padding: 11px 16px;
-            background-color: var(--bg-main);
-            border: 1px solid var(--border-color);
-            border-radius: 22px;
-            color: var(--text-main);
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .chat-input-area input:focus {
-            border-color: var(--primary-color);
-        }
-        .chat-input-icons-left, .chat-input-icons-right {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            font-size: 22px;
-            color: var(--text-muted);
-        }
-        .chat-input-area i {
-            cursor: pointer;
-            transition: color 0.2s, transform 0.2s;
-        }
-        .chat-input-area i:hover {
-            color: var(--primary-color);
-            transform: scale(1.15);
-        }
-        #send-msg-btn-icon {
-            color: var(--primary-color);
         }
         @keyframes fadeInMsg {
             from { opacity: 0; transform: translateY(8px); }
@@ -586,498 +511,62 @@
         <button class="btn-custom secondary" onclick="document.getElementById('customStatusModal').style.display='none'" style="margin-top: 15px; color: white; border: 1px solid #334155; width: 100%;">إلغاء</button>
     </div>
     
-<div class="social-dropdown-container" style="position: relative; display: inline-block;">
-    <button type="button" id="platformsBtn" onclick="toggleSocialMenu(event)" class="control-btn" title="المنصات">
-        <i class="fas fa-globe"></i>
-    </button>
-    <div id="socialDropdownMenu" style="display: none; position: absolute; top: 40px; left: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid var(--border-color); z-index: 9999;">
-        <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
-        </a>
-        <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
-        </a>
-<a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
-        </a>
-        <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
-        </a>
-        <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
-        </a>
-        <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="24" height="24" style="filter: invert(1);"> منصة X
-        </a>
+    <div class="social-dropdown-container" style="position: fixed; top: 15px; left: 15px; z-index: 9999;">
+        <button type="button" onclick="toggleSocialMenu(event)" style="background-color: var(--primary-color); color: white; padding: 10px 18px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: background-color 0.2s;">
+            🌐 المنصات
+        </button>
+        <div id="socialDropdownMenu" style="display: none; position: absolute; top: 46px; left: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid var(--border-color);">
+            <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
+            </a>
+            <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
+            </a>
+            <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
+            </a>
+            <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
+            </a>
+            <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
+            </a>
+            <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="24" height="24" style="filter: invert(1);"> منصة X
+            </a>
+        </div>
     </div>
-</div>
     
-<script>
-(function() {
-    var nileSocket = typeof socket !== 'undefined' ? socket : null;
-    var nileProfile = typeof myProfile !== 'undefined' ? myProfile : { name: 'مستخدم نايل', avatar: '/static/images/default-avatar.png' };
-    
-    // 1. محرك المساعد الذكي الخاص بك (Nile AI)
-    window.getNileAiResponse = function(userMessage) {
-        var text = userMessage.trim();
-        if (text.includes('السلام') || text.includes('هلا') || text.includes('مرحبا') || text.includes('ازيك')) {
-            return 'مرحباً بك في نايل شات! أنا مساعدك الذكي الخاص، كيف يمكنني مساعدتك اليوم يا غالي؟';
-        }
-        if (text.includes('مين انت') || text.includes('المساعد') || text.includes('ذكاء')) {
-            return 'أنا مساعدك الذكي الخاص المدمج في منظومة نايل شات وجاهز لخدمتك فوراً!';
-        }
-        return 'أنا هنا لمتابعة شاتك ومساعدتك لحظة بلحظة. فهمت سؤالك تماماً بخصوص: ' + text;
-    }; // تم إصلاح القفلة هنا بنجاح
-
-    window.triggerNilePrivateAiChat = function(userInputText, chatContainerSelector) {
-        var chatBox = document.querySelector(chatContainerSelector) || document.querySelector('.messages, .chat-box, #chat-messages');
-        if (!chatBox) return;
-        var userBubble = '<div style="text-align: right; margin: 10px; padding: 10px; background: #0284c7; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>أنت:</strong> ' + userInputText + '</div><br>';
-        chatBox.innerHTML += userBubble;
-        setTimeout(function() {
-            var aiReplyText = window.getNileAiResponse(userInputText);
-            var aiBubble = '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>نايل AI:</strong> ' + aiReplyText + '</div><br>';
-            chatBox.innerHTML += aiBubble;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }, 500);
-    };
-
-    // 2. تثبيت أبعاد الشاشة ومنع التكبير العشوائي في الموبايل
-    function restoreNileSessionAndSettings() {
-        var metaViewport = document.querySelector('meta[name="viewport"]');
-        if (metaViewport) { 
-            metaViewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'); 
-        }
-    }
-    restoreNileSessionAndSettings();
-
-    // 3. تشغيل أزرار الإضافة والمجموعات الأساسية لشريط الأدوات
-    function setupTopBarButtons() { 
-        var addPersonBtn = document.getElementById('nileAddPersonBtn') || document.getElementById('addPersonBtn'); 
-        if (addPersonBtn) { 
-            addPersonBtn.onclick = function() { 
-                var phone = prompt("أدخل رقم هاتف الشخص لإضافته:");
-                if (phone && typeof window.nileAddContact === 'function') { 
-                    window.nileAddContact(phone); 
-                } 
-            }; 
-        } 
-        
-        var addGroupBtn = document.getElementById('nileAddGroupBtn') || document.getElementById('addGroupBtn');
-        if (addGroupBtn) { 
-            addGroupBtn.onclick = function() { 
-                var groupName = prompt("أدخل اسم المجموعة الجديدة:");
-                if (groupName && typeof window.nileCreateGroup === 'function') { 
-                    window.nileCreateGroup(groupName); 
-                } 
-            };
-        } 
-    } 
-
-    // تشغيل الأزرار بعد التأكد من تحميل واجهة الشات تماماً
-    setTimeout(setupTopBarButtons, 1500); 
-})();
-</script>
-
-<script>
-// 5. نظام الإشعارات والرسائل الواردة النظيف
-function requestNileNotificationPermission() {
-    if ("Notification" in window) {
-        Notification.requestPermission().then(function(permission) {
-            if (permission === 'granted') {
-                console.log('تم تفعيل نظام الإشعارات بنجاح!');
-            }
-        });
-    }
-}
-</script>
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(requestNileNotificationPermission, 2000);
-});
-
-function playNileIncomingRingtone() {
-    var ringtoneUrls = {
-        'default': 'https://www.soundjay.com/phone/sounds/telephone-ring-03a.mp3'
-    };
-    var audio = new Audio(ringtoneUrls['default']);
-    audio.volume = 1.0;
-    audio.play().catch(function(e) { console.log("البرنامج محجوب من التشغيل التلقائي للصوت"); });
-}
-
-if (typeof socket !== 'undefined' && socket.on) {
-    socket.on('receive_message', function(msg) {
-        if (document.hidden || (typeof currentRoomId !== 'undefined' && currentRoomId !== msg.room)) {
-            playNileIncomingRingtone();
-            if (Notification.permission === "granted") {
-                new Notification("رسالة جديدة من: " + (msg.senderName || "مستخدم نايل"), {
-                    body: msg.text,
-                    icon: '/icon.png',
-                    tag: 'nile-chat'
-                });
-            }
-        }
-    });
-}
-</script>
-    
-<script>        
-function checkNileAdminPrivileges(roomId, userPhone, callback) {
-    if (typeof socket !== 'undefined' && socket.emit) {
-        socket.emit('get_room_admin_status', { room: roomId, phone: userPhone }, function(response) {
-            if (response && response.isAdmin) {
-                callback(true);
-            } else {
-                callback(false);
-            }
-        });
-    }
-}
-
-function kickNileGroupMember(roomId, memberPhone) {
-    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
-        if (isAdmin) {
-            if (confirm("هل أنت متأكد من طرد هذا العضو؟")) {
-                socket.emit('kick_group_member', { room: roomId, target: memberPhone });
-                alert("تم طرد العضو بنجاح!");
-            }
+    <script>
+    function toggleSocialMenu(event) {
+        if(event) event.stopPropagation();
+        var menu = document.getElementById("socialDropdownMenu");
+        if (menu.style.display === "none" || menu.style.display === "") {
+            menu.style.display = "block";
         } else {
-            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
-        }
-    });
-}
-
-function promoteNileToAdmin(roomId, memberPhone) {
-    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
-        if (isAdmin) {
-            socket.emit('promote_to_admin', { room: roomId, target: memberPhone });
-            alert("تم تعيين العضو كمسؤول (أدمن) للجروب!");
-        } else {
-            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
-        }
-    });
-}
-
-function toggleNileGroupChatLock(roomId, isLocked) {
-    checkNileAdminPrivileges(roomId, myProfile.phone, function(isAdmin) {
-        if (isAdmin) {
-            socket.emit('toggle_room_lock', { room: roomId, locked: isLocked });
-            alert(isLocked ? "تم قفل الجروب، الإرسال للأدمن فقط!" : "تم فتح الجروب للجميع!");
-        } else {
-            alert("عذراً، هذه الصلاحية خاصة بأدمن الجروب فقط!");
-        }
-    });
-}
-  // دالة تشغيل القائمة عند الضغط المطول على الرسالة (تم الإبقاء عليها بأمان)
-function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
-    if (!messageElement) return;
-
-    messageElement.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        
-        var menu = document.getElementById('nileMessageContextMenu');
-        if (!menu) return;
-
-        // إظهار القائمة مكان الضغطة
-        menu.style.display = 'block';
-        menu.style.top = e.clientY + 'px';
-        menu.style.left = e.clientX + 'px';
-
-        // تشغيل دالة الرد
-        document.getElementById('context-reply-btn').onclick = function() {
-            if (typeof setNileReplyTarget === 'function') {
-                setNileReplyTarget(messageId, senderName, messageText);
-            } else if (typeof replyMessage === 'function') {
-                replyMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل دالة التحويل
-        document.getElementById('context-forward-btn').onclick = function() {
-            if (typeof forwardNileMessage === 'function') {
-                forwardNileMessage(messageText);
-            } else if (typeof forwardMessage === 'function') {
-                forwardMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل دالة التفاعل
-        document.getElementById('context-react-btn').onclick = function() {
-            var chosenEmoji = prompt("أدخل الإيموجي أو التفاعل النصي:", "👍");
-            if (chosenEmoji && typeof reactToNileMessage === 'function') {
-                reactToNileMessage(messageId, chosenEmoji);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل دالة المسح
-        document.getElementById('context-delete-btn').onclick = function() {
-            if (typeof deleteNileMessage === 'function') {
-                deleteNileMessage(messageId);
-            } else if (typeof deleteMessage === 'function') {
-                deleteMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-    });
-}
-
-// إغلاق قائمة الرسائل المنبثقة عند الضغط في أي مكان خارجي بالصفحة
-document.addEventListener('click', function() {
-    var menu = document.getElementById('nileMessageContextMenu');
-    if (menu) menu.style.display = 'none';
-});
-// إخفاء القائمة لو ضغطت في أي مكان فاضي بالصفحة
-document.addEventListener('click', function() {
-    var menu = document.getElementById('nileMessageContextMenu');
-    if (menu) menu.style.display = 'none';
-});
-(function() {
-    // 1. تأمين وجود كائن البروفايل لمنع توقف الكود (ReferenceError)
-    if (typeof myProfile === 'undefined') {
-        window.myProfile = { name: '', phone: '', avatar: '' };
-    }
-
-    var savedName = localStorage.getItem('nile_name');
-    var savedPhone = localStorage.getItem('nile_phone');
-    var savedAvatar = localStorage.getItem('nile_avatar');
-    var savedToken = localStorage.getItem('saved_login_token');
-
-    // 2. تشغيل الكود بأمان للتأكد من تحميل عناصر الواجهة (DOM) لشاشة الدخول
-    function initNileAuth() {
-        var authModal = document.getElementById('modal-user-registration-auth');
-
-        if (savedPhone && savedToken) {
-            myProfile.name = savedName || "مستخدم نايل شات";
-            myProfile.phone = savedPhone;
-            myProfile.avatar = savedAvatar || 'https://www.w3schools.com/howto/img_avatar.png';
-            
-            if(document.getElementById('my-global-name')) document.getElementById('my-global-name').innerText = myProfile.name;
-            if(document.getElementById('my-global-avatar')) document.getElementById('my-global-avatar').src = myProfile.avatar;
-            
-            // التحقق من الحساب المسجل عبر السوكيت بأمان
-            if (typeof socket !== 'undefined' && socket.emit) {
-                socket.emit('verify_saved_login', { phone: myProfile.phone, token: savedToken });
-                socket.emit('register_user', { phone: myProfile.phone, name: myProfile.name, avatar: myProfile.avatar });
-            }
-
-            // تعديل الأمان لمنع التعليق: لو السيرفر ما ردش في خلال ثانيتين، افتح نافذة التسجيل فوراً
-            window.nileAuthTimeout = setTimeout(function() {
-                if (!window.nileUserVerified && authModal) {
-                    authModal.classList.add('open');
-                    authModal.style.display = 'flex';
-                    console.log("استجابة السيرفر تأخرت، تم فتح نافذة التسجيل حمايةً من التعليق.");
-                }
-            }, 2000);
-
-        } else {
-            // للمستخدم الجديد: فتح شاشة التسجيل فوراً وبدون أي تأخير
-            if (authModal) {
-                authModal.classList.add('open');
-                authModal.style.display = 'flex';
-            }
+            menu.style.display = "none";
         }
     }
-
-    // انتظر حتى يتم تحميل الصفحة بالكامل ثم نفذ دالة الفحص
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initNileAuth);
-    } else {
-        initNileAuth();
-    }
-})();
-
-// 3. دالة تشغيل كافة أزرار الشات الأساسية (الرد، التحويل، التفاعل، الحذف) بدون تداخل
-function attachLongPressToMessage(messageElement, messageId, senderName, messageText) {
-    if (!messageElement) return;
-
-    messageElement.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        
-        var menu = document.getElementById('nileMessageContextMenu');
-        if (!menu) return;
-
-        // إظهار القائمة مكان الضغطة
-        menu.style.display = 'block';
-        menu.style.top = e.clientY + 'px';
-        menu.style.left = e.clientX + 'px';
-
-        // تشغيل زر الرد
-        document.getElementById('context-reply-btn').onclick = function() {
-            if (typeof setNileReplyTarget === 'function') {
-                setNileReplyTarget(messageId, senderName, messageText);
-            } else if (typeof replyMessage === 'function') {
-                replyMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل زر التحويل
-        document.getElementById('context-forward-btn').onclick = function() {
-            if (typeof forwardNileMessage === 'function') {
-                forwardNileMessage(messageText);
-            } else if (typeof forwardMessage === 'function') {
-                forwardMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل زر التفاعل
-        document.getElementById('context-react-btn').onclick = function() {
-            var chosenEmoji = prompt("أدخل الإيموجي أو التفاعل النصي:", "👍");
-            if (chosenEmoji && typeof reactToNileMessage === 'function') {
-                reactToNileMessage(messageId, chosenEmoji);
-            }
-            menu.style.display = 'none';
-        };
-
-        // تشغيل زر الحذف
-        document.getElementById('context-delete-btn').onclick = function() {
-            if (typeof deleteNileMessage === 'function') {
-                deleteNileMessage(messageId);
-            } else if (typeof deleteMessage === 'function') {
-                deleteMessage(messageId);
-            }
-            menu.style.display = 'none';
-        };
-    });
-}
-
-// إغلاق أي قوائم منبثقة للرسائل عند الضغط خارجها لتأمين نظافة الواجهة
-document.addEventListener('click', function() {
-    var menu = document.getElementById('nileMessageContextMenu');
-    if (menu) menu.style.display = 'none';
-});
-// استقبال رد السيرفر وإلغاء الـ Timeout لمنع التعليق
-if (typeof socket !== 'undefined' && socket.on) {
-    socket.on('login_persist_status', function(res) {
-        var authModal = document.getElementById('modal-user-registration-auth');
-        if (res && (res.status === 'success' || res.status === 'verified')) {
-            window.nileUserVerified = true;
-            clearTimeout(window.nileAuthTimeout); // إلغاء عداد الأمان
-            
-            if (authModal) {
-                authModal.classList.remove('open');
-                authModal.style.display = 'none';
-            }
-            
-            // تحديث البيانات والتأكيد عليها
-            localStorage.setItem('nile_phone', res.phone);
-            if(res.name) localStorage.setItem('nile_name', res.name);
-            if(res.avatar) localStorage.setItem('nile_avatar', res.avatar);
-        } else {
-            // لو السيرفر رفض التوكن، افتح شاشة التسجيل فوراً
-            clearTimeout(window.nileAuthTimeout);
-            if (authModal) {
-                authModal.classList.add('open');
-                authModal.style.add('display', 'flex');
-                authModal.style.display = 'flex';
-            }
+    window.addEventListener('click', function(event) {
+        var menu = document.getElementById("socialDropdownMenu");
+        var container = document.querySelector(".social-dropdown-container");
+        if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
+            menu.style.display = "none";
         }
     });
-
-    socket.on('message', function(data) {
-        if (data && data.room) {
-            var storageKey = "nile_history_" + data.room;
-            var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
-            
-            var isExist = localHistory.some(function(m) { 
-                return m.id === data.id || (m.text === data.text && m.timestamp === data.timestamp); 
-            });
-            
-            if (!isExist) {
-                localHistory.push(data);
-                if(localHistory.length > 300) localHistory.shift(); 
-                localStorage.setItem(storageKey, JSON.stringify(localHistory));
-            }
-        }
-    });
-}
-function openMyPrivateAIChat() {
-    if (!myProfile.phone) {
-        alert("برجاء تسجيل الدخول أولاً لتفعيل المساعد الذكي!");
-        return;
-    }
-    
-    var privateAIRoomId = "AI_ROOM_" + myProfile.phone;
-    
-    if (typeof joinChatRoomHook === 'function') {
-        joinChatRoomHook(privateAIRoomId, "المساعد الذكي (Nile AI)");
-    } else if (typeof joinRoom === 'function') {
-        joinRoom(privateAIRoomId, "المساعد الذكي (Nile AI)");
-    }
-    
-    var storageKey = "nile_history_" + privateAIRoomId;
-    var localHistory = JSON.parse(localStorage.getItem(storageKey)) || [];
-    var anchor = document.getElementById('chat-messages-stream-anchor');
-    
-    if (anchor && localHistory.length > 0) {
-        anchor.innerHTML = ''; 
-        localHistory.forEach(function(msgData) {
-            if (typeof renderSingleBubbleLayout === 'function') {
-                renderSingleBubbleLayout(msgData);
-            }
-        });
- anchor.scrollTop = anchor.scrollHeight;
-        }
-    });
-} // تأكد إن القوس ده بيقفل الـ function الأساسية اللي فوقه بنظافة
-
-<script>
-        function toggleSocialMenu(event) {
-            if(event) event.stopPropagation();
-            var menu = document.getElementById("socialDropdownMenu");
-            if (menu) {
-                if (menu.style.display === "none" || menu.style.display === "") {
-                    menu.style.display = "block";
-                } else {
-                    menu.style.display = "none";
-                }
-            }
-        }
-
-        window.addEventListener('click', function(event) {
-            var menu = document.getElementById("socialDropdownMenu");
-            var container = document.querySelector(".social-dropdown-container");
-            if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
-                menu.style.display = "none";
-            }
-        });
-
-        (function() {
-            if (typeof socket !== 'undefined' && socket.on) {
-                socket.on('receive_message', function(data) {
-                    if (data.room === 'nile_ai_room' || data.senderName === 'Nile AI') {
-                        if (typeof displayMessage === 'function') {
-                            displayMessage(data);
-                        } else if (typeof appendMessage === 'function') {
-                            appendMessage(data);
-                        }
-                        
-                        if (typeof playNotificationSound === 'function') {
-                            playNotificationSound();
-                        }
-                    }
-                });
-            }
-        })();
     </script>
 
     <div class="app-container">
         <aside class="sidebar">
-            <div class="sidebar-header" style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
-                <div class="profile-container" style="display: flex; align-items: center; gap: 10px;">
-                    <img class="user-avatar" id="my-avatar-display" src="https://i.ibb.co/6NGH0f3/logo.png" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%;">
-                    <div class="user-meta-header">
-                        <div id="loading-bar-mini" style="font-size: 11px; color: var(--primary-color); font-weight: 600; margin-bottom: 2px;">
-                            <i class="fas fa-spinner fa-spin"></i> متصل...
-                        </div>
-                        <span id="my-name-display" style="font-weight: 700; font-size: 14px;">جاري التحميل...</span>
-                    </div>
+            <div class="sidebar-header">
+                <div class="profile-container" onclick="openProfileSettingsModal()">
+                    <img id="my-global-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" class="user-avatar">
+                    <span id="my-global-name" style="font-weight:700; font-size:14px; color: var(--text-main);">جاري التحميل...</span>
                 </div>
-                <div class="header-actions" style="display: flex; align-items: center; gap: 16px; font-size: 18px; color: var(--text-muted);">
-                    <i class="fas fa-robot" id="btn-ai-chat" title="Nile AI" style="cursor: pointer;"></i>
+                <div class="header-actions">
+                    <i class="bi bi-moon-stars-fill" onclick="toggleThemeModeLive()"></i>
+                    <i class="bi bi-person-plus-fill" onclick="openAddContactModal()"></i>
+                    <i class="bi bi-plus-circle-dotted" onclick="openCreateGroupModal()"></i>
                 </div>
             </div>
             <nav class="tabs-nav">
@@ -1101,30 +590,30 @@ function openMyPrivateAIChat() {
                             <div class="list-item-desc">تواصل مباشرة مع جميع النشطين الآن</div>
                         </div>
                     </div>
-                    <div class="list-item" onclick="openMyPrivateAIChat()">
+                    <div class="list-item" onclick="joinChatRoomHook('AI_bot', 'Nile AI')">
                         <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="list-item-avatar">
                         <div class="list-item-info">
                             <div class="list-item-title">Nile AI</div>
-                            <div class="list-item-desc">اضغط لبدء محادثتك الذكية الخاصة والمشفرة</div>
+                            <div class="list-item-desc">اضغط لبدء محادثة ذكية فورية متميزة</div>
                         </div>
                     </div>
                 </div>
                 <div id="my-private-groups-list-hook"></div>
             </div>
-            <div id="contacts-tab" class="tab-content" style="display:none;">
+            <div id="contacts-tab" class="tab-content">
                 <div id="my-contacts-render-hook"></div>
             </div>
-            <div id="stories-tab" class="tab-content" style="display:none;">
+            <div id="stories-tab" class="tab-content">
                 <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreateStoryModal()">+ إضافة حالة جديدة</button>
                     <button class="btn-custom" style="width:100%; padding:11px; background-color: #475569; color: white;" onclick="document.getElementById('customStatusModal').style.display='block'">📸 معرض الحالات المطور</button>
                 </div>
                 <div id="stories-render-hook"></div>
             </div>
-            <div id="feed-tab" class="tab-content" style="display:none;">
+            <div id="feed-tab" class="tab-content">
                 <div style="padding:12px; display: flex; flex-direction: column; gap: 8px;">
                     <button class="btn-custom primary" style="width:100%; padding:11px;" onclick="openCreatePostModal()">اكتب منشوراً جديداً بالمنتدى</button>
-                    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 11px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-size: 14px;">
+                    <a href="https://www.facebook.com" target="_blank" style="background-color: #1877f2; color: white; padding: 11px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-size: 14px;" onclick="console.log('تم ربط حساب نايل شات بالفيسبوك تلقائياً')">
                         <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="18" height="18"> دخول بحساب فيسبوك
                     </a>
                 </div>
@@ -1157,7 +646,7 @@ function openMyPrivateAIChat() {
                     <i class="bi bi-paperclip footer-icon-btn" onclick="triggerFileUploadAction()"></i>
                     <input type="file" id="hidden-file-input-field" style="display:none;" onchange="handleFileSelectedUpload(this)">
                     <div class="input-panel-wrapper">
-                        <input type="text" id="chat-inline-text-input" class="main-message-input" placeholder="اكتب رسالتك هنا..." onkeyup="if(typeof evalInputChangeState === 'function') evalInputChangeState(this)">
+                        <input type="text" id="chat-inline-text-input" class="main-message-input" placeholder="اكتب رسالتك هنا..." onkeyup="evalInputChangeState(this)">
                     </div>
                     <div class="send-action-container">
                         <button type="button" id="dynamic-action-control-btn" class="circle-action-btn" onclick="executePrimaryActionControl()">
@@ -1168,7 +657,6 @@ function openMyPrivateAIChat() {
             </div>
         </main>
     </div>
-
     <div class="modal-overlay" id="modal-user-registration-auth">
         <div class="modal-card">
             <div class="modal-title">تسجيل الدخول / إنشاء حساب نايل تشات</div>
@@ -1191,7 +679,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-add-contact-view">
         <div class="modal-card">
             <div class="modal-title">إضافة جهة اتصال جديدة</div>
@@ -1209,7 +696,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-create-group-view">
         <div class="modal-card">
             <div class="modal-title">إنشاء مجموعة مخصصة خاصة جديدة</div>
@@ -1223,7 +709,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-create-story-view">
         <div class="modal-card">
             <div class="modal-title">رفع حالة (Story) جديدة للمشتركين</div>
@@ -1241,7 +726,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-create-post-view">
         <div class="modal-card">
             <div class="modal-title">منشور جديد في المنتدى العام للمنصة</div>
@@ -1259,7 +743,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-profile-settings-view">
         <div class="modal-card">
             <div class="modal-title">تعديل الملف الشخصي والخصوصية</div>
@@ -1274,6 +757,18 @@ function openMyPrivateAIChat() {
                 <small id="profile-upload-status" style="color: var(--primary-color); display: none; margin-top: 5px; font-weight: bold;"></small>
             </div>
             <div class="form-group">
+                <label>رابط خلفية الشات المستهدفة:</label>
+                <input type="text" id="profile-edit-wallpaper" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>مغير نبرة الصوت المفضل:</label>
+                <select id="profile-edit-voice-setting" class="form-control">
+                    <option value="normal">عادي وبدون فلتر</option>
+                    <option value="robot">روبوت فضائي سميك</option>
+                    <option value="chipmunk">سنجاب سريع حاد</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>الحالة المكتوبة المخصصة:</label>
                 <input type="text" id="profile-edit-status-text" class="form-control">
             </div>
@@ -1283,7 +778,6 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-
     <div class="modal-overlay" id="modal-qr-display-frame">
         <div class="modal-card" style="text-align:center;">
             <div class="modal-title">كود الـ باركود QR الخاص بغرفة الدردشة</div>
@@ -1293,8 +787,7 @@ function openMyPrivateAIChat() {
             </div>
         </div>
     </div>
-    
-    <div class="webrtc-call-overlay" id="webrtc-call-screen-overlay" style="display:none;">
+    <div class="webrtc-call-overlay" id="webrtc-call-screen-overlay">
         <h2 id="call-screen-title" style="color:white; margin-bottom:20px; font-weight:300;">مكالمة نايل تشات الجارية...</h2>
         <div class="video-streams-box">
             <video id="webrtc-remote-video-stream" class="video-element" autoplay playsinline></video>
@@ -1306,6 +799,7 @@ function openMyPrivateAIChat() {
         </div>
     </div>
 
+    <!-- قائمة سياقية تفاعلية مخصصة للتحكم بالرسائل -->
     <div id="messageContextMenu" style="display: none; position: fixed; background-color: #1e293b; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 10px; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 170px;">
         <div style="display: flex; gap: 6px; justify-content: space-around; padding-bottom: 8px; border-bottom: 1.5px solid #334155; margin-bottom: 6px;">
             <span onclick="reactToMsg('👍')" style="cursor: pointer; font-size: 18px; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</span>
@@ -1610,7 +1104,7 @@ function openMyPrivateAIChat() {
             inputNode.value = '';
         }
 
-function loadMyContacts() { socket.emit('get_my_contacts', { user_phone: myProfile.phone }); }
+        function loadMyContacts() { socket.emit('get_my_contacts', { user_phone: myProfile.phone }); }
 
         socket.on('my_contacts_list', (data) => {
             const hook = document.getElementById('my-contacts-render-hook');
@@ -1766,7 +1260,7 @@ function loadMyContacts() { socket.emit('get_my_contacts', { user_phone: myProfi
             });
         });
 
-function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: postId, phone: myProfile.phone }); }
+        function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: postId, phone: myProfile.phone }); }
 
         socket.on('new_feed_post_alert', () => { if(document.getElementById('feed-tab').classList.contains('active')) requestAllFeedPosts(); });
 
@@ -1858,7 +1352,7 @@ function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: 
             }
         });
 
-function terminateActiveCallSession() {
+        function terminateActiveCallSession() {
             document.getElementById('webrtc-call-screen-overlay').style.display = 'none';
             if(localMediaStream) { localMediaStream.getTracks().forEach(track => track.stop()); localMediaStream = null; }
             if(activePeerConnection) { activePeerConnection.close(); activePeerConnection = null; }
@@ -1884,8 +1378,8 @@ function terminateActiveCallSession() {
             myProfile.name = document.getElementById('profile-edit-name').value.trim();
             myProfile.avatar = document.getElementById('profile-edit-avatar').value.trim();
             myProfile.status_text = document.getElementById('profile-edit-status-text').value.trim();
-            
-            // تم تنظيف السطور القديمة الخاصة بنبرة الصوت والخلفية لمنع تعليق الصفحة
+            myProfile.voice_setting = document.getElementById('profile-edit-voice-setting').value;
+            myProfile.wallpaper = document.getElementById('profile-edit-wallpaper').value.trim();
             document.getElementById('my-global-name').innerText = myProfile.name;
             document.getElementById('my-global-avatar').src = myProfile.avatar;
             socket.emit('update_profile_live', myProfile);
@@ -1893,23 +1387,13 @@ function terminateActiveCallSession() {
         }
 
         function commitUserRegistrationAuthLive() {
-            var nameField = document.getElementById('auth-input-name');
-            var phoneField = document.getElementById('auth-input-phone');
-            var avatarField = document.getElementById('auth-input-avatar');
-
-            var user_name = nameField ? nameField.value.trim() : '';
-            var user_phone = phoneField ? phoneField.value.trim() : '';
-            var user_avatar = avatarField ? avatarField.value.trim() : '';
-
-            if(!user_phone || !user_name) { alert('يرجى ملء خانة رقم الهاتف والاسم المستعار لإتمام الإجراء.'); return; }
-
-            var newToken = 'tk_' + Math.random().toString(36).substring(2) + Date.now();
-            localStorage.setItem('nile_name', user_name);
-            localStorage.setItem('nile_phone', user_phone);
-            localStorage.setItem('nile_avatar', user_avatar);
-            localStorage.setItem('saved_login_token', newToken);
+            const ph = document.getElementById('auth-input-phone').value.trim();
+            const nm = document.getElementById('auth-input-name').value.trim();
+            const av = document.getElementById('auth-input-avatar').value.trim();
+            if(!ph || !nm) { alert('يرجى ملء خانة رقم الهاتف والاسم المستعار لإتمام الإجراء.'); return; }
             
-            socket.emit('register_user', { phone: user_phone, name: user_name, avatar: user_avatar, token: newToken });
+            const token = 'token_' + Date.now();
+            socket.emit('register_user', { phone: ph, name: nm, avatar: av, token: token });
         }
 
         function openAddContactModal() { openModalOverlay('modal-add-contact-view'); }
@@ -1917,32 +1401,25 @@ function terminateActiveCallSession() {
         function openCreateStoryModal() { openModalOverlay('modal-create-story-view'); }
         function openCreatePostModal() { openModalOverlay('modal-create-post-view'); }
         
-        function openModalOverlay(id) { 
-            var modal = document.getElementById(id);
-            if(modal) { modal.classList.add('open'); modal.style.display = 'flex'; } 
-        }
-        function closeModalOverlay(id) { 
-            var modal = document.getElementById(id);
-            if(modal) { modal.classList.remove('open'); modal.style.display = 'none'; } 
-        }
+        function openModalOverlay(id) { document.getElementById(id).classList.add('open'); }
+        function closeModalOverlay(id) { document.getElementById(id).classList.remove('open'); }
         function scrollMessagesToBottomContainer() { const c = document.getElementById('chat-messages-stream-anchor'); if(c) c.scrollTop = c.scrollHeight; }
 
+        // وظائف القائمة السياقية (Context Menu) وتفاعلات الرسائل
         function showCustomContextMenu(e, msgId, msgText) {
             selectedMessageId = msgId;
             selectedMessageText = msgText;
             
             const menu = document.getElementById('messageContextMenu');
-            if(menu) {
-                menu.style.display = 'block';
-                menu.style.top = e.clientY + 'px';
-                menu.style.left = e.clientX + 'px';
-                
-                const closeMenu = () => {
-                    menu.style.display = 'none';
-                    document.removeEventListener('click', closeMenu);
-                };
-                setTimeout(() => { document.addEventListener('click', closeMenu); }, 50);
-            }
+            menu.style.display = 'block';
+            menu.style.top = e.clientY + 'px';
+            menu.style.left = e.clientX + 'px';
+            
+            const closeMenu = () => {
+                menu.style.display = 'none';
+                document.removeEventListener('click', closeMenu);
+            };
+            setTimeout(() => { document.addEventListener('click', closeMenu); }, 50);
         }
 
         function deleteMsg() {
@@ -1999,33 +1476,6 @@ function terminateActiveCallSession() {
                 reactBadge.innerText = data.emoji;
             }
         });
-<div class="bottom-control-bar">
-    </div>
-
-<script>
-// دالة تشغيل القوائم المنسدلة السفلى للشات (تم الإبقاء عليها بأمان للاستخدامات الأساسية)
-function toggleUpwardMenu(id) {
-    var menu = document.getElementById(id);
-    if (!menu) return;
-    var isVisible = menu.style.display === 'block';
-    document.querySelectorAll('.upward-dropdown').forEach(function(el) {
-        el.style.display = 'none';
-    });
-    if (!isVisible) {
-        menu.style.display = 'block';
-    } else {
-        menu.style.display = 'none';
-    }
-}
-
-// إغلاق القوائم عند الضغط في أي مكان خارج شريط التحكم السفلي لتأمين الواجهة
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.bottom-control-bar')) {
-        document.querySelectorAll('.upward-dropdown').forEach(function(el) {
-            el.style.display = 'none';
-        });
-    }
-});
-</script>
+    </script>
 </body>
 </html>
