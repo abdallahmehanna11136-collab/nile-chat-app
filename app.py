@@ -1,3 +1,6 @@
+from gevent import monkey
+monkey.patch_all()
+
 from flask import Flask, render_template, make_response, request, jsonify, url_for, session
 from flask_socketio import SocketIO, emit, join_room
 from werkzeug.utils import secure_filename
@@ -7,9 +10,6 @@ import time
 import os
 import requests
 import json
-from gevent import monkey
-monkey.patch_all()
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=36500)
