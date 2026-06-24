@@ -19,6 +19,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
+
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'nile-chat-database.db')
@@ -305,7 +306,7 @@ def handle_message_event(data):
     emit('message', data, room=room)
     emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
-if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
+    if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         try:
             payload = {
                 "messages": [
@@ -340,6 +341,9 @@ if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         
         emit('message', ai_data, room='AI_bot')
         conn.close()
+    else:
+        conn.close()
+
 @socketio.on('edit_message')
 def handle_edit_message(data):
     conn = sqlite3.connect(DB_PATH)
