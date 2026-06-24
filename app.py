@@ -7,7 +7,6 @@ import time
 import os
 import requests
 import json
-import openai # تم إضافة مكتبة OpenAI بنجاح
 from gevent import monkey
 monkey.patch_all()
 
@@ -21,8 +20,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
 DB_PATH = 'nile_chat_database.db'
 
-# ربط مفتاح شات جي بي تي الخاص بك بنجاح
-openai.api_key = "Sk-proj-106utGV0Yx7CC3T42G7K1k5XLp4NrE4_wwJKz3V-quE4wFoeSJWLKUz2APDlcs-8LUYDsC3b-TT3BlbkFJYwrt0UA8C4ct6JoPDgWRx1sXKNzJOV5DoRZAtVTPD103zv9djQ5GYEVsh8b8lPfGbCnQ_8UowA"
+# 🎯 تم إزالة كود الـ API Key القديم بنجاح والاعتماد على السيرفر المجاني المباشر بالأسفل
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
