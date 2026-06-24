@@ -1022,13 +1022,14 @@ function executePrimaryActionControl() {
                     window.currentReplyId = null;
                 }
 
-                // لو داخل غرفه Nile AI شغل الرد المحلي فوراً وامنع السيرفر
+                // 🎯 تعديل الذكاء الاصطناعي: لو الروم هي البوت، بنشغل الرد محلياً فوراً لمنع الـ Recursion
                 if (activeRoomId === 'AI_bot') {
                     renderMessageBubble(msgPayload);
                     if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
                     inputField.value = '';
                     evalInputChangeState(inputField);
 
+                    // إظهار رد البوت بعد نصف ثانية تلقائياً
                     setTimeout(function() {
                         const aiReplyText = window.getNileAiResponse(textValue);
                         renderMessageBubble({
@@ -1042,10 +1043,10 @@ function executePrimaryActionControl() {
                         if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
                     }, 500);
 
-                    return; 
+                    return; // إنهاء الدالة هنا تماماً عشان ما تروحش للسيرفر وتعمل الـ Loop
                 }
 
-                // المجرى الطبيعي لباقي الغرف
+                // المجرى الطبيعي لباقي غرف الدردشة
                 socket.emit('message', msgPayload);
                 inputField.value = '';
                 evalInputChangeState(inputField);
