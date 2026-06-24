@@ -339,7 +339,7 @@ if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         conn.commit()
         
         emit('message', ai_data, room='AI_bot')
-    conn.close()
+        conn.close()
 
 @socketio.on('edit_message')
 def handle_edit_message(data):
