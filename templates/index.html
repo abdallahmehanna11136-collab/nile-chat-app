@@ -1022,31 +1022,7 @@ function executePrimaryActionControl() {
                     window.currentReplyId = null;
                 }
 
-                // 🎯 تعديل الذكاء الاصطناعي: لو الروم هي البوت، بنشغل الرد محلياً فوراً لمنع الـ Recursion
-                if (activeRoomId === 'AI_bot') {
-                    renderMessageBubble(msgPayload);
-                    if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
-                    inputField.value = '';
-                    evalInputChangeState(inputField);
-
-                    // إظهار رد البوت بعد نصف ثانية تلقائياً
-                    setTimeout(function() {
-                        const aiReplyText = window.getNileAiResponse(textValue);
-                        renderMessageBubble({
-                            id: 'msg-ai-' + Date.now(),
-                            room: 'AI_bot',
-                            sender: 'نايل AI',
-                            phone: 'AI_system', 
-                            text: aiReplyText,
-                            file_type: 'text'
-                        });
-                        if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
-                    }, 500);
-
-                    return; // إنهاء الدالة هنا تماماً عشان ما تروحش للسيرفر وتعمل الـ Loop
-                }
-
-                // المجرى الطبيعي لباقي غرف الدردشة
+                // الكود النظيف والمباشر: الرسالة تذهب للسيرفر وهو يتولى تشغيل OpenAI والرد
                 socket.emit('message', msgPayload);
                 inputField.value = '';
                 evalInputChangeState(inputField);
