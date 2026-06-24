@@ -175,7 +175,6 @@ def handle_profile_update(data):
 @socketio.on('search_user')
 def handle_search_user(data):
     search_phone = str(data.get('phone', '')).strip()
-    user_phone = str(data.get('user_phone', '')).strip()
     
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -398,7 +397,7 @@ def handle_forward_reply(data):
     message_text = data.get('message') or data.get('text')
     reply_to_id = data.get('reply_to_id') or data.get('reply_to')
     is_forwarded = data.get('is_forwarded', False)
-room = data.get('room', 'public_room')
+    room = data.get('room', 'public_room')
     msg_id = f"msg-{int(time.time() * 1000)}"
     
     conn = sqlite3.connect(DB_PATH)
