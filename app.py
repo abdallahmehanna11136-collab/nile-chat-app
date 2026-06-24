@@ -305,7 +305,7 @@ def handle_message_event(data):
     emit('message', data, room=room)
     emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
-    if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
+if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         try:
             payload = {
                 "messages": [
@@ -320,9 +320,10 @@ def handle_message_event(data):
                 ai_reply = response.json()['choices'][0]['message']['content'].strip()
             else:
                 ai_reply = "أنا معاك يا غالي! وسامعك كويس، بس السيرفر عليه ضغط بسيط الحين، ابعتلي رسالتك تاني كدا."
-    except Exception as e:
+        except Exception as e:
             print(f"Free AI Error: {e}")
-            ai_reply = "أنا سامعك يا غالي، والكود شغال تمام، بس السيرفر الخارجي بتاع الـ AI هو اللي واخد وقت عشان يصحى! جرب تبعت تاني دلوقتي."
+            ai_reply = "انا سامعك يا غالي، والكود شغال تمام، بس السيرفر الخارجي بتاع الـ AI هو اللي واخد وقت عشان يصحى! جرب تبعت تاني دلوقتي."
+
         ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
         
         ai_data = {
