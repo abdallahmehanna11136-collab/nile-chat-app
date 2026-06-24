@@ -1004,7 +1004,7 @@
             }
         }
 
-        function executePrimaryActionControl() {
+function executePrimaryActionControl() {
             const inputField = document.getElementById('chat-inline-text-input');
             const textValue = inputField.value.trim();
             if(textValue.length > 0) {
@@ -1018,8 +1018,34 @@
                 };
                 if (window.currentReplyId) {
                     msgPayload.reply_to = window.currentReplyId;
+                    msgPayload.reply_text = window.currentReplyText || '';
                     window.currentReplyId = null;
                 }
+
+                // لو داخل غرفه Nile AI شغل الرد المحلي فوراً وامنع السيرفر
+                if (activeRoomId === 'AI_bot') {
+                    renderMessageBubble(msgPayload);
+                    if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
+                    inputField.value = '';
+                    evalInputChangeState(inputField);
+
+                    setTimeout(function() {
+                        const aiReplyText = window.getNileAiResponse(textValue);
+                        renderMessageBubble({
+                            id: 'msg-ai-' + Date.now(),
+                            room: 'AI_bot',
+                            sender: 'نايل AI',
+                            phone: 'AI_system', 
+                            text: aiReplyText,
+                            file_type: 'text'
+                        });
+                        if(typeof scrollMessagesToBottomContainer === 'function') scrollMessagesToBottomContainer();
+                    }, 500);
+
+                    return; 
+                }
+
+                // المجرى الطبيعي لباقي الغرف
                 socket.emit('message', msgPayload);
                 inputField.value = '';
                 evalInputChangeState(inputField);
@@ -1027,7 +1053,6 @@
                 toggleVoiceRecordingSessionLive();
             }
         }
-
         function toggleVoiceRecordingSessionLive() {
             const btn = document.getElementById('dynamic-action-control-btn');
             const icon = document.getElementById('dynamic-action-icon');
