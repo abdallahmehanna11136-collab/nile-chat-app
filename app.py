@@ -7,6 +7,7 @@ import time
 import os
 import requests
 import json
+import openai # تم إضافة مكتبة OpenAI بنجاح
 from gevent import monkey
 monkey.patch_all()
 
@@ -19,8 +20,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
 DB_PATH = 'nile_chat_database.db'
-GROQ_API_KEY = "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"
-OPENROUTER_MODEL = "meta-llama/llama-3-8b-instruct:free"
+
+# ربط مفتاح شات جي بي تي الخاص بك بنجاح
+openai.api_key = "Sk-proj-106utGV0Yx7CC3T42G7K1k5XLp4NrE4_wwJKz3V-quE4wFoeSJWLKUz2APDlcs-8LUYDsC3b-TT3BlbkFJYwrt0UA8C4ct6JoPDgWRx1sXKNzJOV5DoRZAtVTPD103zv9djQ5GYEVsh8b8lPfGbCnQ_8UowA"
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -322,11 +324,23 @@ def handle_message_event(data):
     emit('message', data, room=room)
     emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
+    # 🎯 هنا قفلنا جروك وشغلنا OpenAI النظيف ومنعنا الـ Loop
     if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
-        user_specific_room = f"ai_room_{phone}"
-        join_room(user_specific_room)
-        
-        ai_reply = get_groq_ai_response(text)
+        try:
+            # استدعاء شات جي بي تي مباشرة
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "أنت Nile AI، مساعد ذكي مدمج في تطبيق نايل شات. رد باختصار وودية بالعامية المصرية."},
+                    {"role": "user", "content": text}
+                ],
+                max_tokens=200
+            )
+            ai_reply = response.choices[0].message['content'].strip()
+        except Exception as e:
+            print(f"OpenAI Error: {e}")
+            ai_reply = "عذراً يا غالي، واجهت مشكلة مؤقتة في الاتصال بالخادم الذكي. تأكد من صلاحية الـ API Key الخاص بك."
+
         ai_msg_id = f"msg-ai-{int(time.time() * 1000)}"
         
         ai_data = {
@@ -348,7 +362,9 @@ def handle_message_event(data):
         """, (ai_msg_id, 'AI_bot', 'Nile AI', 'AI_SYSTEM', ai_reply, time.time(), 'text', '', msg_id))
         conn.commit()
         
-        emit('message', ai_data, room=user_specific_room)
+        # إرسال الرد في غرفه الـ AI_bot مباشرة لكي تظهر للمستخدم فوراً بدون تشتيت رومات
+        emit('message', ai_data, room='AI_bot')
+        
     conn.close()
 
 @socketio.on('edit_message')
