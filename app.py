@@ -178,8 +178,9 @@ def find_user_by_phone(data):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT phone, name, avatar, status_text FROM profiles WHERE phone = ?", (search_phone,))
-row = cursor.fetchone()
+    row = cursor.fetchone()
     conn.close()
+    
     if row:
         emit('user_search_result', {'found': True, 'phone': row[0], 'name': row[1], 'avatar': row[2], 'status_text': row[3]})
     else:
@@ -187,8 +188,8 @@ row = cursor.fetchone()
 
 @socketio.on('add_new_contact')
 def add_new_contact(data):
-    user_phone = str(data.get('user_phone')).strip()
-    contact_phone = str(data.get('contact_phone')).strip()
+    user_phone = str(data.get('user_phone', '')).strip()
+    contact_phone = str(data.get('contact_phone', '')).strip()
     contact_name = data.get('contact_name', '').strip()
     
     if user_phone and contact_phone:
