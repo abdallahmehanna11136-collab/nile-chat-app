@@ -19,7 +19,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
-DB_PATH = 'nile_chat_database.db'
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'nile-chat-database.db')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
