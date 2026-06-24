@@ -172,9 +172,11 @@ def handle_profile_update(data):
     conn.close()
     emit('profile_updated_success', {'theme_mode': theme_mode}, room=f"user_{phone}")
 
-@socketio.on('find_user_by_phone')
-def find_user_by_phone(data):
-    search_phone = str(data.get('search_phone')).strip()
+@socketio.on('search_user')
+def handle_search_user(data):
+    search_phone = str(data.get('phone', '')).strip()
+    user_phone = str(data.get('user_phone', '')).strip()
+    
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT phone, name, avatar, status_text FROM profiles WHERE phone = ?", (search_phone,))
