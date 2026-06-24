@@ -992,7 +992,7 @@ function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
             }
         }
 
-        function executePrimaryActionControl() {
+function executePrimaryActionControl() {
             const inputField = document.getElementById('chat-inline-text-input');
             const textValue = inputField.value.trim();
             if(textValue.length > 0) {
@@ -1006,8 +1006,36 @@ function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
                 };
                 if (window.currentReplyId) {
                     msgPayload.reply_to = window.currentReplyId;
+                    msgPayload.reply_text = window.currentReplyText || '';
                     window.currentReplyId = null;
                 }
+
+                // 🎯 تعديل الذكاء الاصطناعي السحري: منع الـ Recursion والـ Loop اللانهائي
+                if (activeRoomId === 'AI_bot') {
+                    // 1. ارسم رسالة المستخدم فوراً على الشاشة
+                    renderMessageBubble(msgPayload);
+                    scrollMessagesToBottomContainer();
+                    inputField.value = '';
+                    evalInputChangeState(inputField);
+
+                    // 2. خذ رد الذكاء الاصطناعي محلياً واطبعه بعد نصف ثانية
+                    setTimeout(function() {
+                        const aiReplyText = window.getNileAiResponse(textValue);
+                        renderMessageBubble({
+                            id: 'msg-ai-' + Date.now(),
+                            room: 'AI_bot',
+                            sender: 'نايل AI',
+                            phone: 'AI_system', // معرّف وهمي عشان تظهر كرسالة واردة (incoming)
+                            text: aiReplyText,
+                            file_type: 'text'
+                        });
+                        scrollMessagesToBottomContainer();
+                    }, 500);
+
+                    return; // اخرج فوراً واقفل الدالة هنا عشان الكود ميروحش للسيرفر ويضرب
+                }
+
+                // المجرى الطبيعي للغرف والمجموعات الأخرى
                 socket.emit('message', msgPayload);
                 inputField.value = '';
                 evalInputChangeState(inputField);
@@ -1015,7 +1043,6 @@ function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
                 toggleVoiceRecordingSessionLive();
             }
         }
-
         function toggleVoiceRecordingSessionLive() {
             const btn = document.getElementById('dynamic-action-control-btn');
             const icon = document.getElementById('dynamic-action-icon');
