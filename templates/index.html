@@ -1022,7 +1022,7 @@ function executePrimaryActionControl() {
                     window.currentReplyId = null;
                 }
 
-                // الكود النظيف والمباشر: الرسالة تذهب للسيرفر وهو يتولى تشغيل OpenAI والرد
+                // بتبعت علطول للسيرفر والسيرفر هيتولى الرد المجاني
                 socket.emit('message', msgPayload);
                 inputField.value = '';
                 evalInputChangeState(inputField);
