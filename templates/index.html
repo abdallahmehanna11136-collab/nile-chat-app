@@ -873,28 +873,42 @@
             event.currentTarget.classList.add('active');
         }
 
-        function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
+function joinChatRoomHook(roomId, roomTitle, targetAvatar = '') {
             activeRoomId = roomId;
             document.getElementById('chat-welcome-placeholder').style.display = 'none';
             document.getElementById('active-chat-workspace').style.display = 'flex';
             document.getElementById('current-chat-target-name').innerText = roomTitle;
+            
             if(targetAvatar) {
                 document.getElementById('current-chat-target-avatar').src = targetAvatar;
             } else {
                 document.getElementById('current-chat-target-avatar').src = (roomId === 'AI_bot') ? 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png' : 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
             }
-            document.getElementById('chat-messages-stream-anchor').innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">جاري تحميل أرشيف المحادثة بشكل آمن...</div>';
+            
+            var streamAnchor = document.getElementById('chat-messages-stream-anchor');
+            
+            // لو الغرفة هي البوت الذكي، شغلها محلياً فوراً وامنع ضرب السيرفر
+            if (roomId === 'AI_bot') {
+                streamAnchor.innerHTML = '<div style="text-align: left; margin: 10px; padding: 10px; background: #334155; color: white; border-radius: 8px; display: inline-block; max-width: 80%;"><strong>نايل AI:</strong> مرحباً بك في نايل شات المطور! أنا مساعدك الذكي الخاص، اكتب أي شيء وسأرد عليك فوراً يا غالي.</div><br>';
+                return; // قف هنا ومتخليش السوكت يبعت للسيرفر عشان الـ Recursion يقف
+            }
+            
+            streamAnchor.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;">جاري تحميل أرشيف المحادثة بشكل آمن...</div>';
             socket.emit('join_room', { room: activeRoomId });
         }
 
         socket.on('chat_history', (data) => {
+            if (activeRoomId === 'AI_bot') return; // تجاهل أي تاريخ مكسور من السيرفر للبوت
             const container = document.getElementById('chat-messages-stream-anchor');
             container.innerHTML = '';
-            data.messages.forEach(msg => { renderMessageBubble(msg); });
+            if (data && data.messages) {
+                data.messages.forEach(msg => { renderMessageBubble(msg); });
+            }
             scrollMessagesToBottomContainer();
         });
 
         socket.on('message', (data) => {
+            if (activeRoomId === 'AI_bot') return; // منع التداخل أثناء محادثة البوت
             if(data.room === activeRoomId) {
                 renderMessageBubble(data);
                 scrollMessagesToBottomContainer();
