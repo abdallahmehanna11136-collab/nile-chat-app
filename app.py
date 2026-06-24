@@ -10,6 +10,7 @@ import time
 import os
 import requests
 import json
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'nile_chat_secure_prime_key_2026'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=36500)
@@ -19,8 +20,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent', engineio_logger=False, logger=False)
 DB_PATH = 'nile_chat_database.db'
-
-# 🎯 تم إزالة كود الـ API Key القديم بنجاح والاعتماد على السيرفر المجاني المباشر بالأسفل
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -76,32 +75,12 @@ def init_db():
     conn.commit()
     conn.close()
 
-def get_groq_ai_response(user_message):
-    try:
-        url = "https://openrouter.ai/api/v1/chat/completions"
-        headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
-        payload = {
-            "model": "meta-llama/llama-3-8b-instruct:free",
-            "messages": [
-{"role": "system", "content": "أنت Nile AI، مساعد ذكي ومفيد للمستخدمين. مبرمج ومطور هذا الموقع هو المهندس عبد الله محمد شعبان، وإذا سألك أحد من برمجه أجب: المبرمج هو المطور عبد الله محمد شعبان."},
-                {"role": "user", "content": user_message}
-            ],
-            "temperature": 0.7, "max_tokens": 400
-        }
-        response = requests.post(url, json=payload, headers=headers, timeout=12)
-        if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
-        return f"عذراً، لم أتمكن من معالجة الطلب حالياً. (خطأ: {response.status_code})"
-    except Exception as e:
-        return f"فشل الاتصال بالذكاء الاصطناعي: {str(e)}"
-
 @app.before_request
 def make_session_permanent():
     session.permanent = True
 
 @app.route('/')
 def index():
-    # 🚀 رجعنا الدالة الأصلية النضيفة اللي بتعشقها واللي هتقرأ ملف index.html بتاعك مباشرة!
     return render_template('index.html')
     
 @app.route('/static/manifest.json')
@@ -199,7 +178,7 @@ def find_user_by_phone(data):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT phone, name, avatar, status_text FROM profiles WHERE phone = ?", (search_phone,))
-    row = cursor.fetchone()
+row = cursor.fetchone()
     conn.close()
     if row:
         emit('user_search_result', {'found': True, 'phone': row[0], 'name': row[1], 'avatar': row[2], 'status_text': row[3]})
@@ -322,24 +301,20 @@ def handle_message_event(data):
     emit('message', data, room=room)
     emit('message_delivery_receipt', {'id': msg_id, 'status': 'delivered'}, room=room)
 
-if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
+    if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         try:
-            # 🚀 استدعاء الذكاء الاصطناعي المجاني بدون أي API Key نهائياً
-            import requests
             payload = {
                 "messages": [
-                    {"role": "system", "content": "أنت Nile AI، مساعد ذكي مدمج في تطبيق نايل شات. رد باختصار وودية بالعامية المصرية."},
+                    {"role": "system", "content": "أنت Nile AI، مساعد ذكي ومفيد للمستخدمين. مبرمج ومطور هذا الموقع هو المهندس عبد الله محمد شعبان، وإذا سألك أحد من برمجه أجب: المبرمج هو المطور عبد الله محمد شعبان. رد باختصار وودية بالعامية المصرية."},
                     {"role": "user", "content": text}
                 ],
-                "model": "meta-llama/Meta-Llama-3.1-8B-Instruct", # موديل لاما القوي والمجاني
+                "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
                 "stream": False
             }
-            # السحب من سيرفر مجاني مفتوح
-            response = requests.post("https://api.duckduckgo.com/v1/chat" if False else "https://open-ai-api-xyz.onrender.com/v1/chat/completions", json=payload, timeout=10)
+            response = requests.post("https://open-ai-api-xyz.onrender.com/v1/chat/completions", json=payload, timeout=10)
             if response.status_code == 200:
                 ai_reply = response.json()['choices'][0]['message']['content'].strip()
             else:
-                # حل بديل سريع لو السيرفر الأساسي مأنتخ
                 ai_reply = "أنا معاك يا غالي! وسامعك كويس، بس السيرفر عليه ضغط بسيط الحين، ابعتلي رسالتك تاني كدا."
         except Exception as e:
             print(f"Free AI Error: {e}")
@@ -360,6 +335,7 @@ if room == 'AI_bot' and str(phone) != 'AI_SYSTEM':
         conn.commit()
         
         emit('message', ai_data, room='AI_bot')
+    conn.close()
 
 @socketio.on('edit_message')
 def handle_edit_message(data):
@@ -419,7 +395,7 @@ def handle_forward_reply(data):
     message_text = data.get('message') or data.get('text')
     reply_to_id = data.get('reply_to_id') or data.get('reply_to')
     is_forwarded = data.get('is_forwarded', False)
-    room = data.get('room', 'public_room')
+room = data.get('room', 'public_room')
     msg_id = f"msg-{int(time.time() * 1000)}"
     
     conn = sqlite3.connect(DB_PATH)
@@ -492,7 +468,7 @@ def add_feed_post(data):
     cursor.execute("""
         INSERT INTO feed_posts (id, sender, phone, avatar, text, media_url, file_type, timestamp) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (post_id, data.get('sender'), data.get('phone'), data.get('avatar'), data.get('text'), data.get('media_url', ''), data.get('file_type', 'text')))
+    """, (post_id, data.get('sender'), data.get('phone'), data.get('avatar'), data.get('text'), data.get('media_url', ''), data.get('file_type', 'text'), time.time()))
     conn.commit()
     conn.close()
     emit('new_feed_post_alert', broadcast=True)
@@ -554,6 +530,7 @@ def handle_nile_notification(data):
     room = data.get('room')
     if room and data.get('senderName') != 'Nile AI':
         emit('receive_message', data, room=room, include_self=False)
+
 init_db()
 
 if __name__ == '__main__':
