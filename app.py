@@ -208,6 +208,16 @@ def add_new_contact(data):
                                (user_phone, contact_phone, contact_name if contact_name else profile[1], time.time()))
                 conn.commit()
             emit('contact_added_status', {'status': 'success', 'phone': profile[0], 'name': contact_name if contact_name else profile[1], 'avatar': profile[2]})
+            
+            # 🔥 تحديث قائمة جهات الاتصال فوراً في خلفية الواجهة للمستخدم بدون تهنيج
+            cursor.execute("""
+                SELECT c.contact_phone, c.contact_name, p.avatar, p.status_text 
+                FROM contacts c JOIN profiles p ON c.contact_phone = p.phone 
+                WHERE c.user_phone = ? ORDER BY c.contact_name ASC
+            """, (user_phone,))
+            rows = cursor.fetchall()
+            contacts_list = [{"phone": r[0], "name": r[1], "avatar": r[2], "status_text": r[3]} for r in rows]
+            emit('my_contacts_list', {'contacts': contacts_list}, room=f"user_{user_phone}")
         else:
             emit('contact_added_status', {'status': 'not_found'})
         conn.close()
@@ -243,8 +253,24 @@ def create_private_group(data):
                        (group_id, name, creator, json.dumps(members), time.time()))
         conn.commit()
         conn.close()
+        
+        # 🔥 هنا التحديث السحري الفوري: نبعث تحديث القائمة لكل أعضاء الجروب فوراً
         for member in members:
-            emit('new_private_group_alert', {'group_id': group_id, 'name': name}, room=f"user_{member}")
+            # جعل الأعضاء ينضموا لغرفة المجموعة برمجياً لاستقبال الرسائل فوراً
+            join_room(group_id, sid=None) 
+            
+            # جلب القائمة المحدثة وإرسالها فوراً لواجهة المستخدم
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name, creator, members FROM private_groups")
+            rows = cursor.fetchall()
+            conn.close()
+            my_groups = []
+            for r in rows:
+                members_list = json.loads(r[3])
+                if member in members_list:
+                    my_groups.append({"id": r[0], "name": r[1], "creator": r[2], "members": members_list})
+            emit('my_private_groups_list', {'groups': my_groups}, room=f"user_{member}")
 
 @socketio.on('get_my_private_groups')
 def get_my_private_groups(data):
