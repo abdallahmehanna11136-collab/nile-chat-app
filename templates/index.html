@@ -1349,22 +1349,28 @@ function executePrimaryActionControl() {
 
         function requestMyPrivateGroupsList() { socket.emit('get_my_private_groups', { user_phone: myProfile.phone }); }
 
-        socket.on('my_private_groups_list', (data) => {
+socket.on('my_private_groups_list', (data) => {
             const hook = document.getElementById('my-private-groups-list-hook');
-            hook.innerHTML = '';
+            if (!hook) return;
+            
+            // بناء المجموعات بسرعة البرق في الذاكرة
+            const fragment = document.createDocumentFragment();
             data.groups.forEach(g => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
+                item.style.cssText = 'padding: 12px; cursor: pointer; border-bottom: 1px solid #2f3b43;';
                 item.onclick = () => { joinChatRoomHook(g.id, `مجموعة: ${g.name}`); };
                 item.innerHTML = `
                     <img src="https://cdn-icons-png.flaticon.com/512/681/681494.png" class="list-item-avatar">
                     <div class="list-item-info">
-                        <div class="list-item-title">${g.name}</div>
-                        <div class="list-item-desc">مجموعة خاصة مشفرة</div>
+                        <div class="list-item-title" style="font-weight: bold; color: #e9edef;">${g.name}</div>
+                        <div class="list-item-desc" style="font-size: 12px; color: #8696a0;">مجموعة خاصة مشفرة</div>
                     </div>
                 `;
-                hook.appendChild(item);
+                fragment.appendChild(item);
             });
+            hook.innerHTML = '';
+            hook.appendChild(fragment);
         });
 
         function requestAllStoriesLive() { socket.emit('get_stories'); }
@@ -1382,21 +1388,26 @@ function executePrimaryActionControl() {
             document.getElementById('story-media-url').value = '';
         }
 
+        // تحديث وعرض الحالات بتصميم واتساب سريع وغير ثقيل
         socket.on('stories_list', (data) => {
             const hook = document.getElementById('stories-render-hook');
-            hook.innerHTML = '';
-            if(data.stories.length === 0) {
+            if (!hook) return;
+            
+            if(!data.stories || data.stories.length === 0) {
                 hook.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">لا توجد حالات منشورة حالياً.</div>';
                 return;
             }
+
+            const fragment = document.createDocumentFragment();
             data.stories.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
+                item.style.cssText = 'padding: 10px; cursor: pointer; border-bottom: 1px solid #2f3b43; display: flex; align-items: center;';
                 item.innerHTML = `
-                    <img src="${s.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="list-item-avatar" style="border: 2px solid var(--primary-color);">
-                    <div class="list-item-info">
-                        <div class="list-item-title">${s.sender}</div>
-                        <div class="list-item-desc">${s.caption || s.text}</div>
+                    <img src="${s.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" class="list-item-avatar" style="border: 2px solid #00a884; border-radius: 50%; width: 45px; height: 45px; padding: 2px;">
+                    <div class="list-item-info" style="margin-right: 12px;">
+                        <div class="list-item-title" style="font-weight: bold; color: #e9edef;">${s.sender}</div>
+                        <div class="list-item-desc" style="font-size: 12px; color: #8696a0;">${s.caption || s.text}</div>
                     </div>
                 `;
                 item.onclick = () => {
@@ -1406,11 +1417,16 @@ function executePrimaryActionControl() {
                         alert(s.text);
                     }
                 };
-                hook.appendChild(item);
+                fragment.appendChild(item);
             });
+            hook.innerHTML = '';
+            hook.appendChild(fragment);
         });
 
-        socket.on('new_story_alert', () => { if(document.getElementById('stories-tab').classList.contains('active')) requestAllStoriesLive(); });
+        socket.on('new_story_alert', () => { 
+            var tab = document.getElementById('stories-tab');
+            if(tab && tab.classList.contains('active')) requestAllStoriesLive(); 
+        });
 
         function requestAllFeedPosts() { socket.emit('get_feed_posts'); }
 
@@ -1427,28 +1443,36 @@ function executePrimaryActionControl() {
             document.getElementById('feed-post-media-link').value = '';
         }
 
+        // تحسين عرض المنشورات ومنع الـ Lag تماماً
         socket.on('feed_posts_list', (data) => {
             const hook = document.getElementById('feed-posts-render-hook');
-            hook.innerHTML = '';
+            if (!hook) return;
+
+            const fragment = document.createDocumentFragment();
             data.posts.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'feed-card';
-                let mediaHtml = p.media_url ? `<img src="${p.media_url}" class="feed-media">` : '';
+                card.style.cssText = 'background: #222e35; border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid #2f3b43;';
+                
+                let mediaHtml = p.media_url ? `<img src="${p.media_url}" class="feed-media" style="width:100%; border-radius:8px; margin-top:10px; max-height:300px; object-fit:cover;">` : '';
                 const hasLiked = p.likes_json && p.likes_json.includes(myProfile.phone);
+                
                 card.innerHTML = `
-                    <div class="feed-header">
+                    <div class="feed-header" style="display:flex; align-items:center; margin-bottom:10px;">
                         <img src="${p.avatar || 'https://www.w3schools.com/howto/img_avatar.png'}" style="width:35px;height:35px;border-radius:50%;">
-                        <div style="font-weight:600; font-size:14px; margin-right: 8px;">${p.sender}</div>
+                        <div style="font-weight:600; font-size:14px; margin-right: 8px; color:#e9edef;">${p.sender}</div>
                     </div>
-                    <div style="font-size:14px; white-space:pre-wrap; margin-top: 6px;">${p.text}</div>
+                    <div style="font-size:14px; white-space:pre-wrap; margin-top: 6px; color:#e9edef;">${p.text}</div>
                     ${mediaHtml}
-                    <div class="feed-actions" onclick="triggerLikeFeedPost('${p.id}')" style="margin-top: 10px;">
-                        <i class="bi ${hasLiked ? 'bi-heart-fill' : 'bi-heart'}" style="${hasLiked ? 'color:red;' : ''}"></i>
-                        <span style="font-size:13px; margin-right: 5px;">${p.likes || 0} إعجاب</span>
+                    <div class="feed-actions" onclick="triggerLikeFeedPost('${p.id}')" style="margin-top: 12px; display:flex; align-items:center; cursor:pointer; color:#8696a0;">
+                        <i class="bi ${hasLiked ? 'bi-heart-fill' : 'bi-heart'}" style="${hasLiked ? 'color:#ff2e74;' : ''}"></i>
+                        <span style="font-size:13px; margin-right: 6px;">${p.likes || 0} إعجاب</span>
                     </div>
                 `;
-                hook.appendChild(card);
+                fragment.appendChild(card);
             });
+            hook.innerHTML = '';
+            hook.appendChild(fragment);
         });
 
         function triggerLikeFeedPost(postId) { socket.emit('like_feed_post', { post_id: postId, phone: myProfile.phone }); }
