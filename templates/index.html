@@ -497,7 +497,7 @@
                 🎥 اختر فيديو من المعرض
             </button>
             <input type="file" name="status_video" id="galleryVideoInput" accept="video/*" style="display:none;" onchange="document.getElementById('statusDirectForm').submit()">
-        </form>
+</form>
         <div style="border-top: 1px solid #334155; margin-top: 18px; padding-top: 15px;">
             <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">أو شارك حالة من تطبيقاتك المفضلة مباشرة:</p>
             <div class="social-status-icons" style="display: flex; gap: 14px; justify-content: center; align-items: center;">
@@ -511,30 +511,25 @@
         <button class="btn-custom secondary" onclick="document.getElementById('customStatusModal').style.display='none'" style="margin-top: 15px; color: white; border: 1px solid #334155; width: 100%;">إلغاء</button>
     </div>
     
-    <div class="social-dropdown-container" style="position: fixed; top: 15px; left: 15px; z-index: 9999;">
-        <button type="button" onclick="toggleSocialMenu(event)" style="background-color: var(--primary-color); color: white; padding: 10px 18px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: background-color 0.2s;">
-            🌐 المنصات
-        </button>
-        <div id="socialDropdownMenu" style="display: none; position: absolute; top: 46px; left: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid var(--border-color);">
-            <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
-            </a>
-            <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
-            </a>
-            <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
-            </a>
-            <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
-            </a>
-            <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
-            </a>
-            <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="24" height="24" style="filter: invert(1);"> منصة X
-            </a>
-        </div>
+    <div id="socialDropdownMenu" style="display: none; position: fixed; top: 60px; left: 15px; background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; width: 190px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1.5px solid var(--border-color); z-index: 9999;">
+        <a href="https://www.facebook.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" width="24" height="24"> فيسبوك
+        </a>
+        <a href="https://www.tiktok.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" width="24" height="24"> تيك توك
+        </a>
+        <a href="https://www.instagram.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" width="24" height="24"> إنستغرام
+        </a>
+        <a href="https://www.youtube.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174883.png" width="24" height="24"> يوتيوب
+        </a>
+        <a href="https://www.snapchat.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3670/3670166.png" width="24" height="24"> سناب شات
+        </a>
+        <a href="https://twitter.com" target="_blank" style="display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 8px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023.svg" width="24" height="24" style="filter: invert(1);"> منصة X
+        </a>
     </div>
     
     <script>
@@ -549,32 +544,24 @@
     }
     window.addEventListener('click', function(event) {
         var menu = document.getElementById("socialDropdownMenu");
-        var container = document.querySelector(".social-dropdown-container");
-        if (menu && menu.style.display === "block" && container && !container.contains(event.target)) {
+        if (menu && menu.style.display === "block" && !event.target.closest('#platforms-btn') && !menu.contains(event.target)) {
             menu.style.display = "none";
         }
     });
     </script>
 
-    <div class="app-container">
+    <div class="app-container" style="padding-bottom: 60px;">
         <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="profile-container" onclick="openProfileSettingsModal()">
-                    <img id="my-global-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" class="user-avatar">
-                    <span id="my-global-name" style="font-weight:700; font-size:14px; color: var(--text-main);">جاري التحميل...</span>
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #1f2c34;">
+                <div class="profile-container" onclick="openProfileSettingsModal()" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <img id="my-global-avatar" src="https://www.w3schools.com/howto/img_avatar.png" alt="Avatar" class="user-avatar" style="width: 35px; height: 35px; border-radius: 50%;">
+                    <h1 style="font-family: sans-serif; font-size: 18px; font-weight: bold; margin: 0; color: #00a884;">NileChat</h1>
                 </div>
-                <div class="header-actions">
-                    <i class="bi bi-moon-stars-fill" onclick="toggleThemeModeLive()"></i>
-                    <i class="bi bi-person-plus-fill" onclick="openAddContactModal()"></i>
-                    <i class="bi bi-plus-circle-dotted" onclick="openCreateGroupModal()"></i>
+                <div class="header-actions" style="display: flex; gap: 15px; align-items: center; color: #aebac1; font-size: 18px;">
+                    <button id="platforms-btn" onclick="toggleSocialMenu(event)" style="background: #00a884; color: white; border: none; padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">🌐 المنصات</button>
+                    <i class="bi bi-moon-stars-fill" onclick="toggleThemeModeLive()" style="cursor: pointer;"></i>
                 </div>
             </div>
-            <nav class="tabs-nav">
-                <button class="tab-btn active" onclick="switchSidebarTab('chats-tab')">المحادثات</button>
-                <button class="tab-btn" onclick="switchSidebarTab('contacts-tab'); loadMyContacts();">جهات الاتصال</button>
-                <button class="tab-btn" onclick="switchSidebarTab('stories-tab'); requestAllStoriesLive();">الحالات</button>
-                <button class="tab-btn" onclick="switchSidebarTab('feed-tab'); requestAllFeedPosts();">المنتدى</button>
-            </nav>
             <div id="chats-tab" class="tab-content active">
                 <div class="search-box-container">
                     <div class="search-input-wrapper">
