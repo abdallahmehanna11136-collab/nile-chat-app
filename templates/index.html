@@ -562,15 +562,96 @@ function toggleFabMenu(event) {
         menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
     }
 
-    // دوال تشغيل أزرار القائمة العائمة (تليجرام ستايل)
-    function openCreateGroup() {
-        var groupName = prompt("أدخل اسم المجموعة الجديدة:");
-        if(groupName && groupName.trim() !== "") {
-            socket.emit('create_private_group', { group_name: groupName.trim(), creator_phone: myProfile.phone, members: [myProfile.phone] });
-            alert("جاري إنشاء المجموعة...");
-        }
+function openCreateGroup() {
+    var groupName = prompt("أدخل اسم المجموعة الجديدة:");
+    if (!groupName || groupName.trim() === "") return;
+
+    // جلب جهات الاتصال الحالية المتسيفة في الواجهة
+    // تأكد أن الاسم متطابق مع مكان حفظ لستة جهات الاتصال عندك
+    var contactsContainer = document.getElementById('contacts-list-render-hook') || document.getElementById('contacts-tab');
+    
+    if (!contactsContainer || contactsContainer.children.length === 0) {
+        alert("لا توجد جهات اتصال لديك لإضافتها! يرجى إضافة جهات اتصال أولاً.");
+        return;
     }
 
+    // بناء نافذة اختيار الأعضاء (تظهر كصندوق مخصص)
+    var modalHtml = `
+        <div id="group-members-picker-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11,20,26,0.85); z-index:9999; display:flex; align-items:center; justify-content:center;">
+            <div style="background:#222e35; border-radius:12px; width:90%; max-width:400px; padding:20px; border:1px solid #2f3b43; color:#e9edef;">
+                <h3 style="margin-top:0; color:#00a884; font-size:18px; border-bottom:1px solid #2f3b43; padding-bottom:10px;">اختر أعضاء المجموعة 👥</h3>
+                <div id="picker-contacts-list" style="max-height:250px; overflow-y:auto; margin:15px 0; padding-right:5px;">
+                    </div>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button id="submit-group-btn" style="flex:1; background:#00a884; color:#111b21; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer;">إنشاء المجموعة</button>
+                    <button id="cancel-group-btn" style="flex:1; background:#475569; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">إلغاء</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // حقن النافذة في الصفحة
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    var pickerList = document.getElementById('picker-contacts-list');
+    
+    // البحث في عناصر جهات الاتصال لنسخها داخل صندوق الاختيار
+    // الكود هنا بيلقط الـ Phone والـ Name من لستة جهات اتصالك الحقيقية
+    document.querySelectorAll('.chat-item').forEach(item => {
+        // نتحقق إن العنصر ده تبع جهة اتصال وليس محادثة
+        if (item.innerHTML.includes('👤')) {
+            var textContent = item.innerText || "";
+            var lines = textContent.split('\n');
+            var name = lines[0].replace('👤', '').trim();
+            var phone = lines[1] ? lines[1].split('-')[0].trim() : "";
+
+            if (phone) {
+                var row = document.createElement('div');
+                row.style.display = 'flex';
+                row.style.alignItems = 'center';
+                row.style.justifyContent = 'space-between';
+                row.style.padding = '8px 5px';
+                row.style.borderBottom = '1px solid #2f3b43';
+                
+                row.innerHTML = `
+                    <label style="cursor:pointer; display:flex; align-items:center; gap:10px; width:100%;">
+                        <input type="checkbox" class="group-member-checkbox" value="${phone}" style="width:18px; height:18px; accent-color:#00a884;">
+                        <div>
+                            <div style="font-weight:bold; color:#e9edef;">${name}</div>
+                            <div style="font-size:12px; color:#8696a0;">${phone}</div>
+                        </div>
+                    </label>
+                `;
+                pickerList.appendChild(row);
+            }
+        }
+    });
+
+    // زر الإلغاء
+    document.getElementById('cancel-group-btn').onclick = function() {
+        document.getElementById('group-members-picker-modal').remove();
+    };
+
+    // زر الإنشاء الفعلي وإرسال البيانات للسيرفر
+    document.getElementById('submit-group-btn').onclick = function() {
+        var selectedMembers = [myProfile.phone]; // منشئ المجموعة عنصر أساسي
+        
+        document.querySelectorAll('.group-member-checkbox:checked').forEach(checkbox => {
+            selectedMembers.push(checkbox.value);
+        });
+
+        // إرسال الأمر للسيرفر
+        socket.emit('create_private_group', { 
+            group_name: groupName.trim(), 
+            creator_phone: myProfile.phone, 
+            members: selectedMembers 
+        });
+
+        // إغلاق الصندوق وتنظيف الشاشة
+        document.getElementById('group-members-picker-modal').remove();
+        alert("جاري إنشاء المجموعة وضخ الأعضاء المحددين...");
+    };
+}
     function openCreateChannel() {
         var channelName = prompt("أدخل اسم القناة الجديدة:");
         var channelDesc = prompt("أدخل وصف القناة:");
