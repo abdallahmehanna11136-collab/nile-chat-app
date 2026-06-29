@@ -556,10 +556,36 @@
         }
     }
 
-    function toggleFabMenu(event) {
+function toggleFabMenu(event) {
         if(event) event.stopPropagation();
         var menu = document.getElementById('fab-menu');
         menu.style.display = (menu.style.display === 'none' || menu.style.display === '') ? 'block' : 'none';
+    }
+
+    // دوال تشغيل أزرار القائمة العائمة (تليجرام ستايل)
+    function openCreateGroup() {
+        var groupName = prompt("أدخل اسم المجموعة الجديدة:");
+        if(groupName && groupName.trim() !== "") {
+            socket.emit('create_private_group', { group_name: groupName.trim(), creator_phone: myProfile.phone, members: [myProfile.phone] });
+            alert("جاري إنشاء المجموعة...");
+        }
+    }
+
+    function openCreateChannel() {
+        var channelName = prompt("أدخل اسم القناة الجديدة:");
+        var channelDesc = prompt("أدخل وصف القناة:");
+        if(channelName && channelName.trim() !== "") {
+            socket.emit('create_unit', { name: channelName.trim(), type: 'public_channel', creator: myProfile.phone, description: channelDesc });
+            alert("جاري إنشاء القناة...");
+        }
+    }
+
+    function openAddContact() {
+        var cPhone = prompt("أدخل رقم هاتف جهة الاتصال الجديدة:");
+        var cName = prompt("أدخل اسم جهة الاتصال:");
+        if(cPhone && cName) {
+            socket.emit('add_new_contact', { user_phone: myProfile.phone, contact_phone: cPhone.trim(), contact_name: cName.trim() });
+        }
     }
 
     window.addEventListener('click', function(event) {
