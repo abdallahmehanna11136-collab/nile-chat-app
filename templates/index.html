@@ -1685,5 +1685,81 @@ socket.on('my_private_groups_list', (data) => {
             }
         });
     </script>
+    <div style="text-align: center; margin: 10px 0;">
+    <button onclick="openLensesCamera()" style="background:#00a884; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; width: 90%; font-size: 15px;">
+        🎭 افتح كاميرا العدسات (سناب شات)
+    </button>
+</div>
+
+<div id="lenses-container" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#111b21; z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
+    <div style="position:relative; width:100%; max-width:400px; height:70vh; background:#000; border-radius:12px; overflow:hidden;">
+        <video id="webcam-video" autoplay playsinline style="display:none;"></video>
+        <canvas id="lenses-canvas" style="width:100%; height:100%; transform: scaleX(-1);"></canvas>
+    </div>
+    <div id="lenses-bar" style="width:100%; max-width:400px; display:flex; gap:15px; overflow-x:auto; padding:15px; background:rgba(34,46,53,0.8); backdrop-filter:blur(10px); position:absolute; bottom:0; direction:rtl;"></div>
+    <button onclick="closeLensesCamera()" style="position:absolute; top:20px; right:20px; background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:20px; font-weight:bold; cursor:pointer;">إغلاق x</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/facemesh"></script>
+
+<script>
+let streamInstance = null;
+let model = null;
+
+async function openLensesCamera() {
+    document.getElementById('lenses-container').style.display = 'flex';
+    try {
+        streamInstance = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        document.getElementById('webcam-video').srcObject = streamInstance;
+        buildLensesBar();
+        if(!model) {
+            model = await facemesh.load();
+        }
+        trackFace();
+    } catch (err) {
+        alert("خطأ في فتح الكاميرا: " + err.message);
+    }
+}
+
+function buildLensesBar() {
+    const bar = document.getElementById('lenses-bar');
+    bar.innerHTML = '';
+    for(let i = 1; i <= 120; i++) {
+        const lensOption = document.createElement('div');
+        lensOption.style.cssText = 'min-width:60px; height:60px; border-radius:50%; background:#2f3b43; border:2px solid #fff; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:24px;';
+        let emoji = "🎭";
+        if(i <= 20) emoji = "🕶️";
+        else if(i <= 40) emoji = "🦊";
+        else if(i <= 60) emoji = "✨";
+        else if(i <= 80) emoji = "👻";
+        else if(i <= 100) emoji = "🎨";
+        else emoji = "👑";
+        lensOption.innerHTML = emoji;
+        lensOption.onclick = () => console.log("تم اختيار عدسة رقم: " + i);
+        bar.appendChild(lensOption);
+    }
+}
+
+async function trackFace() {
+    const video = document.getElementById('webcam-video');
+    const canvas = document.getElementById('lenses-canvas');
+    const ctx = canvas.getContext('2d');
+    if(!streamInstance) return;
+    if (video.readyState === video.HAVE_CURRENT_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    }
+    requestAnimationFrame(trackFace);
+}
+
+function closeLensesCamera() {
+    if(streamInstance) {
+        streamInstance.getTracks().forEach(track => track.stop());
+    }
+    document.getElementById('lenses-container').style.display = 'none';
+}
+</script>
 </body>
 </html>
