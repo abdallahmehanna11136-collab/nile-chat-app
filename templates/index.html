@@ -1711,28 +1711,40 @@ let streamInstance = null;
 let model = null;
 let currentLensEffect = 'none';
 
-// 1. فتح الكاميرا وطلب الإذن (Permission) تلقائياً
 async function openLensesCamera() {
-    document.getElementById('lenses-container').style.display = 'flex';
+    // إظهار شاشة الكاميرا فوراً
+    const container = document.getElementById('lenses-container');
+    container.style.display = 'flex';
+    
+    // التأكد من دعم المتصفح للكاميرا
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("تنبيه: متصفحك لا يدعم فتح الكاميرا، أو أنك تحتاج لفتح الموقع عبر رابط آمن HTTPS أو Localhost لتفعيل الصلاحيات.");
+        return;
+    }
+
     try {
+        // بناء شريط الـ 120 عدسة تلقائياً
+        buildLensesBar(); 
+        
+        // طلب إذن الكاميرا (Permission) بشكل مباشر وصريح من المتصفح
         streamInstance = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, 
             audio: false 
         });
-        document.getElementById('webcam-video').srcObject = streamInstance;
         
-        buildLensesBar(); // إنشاء الـ 120 عدسة بأشكالها الفريدة
-        
-        if(!model) {
-            model = await facemesh.load();
-        }
-        trackFace();
+        // ربط بث الكاميرا بالعنصر وتشغيله
+        const video = document.getElementById('webcam-video');
+        video.srcObject = streamInstance;
+        video.onloadedmetadata = () => {
+            video.play();
+            trackFace(); // بدء تتبع الوجه والمؤثرات
+        };
     } catch (err) {
-        alert("تنبيه: يجب السماح بصلاحية الكاميرا لتشغيل العدسات والمؤثرات.");
+        console.error("خطأ أثناء طلب إذن الكاميرا: ", err);
+        alert("لم يتم تفعيل الكاميرا. يرجى الضغط على علامة القفل بجانب رابط الموقع في المتصفح وتفعيل إذن الكاميرا (Camera Permission) يدوياً.");
         closeLensesCamera();
     }
 }
-
 // 2. بناء الـ 120 عدسة بأشكال وحركات متنوعة ومختلفة تماماً عن بعضها
 function buildLensesBar() {
     const bar = document.getElementById('lenses-bar');
